@@ -219,8 +219,8 @@ let nextDir = { x: 0, z: -1 };
 
 // Timers
 let tickTimer = 0;
-let baseTickRate = 180; // Default millisecond delay
-let currentTickRate = 180;
+let baseTickRate = 240; // Default millisecond delay (slower start)
+let currentTickRate = 240;
 let lastTickTime = 0;
 
 // Power-ups state
@@ -431,6 +431,8 @@ function resetGameData() {
     gems = 245; // Gem counter matching image
     level = 7;
     applesEaten = 5;
+    baseTickRate = 240; // Default start speed (slower, more manageable)
+    currentTickRate = 240;
     
     document.getElementById('current-score').innerText = formatScore(score);
     document.getElementById('gem-count').innerText = gems;
@@ -444,8 +446,8 @@ function resetGameData() {
     const startX = Math.floor(GRID_WIDTH / 2);
     const startZ = Math.floor(GRID_DEPTH / 2) + 2;
     snake = [];
-    // Form a long curve on start to look nice
-    for (let i = 0; i < 20; i++) {
+    // Form standard initial segments (length 5)
+    for (let i = 0; i < 5; i++) {
         snake.push({ x: startX, z: startZ + i });
     }
     
