@@ -262,6 +262,7 @@ let snakeHeadMesh, snakeSegmentMeshes = [];
 let appleMesh, appleLight;
 let cornerPlants = [];
 let shadowPlanes = [];
+let ambientLight, dirLight;
 
 function initThree() {
     const container = document.getElementById('canvas-container');
@@ -297,11 +298,11 @@ function initThree() {
     orbitControls.enabled = true; // Orbit on start screen
 
     // LIGHTING (Dark moody cyber ambient)
-    const ambientLight = new THREE.AmbientLight(0x0a0c20, 1.5);
+    ambientLight = new THREE.AmbientLight(0x0a0c20, 1.5);
     scene.add(ambientLight);
 
     // Subtle blue directional light
-    const dirLight = new THREE.DirectionalLight(0x1133aa, 0.9);
+    dirLight = new THREE.DirectionalLight(0x1133aa, 0.9);
     dirLight.position.set(5, 30, 10);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 1024;
@@ -925,8 +926,8 @@ function buildVillage() {
         // House stone base
         const baseGeo = new THREE.BoxGeometry(GRID_SIZE * 0.95, GRID_SIZE * 0.7, GRID_SIZE * 0.95);
         const baseMat = new THREE.MeshStandardMaterial({
-            color: 0x42382e, // Dark wood/grey bricks
-            roughness: 0.9,
+            color: 0x8a725d, // Warm lighter timber/brick
+            roughness: 0.85,
             metalness: 0.05
         });
         const base = new THREE.Mesh(baseGeo, baseMat);
@@ -938,8 +939,8 @@ function buildVillage() {
         // Roof cone
         const roofGeo = new THREE.ConeGeometry(GRID_SIZE * 0.75, GRID_SIZE * 0.45, 4);
         const roofMat = new THREE.MeshStandardMaterial({
-            color: 0xa82828, // Terracotta red
-            roughness: 0.95,
+            color: 0xe63939, // Vibrant bright red
+            roughness: 0.9,
             metalness: 0.02
         });
         const roof = new THREE.Mesh(roofGeo, roofMat);
@@ -1012,12 +1013,12 @@ function spawnSingleOmino(initial = false) {
     const targetPos = gridToWorld({ x: rx, z: rz });
     ominoGroup.position.copy(targetPos);
 
-    // Glowing white stick figures
+    // Highly visible glowing white stick figures
     const ominoMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        emissive: 0xcccccc,
-        emissiveIntensity: 1.0,
-        roughness: 0.2,
+        emissive: 0xffffff,
+        emissiveIntensity: 2.2, // Boosted glow for high visibility
+        roughness: 0.1,
         metalness: 0.1
     });
 
@@ -1164,10 +1165,20 @@ function enterBonusLevel() {
         o.light.intensity = 0;
     });
 
-    // Dark reddish night mood
-    scene.background.setHex(0x0a0302);
-    scene.fog.color.setHex(0x0a0302);
-    scene.fog.density = 0.035;
+    // Dark reddish night mood (make it a bit lighter and atmospheric)
+    scene.background.setHex(0x1d110f); 
+    scene.fog.color.setHex(0x1d110f);
+    scene.fog.density = 0.015; // Lower density to reduce obscurity
+
+    // Brighten up global lights for the village dimension
+    if (ambientLight) {
+        ambientLight.color.setHex(0xaa8877); // Cozy warm ambient light
+        ambientLight.intensity = 2.6;
+    }
+    if (dirLight) {
+        dirLight.color.setHex(0xffddaa); // Bright warm moonlight/lantern light
+        dirLight.intensity = 2.2;
+    }
 
     // Show HUD timer
     document.getElementById('bonus-countdown').classList.remove('hidden');
@@ -1194,6 +1205,16 @@ function exitBonusLevel() {
     scene.background.setHex(0x010105);
     scene.fog.color.setHex(0x010105);
     scene.fog.density = 0.02;
+
+    // Restore standard cyber lights
+    if (ambientLight) {
+        ambientLight.color.setHex(0x0a0c20);
+        ambientLight.intensity = 1.5;
+    }
+    if (dirLight) {
+        dirLight.color.setHex(0x1133aa);
+        dirLight.intensity = 0.9;
+    }
 
     // Restore normal elements
     if (appleMesh) {
