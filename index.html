@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="SERPE - Clone di Snake 3D futuristico con estetica cyber-neon ispirata alla demo originale del 2026.">
+    <title>SERPE // Cyber-Neon Snake 3D</title>
+    
+    <!-- Google Fonts: Orbitron & Rajdhani for premium tech vibe -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Game Styling -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon Links -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="128x128" href="favicon.png">
+</head>
+<body>
+    <!-- Three.js Canvas Container -->
+    <div id="canvas-container"></div>
+    
+    <!-- Scanline and grid overlays for retro-cyber feel -->
+    <div class="crt-overlay"></div>
+    <div class="ambient-glow"></div>
+
+    <!-- MAIN HUD (Heads-Up Display) -->
+    <header id="game-hud" class="hud-container hidden">
+        <!-- Gems Counter Pill (Top-Left) -->
+        <div class="hud-pill-gems" id="hud-gems-group">
+            <svg class="gem-crystal-svg" viewBox="0 0 24 24">
+                <polygon points="12,2 22,9 12,22 2,9" />
+                <polygon points="12,2 12,22" />
+                <polygon points="2,9 12,12 22,9" />
+            </svg>
+            <span id="gem-count" class="gems-value-text">245</span>
+        </div>
+
+        <!-- Title & Score (Top-Center) -->
+        <div class="hud-center-group">
+            <h1 class="hud-logo-glow" data-text="SERPE" id="hud-logo-id">SERPE</h1>
+            <div id="current-score" class="score-value-glow">1.250</div>
+        </div>
+
+        <!-- Level & Pause Group (Top-Right) -->
+        <div class="hud-right-align">
+            <div class="level-indicator-group">
+                <div class="level-label-fuchsia">LIVELLO <span id="level-num">7</span></div>
+                <div class="level-dots-track">
+                    <div class="dots-line"></div>
+                    <div class="level-dots" id="level-dots-container">
+                        <span class="dot active"></span>
+                        <span class="dot active"></span>
+                        <span class="dot active"></span>
+                        <span class="dot active"></span>
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="btn-pause" class="pause-circle-btn" aria-label="Pausa">
+                <svg viewBox="0 0 24 24" class="icon-pause-svg">
+                    <rect x="7" y="5" width="3" height="14" rx="0.5" />
+                    <rect x="14" y="5" width="3" height="14" rx="0.5" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- MOBILE TOUCH CONTROLS OVERLAY -->
+    <div id="mobile-controls" class="hidden">
+        <!-- Left Side: Power-Up Buttons (Lightning and Magnet) -->
+        <div class="powerup-side-zone">
+            <!-- Lightning / Speed Power-up -->
+            <div class="powerup-badge-wrapper">
+                <button id="btn-boost" class="powerup-round-btn btn-lightning" aria-label="Boost Velocità">
+                    <svg viewBox="0 0 24 24" class="powerup-svg">
+                        <path d="M13,2 L3,14 L12,14 L11,22 L21,10 L12,10 L13,2 Z" />
+                    </svg>
+                </button>
+                <span class="badge-count" id="count-boost">3</span>
+            </div>
+            
+            <!-- Magnet Power-up -->
+            <div class="powerup-badge-wrapper">
+                <button id="btn-break" class="powerup-round-btn btn-magnet" aria-label="Magnete">
+                    <svg viewBox="0 0 24 24" class="powerup-svg">
+                        <path d="M12,2 C6.5,2 2,6.5 2,12 L2,17 C2,19.2 3.8,21 6,21 L8,21 C8.6,21 9,20.6 9,20 L9,15 C9,14.4 8.6,14 8,14 L5,14 L5,12 C5,8.1 8.1,5 12,5 C15.9,5 19,8.1 19,12 L19,14 L16,14 C15.4,14 15,14.4 15,15 L15,20 C15,20.6 15.4,21 16,21 L18,21 C20.2,21 22,19.2 22,17 L22,12 C22,6.5 17.5,2 12,2 Z" />
+                    </svg>
+                </button>
+                <span class="badge-count" id="count-magnet">2</span>
+            </div>
+        </div>
+        
+        <!-- Right Side: Circular D-pad Control -->
+        <div class="dpad-controller-zone" id="joystick-boundary">
+            <div class="dpad-disc">
+                <!-- Up Arrow -->
+                <div class="dpad-arrow dpad-up" data-dir="up">
+                    <svg viewBox="0 0 24 24"><path d="M12 8l-6 6h12z"/></svg>
+                </div>
+                <!-- Right Arrow -->
+                <div class="dpad-arrow dpad-right" data-dir="right">
+                    <svg viewBox="0 0 24 24"><path d="M16 12l-6-6v12z"/></svg>
+                </div>
+                <!-- Down Arrow -->
+                <div class="dpad-arrow dpad-down" data-dir="down">
+                    <svg viewBox="0 0 24 24"><path d="M12 16l-6-6h12z"/></svg>
+                </div>
+                <!-- Left Arrow -->
+                <div class="dpad-arrow dpad-left" data-dir="left">
+                    <svg viewBox="0 0 24 24"><path d="M8 12l6 6v-12z"/></svg>
+                </div>
+                <!-- Center Dot -->
+                <div class="dpad-center-dot" id="joystick-handle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREENS & OVERLAYS -->
+    
+    <!-- 1. Start Screen -->
+    <section id="screen-start" class="screen-overlay active">
+        <div class="panel glassmorphism">
+            <div class="panel-header">
+                <span class="panel-tag">SYS_INITIALIZED_2026</span>
+                <h2 class="neon-title" data-text="SERPE">SERPE</h2>
+            </div>
+            
+            <div class="panel-body">
+                <p class="panel-desc">Pilota la sonda bio-cibernetica nell'arena neon tridimensionale. Assorbi i nuclei energetici rossi ed evita le collisioni con i confini e te stesso.</p>
+                
+                <div class="controls-guide">
+                    <div class="guide-item">
+                        <span class="guide-key">WASD / FRECCE</span>
+                        <span class="guide-text">Movimento PC</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-key">D-PAD TOUCH</span>
+                        <span class="guide-text">Movimento Mobile</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-key">SPAZIO</span>
+                        <span class="guide-text">Pausa / Avvia</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-footer">
+                <button id="btn-start-game" class="btn-primary-neon">
+                    <span class="btn-label">AVVIA CONNESSIONE</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Game Over Screen -->
+    <section id="screen-gameover" class="screen-overlay hidden">
+        <div class="panel glassmorphism error-theme">
+            <div class="panel-header">
+                <span class="panel-tag">SYS_COLLISION_DETECTED</span>
+                <h2 class="neon-title text-magenta" data-text="DISCONNECTED">DISCONNECTED</h2>
+            </div>
+            
+            <div class="panel-body">
+                <div class="results-grid">
+                    <div class="result-box">
+                        <span class="result-label">PUNTEGGIO</span>
+                        <span id="final-score" class="result-value">00.000</span>
+                    </div>
+                    <div class="result-box">
+                        <span class="result-label">GEMME</span>
+                        <span id="final-gems" class="result-value">000</span>
+                    </div>
+                    <div class="result-box full-width" id="highscore-alert" style="display:none;">
+                        <span class="result-label neon-pulse">NUOVO RECORD!</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-footer">
+                <button id="btn-restart-game" class="btn-primary-neon btn-magenta-style">
+                    <span class="btn-label">RI-CONNETTI</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Pause Screen -->
+    <section id="screen-pause" class="screen-overlay hidden">
+        <div class="panel glassmorphism warning-theme">
+            <div class="panel-header">
+                <span class="panel-tag">SYS_PAUSED</span>
+                <h2 class="neon-title text-cyan" data-text="PAUSA">PAUSA</h2>
+            </div>
+            
+            <div class="panel-body text-center">
+                <p>La simulazione è temporaneamente in standby.</p>
+                <div class="stats-mini">
+                    <span>Punteggio Attuale: <strong id="pause-score">0</strong></span>
+                </div>
+            </div>
+            
+            <div class="panel-footer">
+                <button id="btn-resume-game" class="btn-primary-neon">
+                    <span class="btn-label">RIPRENDI</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Web Audio Context initialization helper -->
+    <div id="audio-opt-in" class="audio-banner">
+        <span>Attiva effetti sonori synth arcade?</span>
+        <button id="btn-audio-yes" class="audio-btn">SI</button>
+        <button id="btn-audio-no" class="audio-btn">NO</button>
+    </div>
+
+    <!-- LIBRARIES -->
+    <!-- Three.js (r128) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for optional visual panning -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Game Controller Logic -->
+    <script src="main.js"></script>
+</body>
+</html>

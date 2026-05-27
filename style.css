@@ -1,0 +1,910 @@
+/* ==========================================================================
+   SERPE 3D - SCREENSHOT-ACCURATE VISUAL STYLE (2026 EDITION)
+   ========================================================================== */
+
+/* 1. Global Variables & Design Tokens */
+:root {
+    --bg-dark: #020208;
+    --bg-panel: rgba(10, 5, 25, 0.8);
+    
+    --neon-cyan: #00f0ff;
+    --neon-magenta: #ff007f;
+    --neon-purple: #d000ff;
+    --neon-blue: #0066ff;
+    --neon-orange: #ff9f00;
+    --neon-green: #39ff14;
+    
+    --text-primary: #ffffff;
+    --text-muted: #837cb0;
+    
+    --font-cyber: 'Orbitron', -apple-system, sans-serif;
+    --font-hud: 'Rajdhani', -apple-system, sans-serif;
+    
+    --glow-cyan: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 20px rgba(0, 240, 255, 0.3);
+    --glow-magenta: 0 0 10px rgba(255, 0, 127, 0.7), 0 0 20px rgba(255, 0, 127, 0.3);
+    --glow-purple: 0 0 10px rgba(208, 0, 255, 0.7), 0 0 20px rgba(208, 0, 255, 0.3);
+    
+    --border-purple: 1.5px solid rgba(208, 0, 255, 0.6);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+    font-family: var(--font-hud);
+    color: var(--text-primary);
+    position: relative;
+    touch-action: none;
+}
+
+/* Canvas Viewport */
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* CRT Screen Scanline FX */
+.crt-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+    background-size: 100% 4px, 6px 100%;
+    z-index: 99;
+    pointer-events: none;
+}
+
+/* Vignette/Shadow Glow */
+.ambient-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(0, 102, 255, 0.05);
+    pointer-events: none;
+    z-index: 90;
+}
+
+/* ==========================================================================
+   2. TOP HUD (Heads-Up Display)
+   ========================================================================== */
+.hud-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 25px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.hud-container.hidden {
+    opacity: 0;
+    transform: translateY(-25px);
+    pointer-events: none;
+}
+
+.hud-pill-gems, .hud-center-group, .hud-right-align {
+    pointer-events: auto; /* Enable clicks */
+}
+
+/* 2.1 Gems Counter Pill (Top-Left) */
+.hud-pill-gems {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(13, 3, 29, 0.55);
+    border: var(--border-purple);
+    padding: 6px 22px 6px 14px;
+    border-radius: 30px;
+    box-shadow: 0 0 15px rgba(208, 0, 255, 0.25), inset 0 0 8px rgba(208, 0, 255, 0.15);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.hud-pill-gems:hover {
+    border-color: rgba(208, 0, 255, 0.9);
+    box-shadow: 0 0 20px rgba(208, 0, 255, 0.4);
+}
+
+.gem-crystal-svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--neon-cyan);
+    stroke: var(--neon-cyan);
+    stroke-width: 1;
+    filter: drop-shadow(0 0 6px var(--neon-cyan));
+    animation: gem-float 3s infinite ease-in-out;
+}
+
+.gems-value-text {
+    font-family: var(--font-cyber);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+}
+
+/* 2.2 Center Logo & Score (Top-Center) */
+.hud-center-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -10px;
+}
+
+/* Gradient Glowing Text for Logo */
+.hud-logo-glow {
+    font-family: var(--font-cyber);
+    font-size: 42px;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 6px;
+    margin: 0;
+    background: linear-gradient(180deg, #00f0ff 0%, #d000ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Drop shadow applied to element for neon glow bypass background clip */
+    filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.5)) drop-shadow(0 0 12px rgba(208, 0, 255, 0.4));
+    animation: title-flicker 5s infinite alternate;
+}
+
+.score-value-glow {
+    font-family: var(--font-hud);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 2px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+}
+
+/* 2.3 Level & Pause (Top-Right) */
+.hud-right-align {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.level-indicator-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.level-label-fuchsia {
+    font-family: var(--font-cyber);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--neon-purple);
+    text-shadow: 0 0 8px rgba(208, 0, 255, 0.4);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+/* Level Connecting Line & Dots */
+.level-dots-track {
+    position: relative;
+    width: 140px;
+    height: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.dots-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(208, 0, 255, 0.25);
+    z-index: 1;
+}
+
+.level-dots {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    z-index: 2;
+}
+
+.level-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bg-dark);
+    border: 1.5px solid rgba(208, 0, 255, 0.5);
+    transition: all 0.3s ease;
+}
+
+.level-dots .dot.active {
+    background: var(--neon-purple);
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 10px var(--neon-purple);
+}
+
+/* Circular Pause Button */
+.pause-circle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(13, 3, 29, 0.55);
+    border: var(--border-purple);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: var(--neon-purple);
+    box-shadow: 0 0 12px rgba(208, 0, 255, 0.25);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.pause-circle-btn:hover {
+    border-color: var(--neon-purple);
+    box-shadow: var(--glow-purple);
+    transform: scale(1.05);
+}
+
+.pause-circle-btn:active {
+    transform: scale(0.95);
+}
+
+.icon-pause-svg {
+    width: 14px;
+    height: 14px;
+    fill: var(--neon-purple);
+    filter: drop-shadow(0 0 3px var(--neon-purple));
+}
+
+
+/* ==========================================================================
+   3. BOTTOM SCREEN GAMEPLAY CONTROLS (PC & Mobile)
+   ========================================================================== */
+#mobile-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 240px;
+    z-index: 60;
+    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 50px 45px 50px;
+}
+
+#mobile-controls.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#mobile-controls > div {
+    pointer-events: auto; /* Capture pointer events */
+}
+
+/* 3.1 Powerups on Left Side */
+.powerup-side-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.powerup-badge-wrapper {
+    position: relative;
+    width: 54px;
+    height: 54px;
+}
+
+.powerup-round-btn {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: rgba(13, 3, 29, 0.55);
+    border: var(--border-purple);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(208, 0, 255, 0.25);
+    backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+}
+
+.powerup-round-btn:hover {
+    border-color: rgba(208, 0, 255, 0.9);
+    box-shadow: 0 0 18px rgba(208, 0, 255, 0.45);
+}
+
+.powerup-round-btn:active {
+    transform: scale(0.92);
+}
+
+.powerup-svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Lightning Button Specifics */
+.btn-lightning .powerup-svg {
+    fill: var(--neon-purple);
+    filter: drop-shadow(0 0 5px var(--neon-purple));
+}
+
+/* Magnet Button Specifics */
+.btn-magnet .powerup-svg {
+    fill: var(--neon-cyan);
+    filter: drop-shadow(0 0 5px var(--neon-cyan));
+}
+
+/* Badge Count Indicators */
+.badge-count {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #020208;
+    border: 1.5px solid var(--neon-purple);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-primary);
+    font-family: var(--font-cyber);
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 0 0 8px rgba(208, 0, 255, 0.4);
+}
+
+/* 3.2 D-PAD controller on Right Side */
+.dpad-controller-zone {
+    width: 150px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dpad-disc {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(4, 5, 20, 0.75);
+    border: 2px solid rgba(0, 102, 255, 0.35);
+    box-shadow: 0 0 20px rgba(0, 102, 255, 0.15), inset 0 0 15px rgba(0, 102, 255, 0.1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Dpad buttons placement */
+.dpad-arrow {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dpad-arrow svg {
+    width: 28px;
+    height: 28px;
+    fill: rgba(0, 240, 255, 0.35);
+    filter: drop-shadow(0 0 3px rgba(0, 240, 255, 0.1));
+    transition: all 0.15s ease;
+}
+
+/* Hover/Touch feedback */
+.dpad-arrow:active svg {
+    fill: var(--neon-cyan);
+    filter: drop-shadow(0 0 8px var(--neon-cyan));
+    transform: scale(1.15);
+}
+
+.dpad-up {
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.dpad-right {
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.dpad-down {
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.dpad-left {
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Dpad Center Blue Dot */
+.dpad-center-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 12px var(--neon-cyan);
+    z-index: 5;
+    pointer-events: none;
+}
+
+
+/* ==========================================================================
+   4. SCREENS & MENU OVERLAYS
+   ========================================================================== */
+.screen-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(2, 2, 8, 0.85);
+    backdrop-filter: blur(8px);
+    transition: opacity 0.4s ease;
+}
+
+.screen-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.panel {
+    width: 90%;
+    max-width: 480px;
+    background: var(--bg-panel);
+    border: 1px solid rgba(208, 0, 255, 0.35);
+    border-radius: 20px;
+    padding: 35px 30px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(208, 0, 255, 0.05);
+    backdrop-filter: blur(15px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: panel-appear 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    animation: scanning-line 3s infinite linear;
+}
+
+.panel.error-theme {
+    border-color: rgba(255, 0, 127, 0.35);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(255, 0, 127, 0.05);
+}
+
+.panel.error-theme::before {
+    background: linear-gradient(90deg, transparent, var(--neon-magenta), transparent);
+}
+
+.panel-header {
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-tag {
+    font-family: var(--font-cyber);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.neon-title {
+    font-family: var(--font-cyber);
+    font-size: 46px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--text-primary);
+    text-shadow: var(--glow-cyan);
+    position: relative;
+}
+
+.neon-title.text-magenta {
+    color: #fff;
+    text-shadow: var(--glow-magenta);
+}
+
+.panel-body {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+.panel-desc {
+    margin-bottom: 20px;
+}
+
+/* Game Controls visual guide */
+.controls-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.guide-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.guide-key {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: var(--font-cyber);
+    font-size: 11px;
+    color: var(--neon-cyan);
+}
+
+.guide-text {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+/* Results panel styles */
+.results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 10px 0;
+}
+
+.result-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.result-box.full-width {
+    grid-column: span 2;
+    border-color: rgba(208, 0, 255, 0.2);
+    background: rgba(208, 0, 255, 0.02);
+}
+
+.result-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-cyber);
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+}
+
+.result-value {
+    font-size: 26px;
+    font-family: var(--font-cyber);
+    font-weight: 700;
+    color: var(--neon-purple);
+    text-shadow: 0 0 5px rgba(208, 0, 255, 0.5);
+}
+
+.panel.error-theme .result-value {
+    color: var(--neon-magenta);
+    text-shadow: 0 0 5px rgba(255, 0, 127, 0.5);
+}
+
+.stats-mini {
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 15px;
+}
+
+/* BUTTONS */
+.btn-primary-neon {
+    width: 100%;
+    background: transparent;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--neon-cyan);
+    font-family: var(--font-cyber);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.btn-primary-neon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.3), transparent);
+    transition: all 0.5s ease;
+}
+
+.btn-primary-neon:hover {
+    background: var(--neon-cyan);
+    color: var(--bg-dark);
+    box-shadow: 0 0 20px var(--neon-cyan);
+    transform: translateY(-2px);
+}
+
+.btn-primary-neon:hover::before {
+    left: 100%;
+}
+
+.btn-primary-neon:active {
+    transform: translateY(0);
+}
+
+.btn-magenta-style {
+    border-color: var(--neon-magenta);
+    color: var(--neon-magenta);
+    box-shadow: inset 0 0 10px rgba(255, 0, 127, 0.2);
+}
+
+.btn-magenta-style:hover {
+    background: var(--neon-magenta);
+    color: #fff;
+    box-shadow: 0 0 20px var(--neon-magenta);
+}
+
+/* Audio Banner Settings */
+.audio-banner {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 5, 25, 0.9);
+    border: 1.5px solid rgba(208, 0, 255, 0.3);
+    border-radius: 30px;
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 150;
+    font-size: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    transition: opacity 0.3s ease;
+}
+
+.audio-banner.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.audio-btn {
+    background: transparent;
+    border: 1px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    border-radius: 12px;
+    padding: 3px 12px;
+    font-family: var(--font-cyber);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.audio-btn:hover {
+    background: var(--neon-cyan);
+    color: var(--bg-dark);
+}
+
+/* ==========================================================================
+   5. ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+@keyframes gem-float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        filter: drop-shadow(0 0 5px var(--neon-cyan));
+    }
+    50% {
+        transform: translateY(-4px) rotate(10deg);
+        filter: drop-shadow(0 0 10px var(--neon-cyan));
+    }
+}
+
+@keyframes title-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.5)) drop-shadow(0 0 12px rgba(208, 0, 255, 0.4));
+        opacity: 1;
+    }
+    20%, 24%, 55% {
+        filter: none;
+        opacity: 0.8;
+    }
+}
+
+@keyframes panel-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.93) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes scanning-line {
+    0% {
+        left: -100%;
+    }
+    50%, 100% {
+        left: 100%;
+    }
+}
+
+/* ==========================================================================
+   6. RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 768px) {
+    .hud-container {
+        padding: 15px 20px;
+    }
+    
+    .hud-logo-glow {
+        font-size: 32px;
+        letter-spacing: 4px;
+    }
+    
+    .score-value-glow {
+        font-size: 20px;
+    }
+    
+    .hud-pill-gems {
+        padding: 4px 14px 4px 10px;
+        gap: 6px;
+    }
+    
+    .gems-value-text {
+        font-size: 16px;
+    }
+    
+    .gem-crystal-svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .level-label-fuchsia {
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+    
+    .level-dots-track {
+        width: 100px;
+    }
+    
+    .level-dots .dot {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .pause-circle-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .icon-pause-svg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    #mobile-controls {
+        padding: 0 25px 25px 25px;
+        height: 180px;
+    }
+    
+    .powerup-badge-wrapper {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .powerup-round-btn {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .powerup-svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .badge-count {
+        width: 16px;
+        height: 16px;
+        font-size: 9px;
+    }
+    
+    .dpad-controller-zone {
+        width: 110px;
+        height: 110px;
+    }
+    
+    .dpad-disc {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .dpad-arrow {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .dpad-arrow svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Active state glow for powerup buttons */
+.powerup-round-btn.active-glow {
+    animation: button-active-pulse 0.8s infinite alternate;
+}
+
+@keyframes button-active-pulse {
+    0% {
+        box-shadow: 0 0 10px rgba(208, 0, 255, 0.4);
+        border-color: rgba(208, 0, 255, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(208, 0, 255, 0.8), inset 0 0 10px rgba(208, 0, 255, 0.4);
+        border-color: rgba(208, 0, 255, 1);
+    }
+}
+
