@@ -189,6 +189,60 @@
                 gain.connect(this.ctx.destination);
                 osc.start();
                 osc.stop(this.ctx.currentTime + 0.22);
+            },
+            playKill() {
+                this.init();
+                if (!this.ctx) return;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.12);
+                
+                gain.gain.setValueAtTime(0.14, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            },
+            playChip() {
+                this.init();
+                if (!this.ctx) return;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1100, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(1650, this.ctx.currentTime + 0.05);
+                
+                gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            },
+            playNearMiss() {
+                this.init();
+                if (!this.ctx) return;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(550, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(950, this.ctx.currentTime + 0.18);
+                
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.18);
             }
         };
 
@@ -488,8 +542,8 @@
             return `${r}, ${g}, ${b}`;
         }
 
-        // --- OSTACOLI ---
-        let obstacles = [];
+        // --- ELEMENTI DI GIOCO (Spine, Scudi, Droni e Chip) ---
+        let gameObjects = [];
         let obstacleTimer = 0;
         let doubleObstacleQueued = false;
         let doubleObstacleTimer = 0;
@@ -528,7 +582,7 @@
             // Timer di spawn regolare
             obstacleTimer -= 1 * timeScale;
             if (obstacleTimer <= 0) {
-                spawnObstacle();
+                spawnRandomElement();
                 // Reimposta il timer dinamicamente in base alla fase corrente
                 obstacleTimer = Math.floor(Math.random() * (maxSpawnDelay - minSpawnDelay)) + minSpawnDelay;
                 
@@ -543,104 +597,291 @@
             if (doubleObstacleQueued) {
                 doubleObstacleTimer -= 1 * timeScale;
                 if (doubleObstacleTimer <= 0) {
-                    spawnObstacle();
+                    spawnRandomElement();
                     doubleObstacleQueued = false;
                 }
             }
         }
 
-        function spawnObstacle() {
+        function spawnRandomElement() {
+            let rand = Math.random();
+            
+            if (currentPhase === 1) {
+                // Fase 1: Solo ostacoli a terra e volanti, sempre guidati da Chip
+                if (rand < 0.7) spawnObstacle('spike');
+                else spawnObstacle('shield');
+            } else if (currentPhase === 2) {
+                // Fase 2: Introduzione Droni (20% di chance)
+                if (rand < 0.5) spawnObstacle('spike');
+                else if (rand < 0.75) spawnObstacle('shield');
+                else spawnDrone();
+            } else {
+                // Fase 3: Difficoltà massima, più Droni e combinazioni veloci
+                if (rand < 0.4) spawnObstacle('spike');
+                else if (rand < 0.7) spawnObstacle('shield');
+                else spawnDrone();
+            }
+        }
+
+        function spawnObstacle(type) {
             let width = Math.floor(Math.random() * 30) + 45; // Larghezza: 45 - 75
             let height = Math.floor(Math.random() * 60) + 60; // Altezza: 60 - 120
-            
-            // Decidi se spawnare a terra o fluttuante (passaggio sotto in scivolata)
-            // 75% ostacolo a terra, 25% fluttuante (incrementa nella fase 3)
-            let isFloating = Math.random() < (currentPhase === 3 ? 0.35 : 0.20);
             let y = FLOOR_Y - height;
 
-            if (isFloating) {
-                // Posiziona l'ostacolo fluttuante lasciando spazio sotto (altezza ninja + margine di sicurezza)
+            if (type === 'shield') {
+                // Lo scudo fluttuante lascia spazio sotto per scivolare (125px)
                 let gapHeight = 125;
                 y = FLOOR_Y - height - gapHeight;
             }
 
-            obstacles.push({
+            gameObjects.push({
+                type: type,
                 x: LOGICAL_WIDTH + 50,
                 y: y,
                 w: width,
                 h: height,
-                isFloating: isFloating,
+                passed: false,
+                nearMissPossible: false,
+                nearMissTriggered: false
+            });
+
+            // SPONA UN CHIP GUIDA SOPRA/SOTTO L'OSTACOLO (Design intelligente)
+            if (type === 'spike') {
+                // Chip fluttuante sopra le spine per incoraggiare il salto mirato
+                spawnChip(LOGICAL_WIDTH + 50 + width / 2 - 10, y - 80);
+            } else if (type === 'shield') {
+                // Chip a terra sotto lo scudo per ricompensare la scivolata audace
+                spawnChip(LOGICAL_WIDTH + 50 + width / 2 - 10, FLOOR_Y - 35);
+            }
+        }
+
+        function spawnDrone() {
+            let size = 36;
+            // Altezza variabile fluttuante a mezz'aria
+            let baseY = FLOOR_Y - size - (Math.random() * 110 + 60);
+
+            gameObjects.push({
+                type: 'drone',
+                x: LOGICAL_WIDTH + 50,
+                y: baseY,
+                baseY: baseY,
+                w: size,
+                h: size,
+                phaseOffset: Math.random() * Math.PI * 2,
                 passed: false
             });
         }
 
-        function updateAndDrawObstacles() {
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                let obs = obstacles[i];
+        function spawnChip(x, y) {
+            gameObjects.push({
+                type: 'chip',
+                x: x,
+                y: y,
+                baseY: y,
+                w: 20,
+                h: 20,
+                phaseOffset: Math.random() * Math.PI * 2,
+                passed: false
+            });
+        }
+
+        function updateAndDrawGameObjects() {
+            let isDashing = isPressing && pressDuration > 8;
+
+            for (let i = gameObjects.length - 1; i >= 0; i--) {
+                let obj = gameObjects[i];
                 
-                // Muove l'ostacolo verso sinistra (influenzato dal timeScale)
-                obs.x -= baseObstacleSpeed * timeScale;
+                // Spostamento orizzontale generale basato sulla velocità e scala temporale
+                obj.x -= baseObstacleSpeed * timeScale;
 
-                // Colore neon dell'ostacolo (rosso fiammante in Phase 3, fucsia neon in Phase 1-2)
-                let obstacleGlowColor = currentPhase === 3 ? '#ff3300' : '#ff0055';
+                // Animazione di fluttuazione sinusoidale per Droni e Chip
+                if (obj.type === 'drone') {
+                    obj.y = obj.baseY + Math.sin(gameFrames * 0.08 + obj.phaseOffset) * 35;
+                } else if (obj.type === 'chip') {
+                    obj.y = obj.baseY + Math.sin(gameFrames * 0.12 + obj.phaseOffset) * 8;
+                }
 
+                // 1. DISEGNO DEI DIVERSI ELEMENTI
                 ctx.save();
-                ctx.shadowBlur = 18;
-                ctx.shadowColor = obstacleGlowColor;
-                ctx.fillStyle = '#0f0515';
-                ctx.strokeStyle = obstacleGlowColor;
-                ctx.lineWidth = 3.5;
+                
+                if (obj.type === 'spike') {
+                    // --- SPINE NEON TERRESTRI ---
+                    let spikeGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = spikeGlow;
+                    ctx.fillStyle = '#0f0515';
+                    ctx.strokeStyle = spikeGlow;
+                    ctx.lineWidth = 3.5;
 
-                if (!obs.isFloating) {
-                    // DISEGNO DELLE SPINE NEON (Spikes terrestri più minacciose)
                     ctx.beginPath();
-                    ctx.moveTo(obs.x, obs.y + obs.h);
-                    let numSpikes = Math.max(2, Math.floor(obs.w / 20));
-                    let spikeW = obs.w / numSpikes;
+                    ctx.moveTo(obj.x, obj.y + obj.h);
+                    let numSpikes = Math.max(2, Math.floor(obj.w / 20));
+                    let spikeW = obj.w / numSpikes;
                     for (let j = 0; j < numSpikes; j++) {
-                        let sx = obs.x + j * spikeW;
-                        ctx.lineTo(sx + spikeW / 2, obs.y);
-                        ctx.lineTo(sx + spikeW, obs.y + obs.h);
+                        let sx = obj.x + j * spikeW;
+                        ctx.lineTo(sx + spikeW / 2, obj.y);
+                        ctx.lineTo(sx + spikeW, obj.y + obj.h);
                     }
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();
-                } else {
-                    // DISEGNO SCUDO CYBERNETICO (Floating shield)
+
+                } else if (obj.type === 'shield') {
+                    // --- SCUDO CYBERNETICO FLUTTUANTE ---
+                    let shieldGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = shieldGlow;
+                    ctx.fillStyle = '#0a0314';
+                    ctx.strokeStyle = shieldGlow;
+                    ctx.lineWidth = 3.5;
+
                     ctx.beginPath();
-                    ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 6);
+                    ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 6);
                     ctx.fill();
                     ctx.stroke();
-                    
+
                     // Linee di pericolo orizzontali interne allo scudo
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 1;
-                    for (let sy = obs.y + 15; sy < obs.y + obs.h; sy += 25) {
+                    for (let sy = obj.y + 15; sy < obj.y + obj.h; sy += 25) {
                         ctx.beginPath();
-                        ctx.moveTo(obs.x + 5, sy);
-                        ctx.lineTo(obs.x + obs.w - 5, sy);
+                        ctx.moveTo(obj.x + 5, sy);
+                        ctx.lineTo(obj.x + obj.w - 5, sy);
                         ctx.stroke();
                     }
+
+                } else if (obj.type === 'drone') {
+                    // --- DRONE VOLANTE (Cyan/Orange) ---
+                    let droneGlow = currentPhase === 3 ? '#ffaa00' : '#00ffff';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = droneGlow;
+                    ctx.fillStyle = '#06161a';
+                    ctx.strokeStyle = droneGlow;
+                    ctx.lineWidth = 3;
+
+                    // Forma di rombo diamante
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                    ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                    ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                    ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Nucleo bianco rotante
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 5 + Math.sin(gameFrames * 0.2) * 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                } else if (obj.type === 'chip') {
+                    // --- CHIP DI ENERGIA COLLEZIONABILE ---
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = '#ffaa00';
+                    ctx.fillStyle = '#221500';
+                    ctx.strokeStyle = '#ffaa00';
+                    ctx.lineWidth = 2.5;
+
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                    ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                    ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                    ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 3, 0, Math.PI * 2);
+                    ctx.fill();
                 }
+
                 ctx.restore();
 
-                // Verifica il superamento dell'ostacolo per il punteggio
-                if (!obs.passed && obs.x + obs.w < player.x) {
-                    obs.passed = true;
-                    score += 10;
-                    Sound.playScore();
-                    // Crea popup del punteggio
-                    spawnScorePopup(player.x + player.width / 2, player.y - 20, "+10");
+                // 2. LOGICA DI COLLISIONE ED EVENTI SPECIALI
+                
+                // Collisione generica
+                let isColliding = checkCollision(player, obj, obj.type === 'chip');
+
+                if (isColliding) {
+                    if (obj.type === 'chip') {
+                        // Raccolta Microchip
+                        score += 20;
+                        dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 15);
+                        Sound.playChip();
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "+20");
+                        spawnChipCollectParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                        gameObjects.splice(i, 1);
+                        continue;
+
+                    } else if (obj.type === 'drone' && isDashing) {
+                        // --- DASH ATTACK: Distruzione del Drone nemico ---
+                        score += 50;
+                        dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 25);
+                        Sound.playKill();
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, "KILL +50");
+                        spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                        
+                        // Screen shake ad impatto
+                        shakeTime = 12;
+                        shakeIntensity = 8;
+                        
+                        gameObjects.splice(i, 1);
+                        continue;
+
+                    } else {
+                        // Impatto letale (Spine, Scudi, o Drone senza Dash)
+                        triggerGameOver();
+                    }
                 }
 
-                // Collisione
-                if (checkCollision(player, obs)) {
-                    triggerGameOver();
+                // 3. LOGICA DI NEAR-MISS (Sfioramento ravvicinato premiato)
+                if ((obj.type === 'spike' || obj.type === 'shield') && !obj.passed && !obj.nearMissTriggered) {
+                    // Verifica se il ninja sta attraversando l'ostacolo sull'asse X
+                    if (obj.x < player.x + player.width && obj.x + obj.w > player.x) {
+                        let gap = 999;
+                        if (obj.type === 'spike') {
+                            // Distanza tra piedi del Ninja e punta dello spike
+                            gap = obj.y - (player.y + player.height);
+                        } else if (obj.type === 'shield') {
+                            // Distanza tra testa del Ninja e fondo dello scudo
+                            gap = player.y - (obj.y + obj.h);
+                        }
+
+                        // Se passa a meno di 42 pixel (gap molto stretto)
+                        if (gap > 0 && gap < 42) {
+                            obj.nearMissPossible = true;
+                        }
+                    }
                 }
 
-                // Rimozione degli ostacoli fuori dallo schermo
-                if (obs.x + obs.w < -100) {
-                    obstacles.splice(i, 1);
+                // Quando l'ostacolo è superato, assegna i punti Near-Miss se applicabile
+                if (obj.x + obj.w < player.x) {
+                    if (!obj.passed) {
+                        obj.passed = true;
+                        
+                        if (obj.type === 'spike' || obj.type === 'shield') {
+                            score += 10;
+                            Sound.playScore();
+                            
+                            // Se ha superato l'ostacolo sfiorandolo all'ultimo secondo
+                            if (obj.nearMissPossible && !obj.nearMissTriggered) {
+                                obj.nearMissTriggered = true;
+                                score += 15;
+                                Sound.playNearMiss();
+                                spawnScorePopup(player.x + player.width / 2, player.y - 45, "NEAR MISS +15");
+                            }
+                        }
+                    }
+                }
+
+                // Rimozione degli oggetti fuori dallo schermo
+                if (obj.x + obj.w < -100) {
+                    gameObjects.splice(i, 1);
                 }
             }
         }
@@ -723,6 +964,33 @@
             spawnParticle(x, y, vx, vy, size, secondaryColor, decay);
         }
 
+        function spawnChipCollectParticles(x, y) {
+            // Esplosione dorata per i chip
+            for (let i = 0; i < 8; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 4 + 2;
+                let vx = Math.cos(angle) * speed;
+                let vy = Math.sin(angle) * speed;
+                let size = Math.random() * 4 + 2;
+                let decay = Math.random() * 0.04 + 0.03;
+                spawnParticle(x, y, vx, vy, size, '#ffaa00', decay);
+            }
+        }
+
+        function spawnDroneExplosionParticles(x, y) {
+            // Forte burst ciano/arancione per la distruzione del drone
+            let droneColor = currentPhase === 3 ? '#ffaa00' : '#00ffff';
+            for (let i = 0; i < 15; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 9 + 3;
+                let vx = Math.cos(angle) * speed;
+                let vy = Math.sin(angle) * speed;
+                let size = Math.random() * 5 + 3;
+                let decay = Math.random() * 0.03 + 0.02;
+                spawnParticle(x, y, vx, vy, size, droneColor, decay);
+            }
+        }
+
         function spawnDeathExplosion(x, y) {
             // Esplosione del colore primario neon corrente
             for (let i = 0; i < 40; i++) {
@@ -767,27 +1035,18 @@
             }
         }
 
-        // --- DASH ENERGY CAPACITOR (Stamina Bar) ---
-        let dashEnergy = 100;
-        const MAX_ENERGY = 100;
-
-        function updateDashEnergy() {
-            let isDashing = isPressing && pressDuration > 8;
-            if (isDashing) {
-                dashEnergy = Math.max(0, dashEnergy - 1.25);
-                if (dashEnergy <= 0) {
-                    // Scarico: ferma il dash forzatamente
-                    isPressing = false;
-                    pressDuration = 0;
-                }
-            } else {
-                // Ricarica quando non si è in modalità dash
-                dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 0.65);
-            }
-        }
-
         // --- COLLISION DETECTOR (AABB con Hitbox tollerante) ---
-        function checkCollision(r1, r2) {
+        function checkCollision(r1, r2, isChip = false) {
+            if (isChip) {
+                // Per il chip collisione generosa senza tolleranze per facilitare la raccolta
+                return (
+                    r1.x < r2.x + r2.w &&
+                    r1.x + r1.width > r2.x &&
+                    r1.y < r2.y + r2.h &&
+                    r1.y + r1.height > r2.y
+                );
+            }
+
             // Riduciamo la hitbox del Ninja del 15% per rendere le collisioni più eque ed evitare frustrazioni
             let padX = r1.width * 0.15;
             let padY = r1.height * 0.15;
@@ -1125,7 +1384,7 @@
             gameTime = 0;
             timeScale = 1.0;
             dashEnergy = 100;
-            obstacles = [];
+            gameObjects = [];
             particles = [];
             popups = [];
             obstacleTimer = 100;
@@ -1245,8 +1504,8 @@
                 updateDashEnergy();
             }
 
-            // Aggiorna ostacoli, particelle e popup in qualsiasi stato (permettere animazioni residue al Game Over)
-            updateAndDrawObstacles();
+            // Aggiorna elementi, particelle e popup in qualsiasi stato (permettere animazioni residue al Game Over)
+            updateAndDrawGameObjects();
             updateAndDrawParticles();
             updateAndDrawPopups();
 
