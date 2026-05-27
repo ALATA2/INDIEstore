@@ -355,6 +355,8 @@
         let gameTime = 0; // Tempo di gioco effettivo in secondi (avanza proporzionalmente a timeScale)
         let score = 0;
         let bestScore = localStorage.getItem('ninja_best_score') || 0;
+        let dashEnergy = 100;
+        const MAX_ENERGY = 100;
 
         // Gestione Tutorial
         let tutorialAlpha = 1.0;
@@ -1032,6 +1034,22 @@
                 ctx.fillStyle = p.color;
                 ctx.fillRect(p.x, p.y, p.size, p.size);
                 ctx.restore();
+            }
+        }
+
+        // --- DASH ENERGY CAPACITOR (Stamina Bar) ---
+        function updateDashEnergy() {
+            let isDashing = isPressing && pressDuration > 8;
+            if (isDashing) {
+                dashEnergy = Math.max(0, dashEnergy - 1.25);
+                if (dashEnergy <= 0) {
+                    // Scarico: ferma il dash forzatamente
+                    isPressing = false;
+                    pressDuration = 0;
+                }
+            } else {
+                // Ricarica quando non si è in modalità dash
+                dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 0.65);
             }
         }
 
