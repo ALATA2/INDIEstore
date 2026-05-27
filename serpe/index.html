@@ -25,6 +25,7 @@
     <!-- Scanline and grid overlays for retro-cyber feel -->
     <div class="crt-overlay"></div>
     <div class="ambient-glow"></div>
+    <div id="screen-flash" class="hidden"></div>
 
     <!-- MAIN HUD (Heads-Up Display) -->
     <header id="game-hud" class="hud-container hidden">
@@ -74,7 +75,7 @@
 
     <!-- MOBILE TOUCH CONTROLS OVERLAY -->
     <div id="mobile-controls" class="hidden">
-        <!-- Left Side: Power-Up Buttons (Lightning and Magnet) -->
+        <!-- Left Side: Power-Up Buttons (Lightning, Magnet, Shield) -->
         <div class="powerup-side-zone">
             <!-- Lightning / Speed Power-up -->
             <div class="powerup-badge-wrapper">
@@ -94,6 +95,16 @@
                     </svg>
                 </button>
                 <span class="badge-count" id="count-magnet">2</span>
+            </div>
+
+            <!-- Shield Power-up -->
+            <div class="powerup-badge-wrapper">
+                <button id="btn-shield" class="powerup-round-btn btn-shield" aria-label="Scudo">
+                    <svg viewBox="0 0 24 24" class="powerup-svg">
+                        <path d="M12,1 L3,5 L3,11 C3,16.5 6.8,21.6 12,23 C17.2,21.6 21,16.5 21,11 L21,5 L12,1 Z M19,11 C19,15.2 16.1,19.3 12,20.8 C7.9,19.3 5,15.2 5,11 L5,6.5 L12,3.4 L19,6.5 L19,11 Z" />
+                    </svg>
+                </button>
+                <span class="badge-count" id="count-shield">1</span>
             </div>
         </div>
         
@@ -147,6 +158,18 @@
                     <div class="guide-item">
                         <span class="guide-key">SPAZIO</span>
                         <span class="guide-text">Pausa / Avvia</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-key">1 / Q</span>
+                        <span class="guide-text">Boost Velocità</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-key">2 / E</span>
+                        <span class="guide-text">Magnete Nuclei</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-key">3 / R</span>
+                        <span class="guide-text">Attiva Scudo</span>
                     </div>
                 </div>
             </div>

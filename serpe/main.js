@@ -224,7 +224,7 @@ const GRID_DEPTH = 19;
 
 let score = 0;
 let highScore = parseInt(localStorage.getItem('serpe_high_score')) || 0;
-let gems = 245; // Start with some gems matching screenshot
+let gems = localStorage.getItem('serpe_gems') !== null ? parseInt(localStorage.getItem('serpe_gems')) : 245;
 let level = 7; // Matching Level 7 from screenshot
 let applesEaten = 5; // Track progress to next level
 
@@ -251,6 +251,10 @@ let speedMultiplier = 1.0; // Affected by Boost
 let magnetActive = false;
 let magnetTimer = 0; // Duration remaining in milliseconds
 let boostActive = false;
+let shieldCount = 1;
+let shieldActive = false;
+let shieldMesh = null;
+let shieldImmunityTimer = 0; // Temporary invulnerability after shield break
 
 // Entities
 let food = { x: 0, z: 0 };
@@ -285,6 +289,7 @@ let appleMesh, appleLight;
 let cornerPlants = [];
 let shadowPlanes = [];
 let ambientLight, dirLight;
+let particles = []; // Active 3D particles system
 
 function initThree() {
     const container = document.getElementById('canvas-container');
@@ -450,7 +455,7 @@ function buildCornerVegetation() {
 
 function resetGameData() {
     score = 1250; // Visual start score matching image
-    gems = 245; // Gem counter matching image
+    gems = localStorage.getItem('serpe_gems') !== null ? parseInt(localStorage.getItem('serpe_gems')) : 245;
     level = 7;
     applesEaten = 5;
     baseTickRate = 240; // Default start speed (slower, more manageable)
@@ -459,8 +464,22 @@ function resetGameData() {
     document.getElementById('current-score').innerText = formatScore(score);
     document.getElementById('gem-count').innerText = gems;
     document.getElementById('level-num').innerText = level;
+    
+    boostCount = 3;
+    magnetCount = 2;
+    shieldCount = 1;
+    shieldActive = false;
+    shieldImmunityTimer = 0;
+    if (shieldMesh) {
+        scene.remove(shieldMesh);
+        shieldMesh = null;
+    }
+    const btnShield = document.getElementById('btn-shield');
+    if (btnShield) btnShield.classList.remove('active-glow');
+
     document.getElementById('count-boost').innerText = boostCount;
     document.getElementById('count-magnet').innerText = magnetCount;
+    document.getElementById('count-shield').innerText = shieldCount;
     
     updateLevelProgressDots();
 
@@ -863,6 +882,69 @@ function activateBoost() {
     }, 4000);
 }
 
+function activateShield() {
+    if (shieldCount <= 0 || shieldActive) return;
+    shieldCount--;
+    document.getElementById('count-shield').innerText = shieldCount;
+    
+    shieldActive = true;
+    audio.playPowerupActive();
+    
+    const btnShield = document.getElementById('btn-shield');
+    if (btnShield) btnShield.classList.add('active-glow');
+    
+    // Create the 3D cyan wireframe sphere around head
+    const shieldGeo = new THREE.SphereGeometry(GRID_SIZE * 0.8, 16, 16);
+    const shieldMat = new THREE.MeshBasicMaterial({
+        color: 0x00f0ff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.45
+    });
+    shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+    if (snakeHeadMesh) {
+        shieldMesh.position.copy(snakeHeadMesh.position);
+    }
+    scene.add(shieldMesh);
+    
+    // Spawn initial shield burst
+    if (snakeHeadMesh) {
+        createParticleBurst(snakeHeadMesh.position, 0x00f0ff, 12);
+    }
+}
+
+function handleCollision() {
+    if (shieldActive) {
+        shieldActive = false;
+        if (shieldMesh) {
+            scene.remove(shieldMesh);
+            shieldMesh = null;
+        }
+        
+        // Break effect: burst of cyan particles
+        if (snakeHeadMesh) {
+            createParticleBurst(snakeHeadMesh.position, 0x00f0ff, 25);
+        }
+        
+        const btnShield = document.getElementById('btn-shield');
+        if (btnShield) btnShield.classList.remove('active-glow');
+        
+        // Play breaking sound using Game Over sfx
+        audio.playGameOver();
+        
+        // Trigger 1.5 seconds of flashing immunity
+        shieldImmunityTimer = 1500;
+        return false; // Survive!
+    }
+    
+    if (shieldImmunityTimer > 0) {
+        return false; // Immune! Bypass death
+    }
+    
+    triggerGameOver();
+    return true; // Game Over
+}
+
 // Draw orbs towards snake head
 function updateMagnetLogic(deltaTime) {
     if (!magnetActive || snake.length === 0) return;
@@ -1038,8 +1120,15 @@ function spawnSingleOmino(initial = false) {
     const targetPos = gridToWorld({ x: rx, z: rz });
     ominoGroup.position.copy(targetPos);
 
-    // Highly visible glowing white stick figures
-    const ominoMat = new THREE.MeshStandardMaterial({
+    // Highly visible glowing white or golden stick figures
+    const isGolden = Math.random() < 0.15;
+    const ominoMat = isGolden ? new THREE.MeshStandardMaterial({
+        color: 0xffd700, // Gold
+        emissive: 0xffaa00, // Golden glow
+        emissiveIntensity: 2.8,
+        roughness: 0.05,
+        metalness: 0.95
+    }) : new THREE.MeshStandardMaterial({
         color: 0xffffff,
         emissive: 0xffffff,
         emissiveIntensity: 2.2, // Boosted glow for high visibility
@@ -1108,7 +1197,8 @@ function spawnSingleOmino(initial = false) {
         legL: legLGroup,
         legR: legRGroup,
         armL: armLGroup,
-        armR: armRGroup
+        armR: armRGroup,
+        isGolden: isGolden
     };
 
     villagers.push(ominoObj);
@@ -1178,6 +1268,7 @@ function enterBonusLevel() {
     bonusDurationLeft = 60000; // 60 seconds
     villageTickCount = 0;
     audio.playTeleport();
+    triggerScreenFlash();
 
     closePortal();
 
@@ -1217,6 +1308,7 @@ function enterBonusLevel() {
 function exitBonusLevel() {
     inBonusLevel = false;
     audio.playTeleport();
+    triggerScreenFlash();
 
     // Hide HUD countdown
     document.getElementById('bonus-countdown').classList.add('hidden');
@@ -1318,23 +1410,38 @@ function updateGameTick() {
         for (let i = 0; i < villageHouses.length; i++) {
             const h = villageHouses[i];
             if (nextHead.x === h.x && nextHead.z === h.z) {
-                triggerGameOver();
-                return;
+                if (handleCollision()) return;
+                if (snakeDir.x !== 0) {
+                    nextDir = { x: 0, z: (snake[0].z < GRID_DEPTH / 2) ? 1 : -1 };
+                } else {
+                    nextDir = { x: (snake[0].x < GRID_WIDTH / 2) ? 1 : -1, z: 0 };
+                }
+                snakeDir = { ...nextDir };
+                nextHead.x = snake[0].x + snakeDir.x;
+                nextHead.z = snake[0].z + snakeDir.z;
+                break;
             }
         }
 
         // Hitting self is still Game Over
         for (let i = 0; i < snake.length; i++) {
             if (snake[i].x === nextHead.x && snake[i].z === nextHead.z) {
-                triggerGameOver();
-                return;
+                if (handleCollision()) return;
+                break;
             }
         }
 
         // Hitting boundary walls is still Game Over
         if (nextHead.x < 0 || nextHead.x >= GRID_WIDTH || nextHead.z < 0 || nextHead.z >= GRID_DEPTH) {
-            triggerGameOver();
-            return;
+            if (handleCollision()) return;
+            if (snakeDir.x !== 0) {
+                nextDir = { x: 0, z: (snake[0].z < GRID_DEPTH / 2) ? 1 : -1 };
+            } else {
+                nextDir = { x: (snake[0].x < GRID_WIDTH / 2) ? 1 : -1, z: 0 };
+            }
+            snakeDir = { ...nextDir };
+            nextHead.x = snake[0].x + snakeDir.x;
+            nextHead.z = snake[0].z + snakeDir.z;
         }
 
         // Move snake
@@ -1360,15 +1467,22 @@ function updateGameTick() {
 
     // Collision check: boundaries
     if (nextHead.x < 0 || nextHead.x >= GRID_WIDTH || nextHead.z < 0 || nextHead.z >= GRID_DEPTH) {
-        triggerGameOver();
-        return;
+        if (handleCollision()) return;
+        if (snakeDir.x !== 0) {
+            nextDir = { x: 0, z: (snake[0].z < GRID_DEPTH / 2) ? 1 : -1 };
+        } else {
+            nextDir = { x: (snake[0].x < GRID_WIDTH / 2) ? 1 : -1, z: 0 };
+        }
+        snakeDir = { ...nextDir };
+        nextHead.x = snake[0].x + snakeDir.x;
+        nextHead.z = snake[0].z + snakeDir.z;
     }
 
     // Collision check: self
     for (let i = 0; i < snake.length; i++) {
         if (snake[i].x === nextHead.x && snake[i].z === nextHead.z) {
-            triggerGameOver();
-            return;
+            if (handleCollision()) return;
+            break;
         }
     }
 
@@ -1409,6 +1523,7 @@ function handleEatApple() {
     
     growSnakeMesh();
     pulseTile(food.x, food.z, 0xff0022);
+    createParticleBurst(gridToWorld(food), 0xff0022, 16);
 
     if (applesEaten >= 7) {
         handleLevelUp();
@@ -1422,12 +1537,14 @@ function handleEatApple() {
 function handleEatOrb(orb) {
     score += 150 * level;
     gems += 2;
+    localStorage.setItem('serpe_gems', gems);
     document.getElementById('current-score').innerText = formatScore(score);
     document.getElementById('gem-count').innerText = gems;
     audio.playEatOrb();
 
     // Grow snake tail on eating any orb/pearl
     growSnakeMesh();
+    createParticleBurst(gridToWorld({ x: orb.x, z: orb.z }), orb.type.color, 12);
 
     // 25% chance to replenish powerups based on orb color
     if (orb.type.name === 'blue' && boostCount < 5) {
@@ -1512,14 +1629,28 @@ function moveVillagers() {
 }
 
 function handleEatVillager(v) {
-    score += 500 * level;
+    let pts = 500 * level;
+    let shrinkAmount = 2;
+    let pulseColor = 0xff0055;
+    
+    if (v.isGolden) {
+        pts = 1000 * level;
+        shrinkAmount = 4;
+        pulseColor = 0xffea00;
+        audio.playEatGem();
+    }
+    
+    score += pts;
     document.getElementById('current-score').innerText = formatScore(score);
     audio.playSqueal();
 
-    // Shorten tail by 2 segments
-    shortenSnake(2);
+    // Shorten tail
+    shortenSnake(shrinkAmount);
 
-    pulseTile(v.x, v.z, 0xff0055);
+    pulseTile(v.x, v.z, pulseColor);
+    
+    // Spawn burst particles!
+    createParticleBurst(gridToWorld({ x: v.x, z: v.z }), pulseColor, 16);
 
     // Remove villager from scene
     scene.remove(v.group);
@@ -1643,6 +1774,37 @@ function animate(currentTime) {
 
     // Dynamic gameplay updates
     if (isPlaying && !isPaused && !isGameOver) {
+        // Update shield immunity flashing
+        if (shieldImmunityTimer > 0) {
+            shieldImmunityTimer -= deltaTime;
+            const flash = Math.floor(currentTime / 100) % 2 === 0;
+            const visibility = flash ? 0.35 : 1.0;
+            if (snakeHeadMesh) {
+                snakeHeadMesh.material.transparent = true;
+                snakeHeadMesh.material.opacity = visibility;
+            }
+            snakeSegmentMeshes.forEach(m => {
+                m.material.transparent = true;
+                m.material.opacity = visibility;
+            });
+        } else {
+            if (snakeHeadMesh) {
+                snakeHeadMesh.material.transparent = false;
+                snakeHeadMesh.material.opacity = 1.0;
+            }
+            snakeSegmentMeshes.forEach(m => {
+                m.material.transparent = false;
+                m.material.opacity = 1.0;
+            });
+        }
+
+        // Align shield wireframe sphere with snake head
+        if (shieldActive && shieldMesh && snakeHeadMesh) {
+            shieldMesh.position.copy(snakeHeadMesh.position);
+            shieldMesh.rotation.y += 0.02;
+            shieldMesh.rotation.x += 0.015;
+        }
+
         if (!inBonusLevel) {
             updateMagnetLogic(deltaTime);
             
@@ -1706,9 +1868,129 @@ function animate(currentTime) {
         interpolateSnake(t);
     }
 
+    // Update active particle system
+    const deltaTimeSec = Math.min(0.05, deltaTime * 0.001);
+    updateParticles(deltaTimeSec);
+
+    // Spawn trail particles behind snake tail
+    if (isPlaying && !isPaused && !isGameOver) {
+        let tailPos = new THREE.Vector3();
+        if (snakeSegmentMeshes.length > 0) {
+            snakeSegmentMeshes[snakeSegmentMeshes.length - 1].getWorldPosition(tailPos);
+        } else if (snakeHeadMesh) {
+            snakeHeadMesh.getWorldPosition(tailPos);
+        }
+        if (Math.random() < 0.5) {
+            let trailColor = 0x00f0ff; // Cyan default
+            if (boostActive) {
+                trailColor = 0xff00bb; // Hot fuchsia for boost
+            }
+            spawnTrailParticle(tailPos, trailColor);
+        }
+    }
+
     orbitControls.update();
     renderer.render(scene, camera);
     lastTickTime = currentTime;
+}
+
+function createParticleBurst(position, color, count = 12) {
+    const particleGeo = new THREE.BoxGeometry(0.16, 0.16, 0.16);
+    for (let i = 0; i < count; i++) {
+        const mat = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: 1.0
+        });
+        const mesh = new THREE.Mesh(particleGeo, mat);
+        
+        mesh.position.copy(position);
+        mesh.position.x += (Math.random() - 0.5) * 0.5;
+        mesh.position.y += Math.random() * 0.3;
+        mesh.position.z += (Math.random() - 0.5) * 0.5;
+        
+        const velocity = new THREE.Vector3(
+            (Math.random() - 0.5) * 4.0,
+            2.0 + Math.random() * 4.0,
+            (Math.random() - 0.5) * 4.0
+        );
+        
+        scene.add(mesh);
+        
+        const maxLife = 0.5 + Math.random() * 0.5;
+        particles.push({
+            mesh: mesh,
+            material: mat,
+            velocity: velocity,
+            life: maxLife,
+            maxLife: maxLife
+        });
+    }
+}
+
+function spawnTrailParticle(position, color) {
+    const particleGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+    const mat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.8
+    });
+    const mesh = new THREE.Mesh(particleGeo, mat);
+    mesh.position.copy(position);
+    mesh.position.x += (Math.random() - 0.5) * 0.2;
+    mesh.position.y += (Math.random() - 0.5) * 0.2;
+    mesh.position.z += (Math.random() - 0.5) * 0.2;
+
+    const velocity = new THREE.Vector3(
+        (Math.random() - 0.5) * 0.5,
+        Math.random() * 0.5,
+        (Math.random() - 0.5) * 0.5
+    );
+    
+    scene.add(mesh);
+    const maxLife = 0.4 + Math.random() * 0.3;
+    particles.push({
+        mesh: mesh,
+        material: mat,
+        velocity: velocity,
+        life: maxLife,
+        maxLife: maxLife
+    });
+}
+
+function updateParticles(deltaTimeSec) {
+    const gravity = -9.8;
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= deltaTimeSec;
+        if (p.life <= 0) {
+            scene.remove(p.mesh);
+            p.mesh.geometry.dispose();
+            p.material.dispose();
+            particles.splice(i, 1);
+        } else {
+            p.velocity.y += gravity * deltaTimeSec;
+            p.mesh.position.addScaledVector(p.velocity, deltaTimeSec);
+            p.material.opacity = Math.max(0.0, p.life / p.maxLife);
+            const scale = p.life / p.maxLife;
+            p.mesh.scale.set(scale, scale, scale);
+        }
+    }
+}
+
+function triggerScreenFlash() {
+    const flash = document.getElementById('screen-flash');
+    if (!flash) return;
+    flash.classList.remove('hidden');
+    flash.classList.remove('flash-animate');
+    void flash.offsetWidth; // Trigger reflow
+    flash.classList.add('flash-animate');
+    
+    // Hide overlay after animation finishes
+    setTimeout(() => {
+        flash.classList.add('hidden');
+        flash.classList.remove('flash-animate');
+    }, 500);
 }
 
 // Lerp segment locations for fluent 3D movement path
@@ -1791,6 +2073,21 @@ window.addEventListener('keydown', (e) => {
         case 'D':
             if (snakeDir.x !== -1) nextDir = { x: 1, z: 0 };
             break;
+        case '1':
+        case 'q':
+        case 'Q':
+            activateBoost();
+            break;
+        case '2':
+        case 'e':
+        case 'E':
+            activateMagnet();
+            break;
+        case '3':
+        case 'r':
+        case 'R':
+            activateShield();
+            break;
     }
 });
 
@@ -1827,9 +2124,10 @@ function pollGamepad() {
 
     if (gp.buttons[9]?.pressed) togglePause();
     
-    // Gamepad mappings for Magnet (X / Button 2) and Boost (A / Button 0)
+    // Gamepad mappings for Magnet (X / Button 2), Boost (A / Button 0) and Shield (B / Button 1 or Y / Button 3)
     if (gp.buttons[2]?.pressed) activateMagnet();
     if (gp.buttons[0]?.pressed) activateBoost();
+    if (gp.buttons[1]?.pressed || gp.buttons[3]?.pressed) activateShield();
 }
 
 // D-pad Touch & Click mappings
@@ -1865,6 +2163,7 @@ function setupDpadControls() {
     // Touch Powerup button mappings
     const btnBoost = document.getElementById('btn-boost');
     const btnMagnet = document.getElementById('btn-break'); // Remapped to Magnet button
+    const btnShield = document.getElementById('btn-shield');
 
     btnBoost.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -1883,6 +2182,17 @@ function setupDpadControls() {
         e.preventDefault();
         activateMagnet();
     });
+
+    if (btnShield) {
+        btnShield.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            activateShield();
+        });
+        btnShield.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            activateShield();
+        });
+    }
 }
 
 function detectDevice() {
