@@ -7,14 +7,32 @@ class AudioController {
     constructor() {
         this.ctx = null;
         this.enabled = false;
+        this.bgMusic = null;
     }
 
     init() {
+        if (this.ctx) {
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+            if (this.bgMusic && this.bgMusic.paused) {
+                this.bgMusic.play().catch(e => console.log(e));
+            }
+            return;
+        }
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             this.ctx = new AudioContext();
             this.enabled = true;
             this.playStartBlip();
+
+            // Background Music Setup
+            this.bgMusic = new Audio("redSnake.mp3");
+            this.bgMusic.loop = true;
+            this.bgMusic.volume = 0.25; // Balanced volume to not overpower synth SFX
+            this.bgMusic.play().catch(err => {
+                console.log("Riproduzione automatica musica bloccata o errore:", err);
+            });
         } catch (e) {
             console.error("AudioContext non supportato.", e);
             this.enabled = false;
@@ -23,6 +41,9 @@ class AudioController {
 
     disable() {
         this.enabled = false;
+        if (this.bgMusic) {
+            this.bgMusic.pause();
+        }
         if (this.ctx && this.ctx.state !== 'closed') {
             this.ctx.close();
         }
@@ -1953,18 +1974,16 @@ document.addEventListener('DOMContentLoaded', () => {
         highScoreElem.innerText = formatScore(highScore);
     }
 
-    // Audio opt-in logic
-    const audioBanner = document.getElementById('audio-opt-in');
-    
-    document.getElementById('btn-audio-yes').addEventListener('click', () => {
+    // Auto-initialize audio on first interaction to play sfx and redSnake.mp3
+    const initAudioOnInteraction = () => {
         audio.init();
-        audioBanner.classList.add('hidden');
-    });
-
-    document.getElementById('btn-audio-no').addEventListener('click', () => {
-        audio.disable();
-        audioBanner.classList.add('hidden');
-    });
+        document.removeEventListener('click', initAudioOnInteraction);
+        document.removeEventListener('touchstart', initAudioOnInteraction);
+        document.removeEventListener('keydown', initAudioOnInteraction);
+    };
+    document.addEventListener('click', initAudioOnInteraction);
+    document.addEventListener('touchstart', initAudioOnInteraction);
+    document.addEventListener('keydown', initAudioOnInteraction);
 
     // Screen button binds
     document.getElementById('btn-start-game').addEventListener('click', handleStartClick);
