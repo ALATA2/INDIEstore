@@ -143,6 +143,40 @@ class AudioController {
         osc.stop(now + 0.6);
     }
 
+    playTeleport() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(1400, now + 0.5);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 1.0);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.linearRampToValueAtTime(0.08, now + 0.8);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 1.0);
+    }
+
+    playSqueal() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(850, now);
+        osc.frequency.exponentialRampToValueAtTime(250, now + 0.16);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.16);
+    }
+
     playUiClick() {
         if (!this.enabled || !this.ctx) return;
         const now = this.ctx.currentTime;
@@ -201,6 +235,17 @@ let boostActive = false;
 let food = { x: 0, z: 0 };
 let orbs = []; // Visual/bonus elements scattered matching screenshot
 const MAX_ORBS = 12; // Scattered colors matching screenshot
+
+// Secret Dimension (Village Bonus Level)
+let inBonusLevel = false;
+let bonusDurationLeft = 60000; // 60 seconds
+let portalActive = false;
+let portalPos = { x: 0, z: 0 };
+let portalMesh = null;
+let portalLight = null;
+let portalSpawnTimer = 0; // Time accumulator in ms
+let villageHouses = []; // static array of { x, z, groupMesh }
+let villagers = []; // moving array of { x, z, group, legL, legR, armL, armR, prevX, prevZ }
 
 // Orb Colors
 const ORB_TYPES = [
@@ -410,6 +455,21 @@ function resetGameData() {
     rebuildSnakeMeshes();
     spawnFood();
     rebuildOrbs();
+
+    // Reset secret dimension states
+    inBonusLevel = false;
+    portalSpawnTimer = 0;
+    closePortal();
+    villageHouses.forEach(h => scene.remove(h.groupMesh));
+    villageHouses = [];
+    villagers.forEach(v => scene.remove(v.group));
+    villagers = [];
+    document.getElementById('bonus-countdown').classList.add('hidden');
+    if (scene) {
+        scene.background.setHex(0x010105);
+        scene.fog.color.setHex(0x010105);
+        scene.fog.density = 0.02;
+    }
 }
 
 function formatScore(val) {
@@ -824,6 +884,354 @@ function updateMagnetLogic(deltaTime) {
     }
 }
 
+// --- 5.1 SECRET DIMENSION BONUS LEVEL HELPER FUNCTIONS ---
+
+// Spawn 10-14 rustic house obstacles
+function buildVillage() {
+    villageHouses.forEach(h => scene.remove(h.groupMesh));
+    villageHouses = [];
+
+    const houseCount = 11 + Math.floor(Math.random() * 3);
+    
+    for (let i = 0; i < houseCount; i++) {
+        let rx, rz;
+        let valid = false;
+        let attempts = 0;
+        
+        while (!valid && attempts < 100) {
+            attempts++;
+            rx = Math.floor(Math.random() * GRID_WIDTH);
+            rz = Math.floor(Math.random() * GRID_DEPTH);
+            
+            valid = true;
+            // Avoid spawning on or close to the snake segments
+            for (let s = 0; s < snake.length; s++) {
+                if (Math.abs(snake[s].x - rx) <= 1 && Math.abs(snake[s].z - rz) <= 1) {
+                    valid = false;
+                    break;
+                }
+            }
+            // Avoid duplicates
+            villageHouses.forEach(h => {
+                if (h.x === rx && h.z === rz) valid = false;
+            });
+        }
+
+        if (!valid) continue;
+
+        const houseGroup = new THREE.Group();
+        const targetPos = gridToWorld({ x: rx, z: rz });
+
+        // House stone base
+        const baseGeo = new THREE.BoxGeometry(GRID_SIZE * 0.95, GRID_SIZE * 0.7, GRID_SIZE * 0.95);
+        const baseMat = new THREE.MeshStandardMaterial({
+            color: 0x42382e, // Dark wood/grey bricks
+            roughness: 0.9,
+            metalness: 0.05
+        });
+        const base = new THREE.Mesh(baseGeo, baseMat);
+        base.position.y = (GRID_SIZE * 0.7) / 2;
+        base.castShadow = true;
+        base.receiveShadow = true;
+        houseGroup.add(base);
+
+        // Roof cone
+        const roofGeo = new THREE.ConeGeometry(GRID_SIZE * 0.75, GRID_SIZE * 0.45, 4);
+        const roofMat = new THREE.MeshStandardMaterial({
+            color: 0xa82828, // Terracotta red
+            roughness: 0.95,
+            metalness: 0.02
+        });
+        const roof = new THREE.Mesh(roofGeo, roofMat);
+        roof.position.y = GRID_SIZE * 0.7 + (GRID_SIZE * 0.45) / 2 - 0.05;
+        roof.rotation.y = Math.PI / 4;
+        roof.castShadow = true;
+        houseGroup.add(roof);
+
+        // Yellow window box
+        const windowGeo = new THREE.BoxGeometry(0.12, 0.12, 0.02);
+        const windowMat = new THREE.MeshBasicMaterial({ color: 0xffea00 });
+        
+        const winF = new THREE.Mesh(windowGeo, windowMat);
+        winF.position.set(0, GRID_SIZE * 0.35, GRID_SIZE * 0.485);
+        houseGroup.add(winF);
+
+        const winB = new THREE.Mesh(windowGeo, windowMat);
+        winB.position.set(0, GRID_SIZE * 0.35, -GRID_SIZE * 0.485);
+        houseGroup.add(winB);
+
+        houseGroup.position.copy(targetPos);
+        scene.add(houseGroup);
+
+        villageHouses.push({
+            x: rx,
+            z: rz,
+            groupMesh: houseGroup
+        });
+    }
+}
+
+// Spawn fleeing stick figures (omini)
+function spawnOmini() {
+    villagers.forEach(v => scene.remove(v.group));
+    villagers = [];
+
+    const villagerCount = 7 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < villagerCount; i++) {
+        spawnSingleOmino(true);
+    }
+}
+
+function spawnSingleOmino(initial = false) {
+    let rx, rz;
+    let valid = false;
+    
+    while (!valid) {
+        rx = Math.floor(Math.random() * GRID_WIDTH);
+        rz = Math.floor(Math.random() * GRID_DEPTH);
+        
+        valid = true;
+        // Avoid houses
+        villageHouses.forEach(h => {
+            if (h.x === rx && h.z === rz) valid = false;
+        });
+        // Avoid snake segments
+        for (let s = 0; s < snake.length; s++) {
+            if (snake[s].x === rx && snake[s].z === rz) {
+                valid = false;
+                break;
+            }
+        }
+        // Avoid other villagers
+        villagers.forEach(v => {
+            if (v.x === rx && v.z === rz) valid = false;
+        });
+    }
+
+    const ominoGroup = new THREE.Group();
+    const targetPos = gridToWorld({ x: rx, z: rz });
+    ominoGroup.position.copy(targetPos);
+
+    // Glowing white stick figures
+    const ominoMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xcccccc,
+        emissiveIntensity: 1.0,
+        roughness: 0.2,
+        metalness: 0.1
+    });
+
+    // Head
+    const headGeo = new THREE.SphereGeometry(GRID_SIZE * 0.11, 8, 8);
+    const head = new THREE.Mesh(headGeo, ominoMat);
+    head.position.y = GRID_SIZE * 0.36;
+    head.castShadow = true;
+    ominoGroup.add(head);
+
+    // Torso
+    const torsoGeo = new THREE.CylinderGeometry(0.02, 0.02, GRID_SIZE * 0.24, 4);
+    const torso = new THREE.Mesh(torsoGeo, ominoMat);
+    torso.position.y = GRID_SIZE * 0.2;
+    torso.castShadow = true;
+    ominoGroup.add(torso);
+
+    // Left leg
+    const legGeo = new THREE.CylinderGeometry(0.015, 0.015, GRID_SIZE * 0.12, 4);
+    const legL = new THREE.Mesh(legGeo, ominoMat);
+    const legLGroup = new THREE.Group();
+    legLGroup.position.set(-0.06, GRID_SIZE * 0.1, 0);
+    legL.position.y = -GRID_SIZE * 0.06;
+    legLGroup.add(legL);
+    ominoGroup.add(legLGroup);
+
+    // Right leg
+    const legR = new THREE.Mesh(legGeo, ominoMat);
+    const legRGroup = new THREE.Group();
+    legRGroup.position.set(0.06, GRID_SIZE * 0.1, 0);
+    legR.position.y = -GRID_SIZE * 0.06;
+    legRGroup.add(legR);
+    ominoGroup.add(legRGroup);
+
+    // Left arm
+    const armGeo = new THREE.CylinderGeometry(0.012, 0.012, GRID_SIZE * 0.15, 4);
+    const armL = new THREE.Mesh(armGeo, ominoMat);
+    const armLGroup = new THREE.Group();
+    armLGroup.position.set(-0.06, GRID_SIZE * 0.26, 0);
+    armL.position.set(-0.03, -GRID_SIZE * 0.06, 0);
+    armL.rotation.z = -0.3;
+    armLGroup.add(armL);
+    ominoGroup.add(armLGroup);
+
+    // Right arm
+    const armR = new THREE.Mesh(armGeo, ominoMat);
+    const armRGroup = new THREE.Group();
+    armRGroup.position.set(0.06, GRID_SIZE * 0.26, 0);
+    armR.position.set(0.03, -GRID_SIZE * 0.06, 0);
+    armR.rotation.z = 0.3;
+    armRGroup.add(armR);
+    ominoGroup.add(armRGroup);
+
+    scene.add(ominoGroup);
+
+    const ominoObj = {
+        x: rx,
+        z: rz,
+        prevX: rx,
+        prevZ: rz,
+        group: ominoGroup,
+        legL: legLGroup,
+        legR: legRGroup,
+        armL: armLGroup,
+        armR: armRGroup
+    };
+
+    villagers.push(ominoObj);
+}
+
+// Spawns fuchsia teleport gateway
+function spawnPortal() {
+    if (portalActive) return;
+
+    let valid = false;
+    let rx, rz;
+
+    while (!valid) {
+        rx = Math.floor(Math.random() * (GRID_WIDTH - 2)) + 1;
+        rz = Math.floor(Math.random() * (GRID_DEPTH - 2)) + 1;
+        
+        valid = true;
+        if (food.x === rx && food.z === rz) valid = false;
+        for (let i = 0; i < snake.length; i++) {
+            if (snake[i].x === rx && snake[i].z === rz) {
+                valid = false;
+                break;
+            }
+        }
+        orbs.forEach(o => {
+            if (o.x === rx && o.z === rz) valid = false;
+        });
+    }
+
+    portalPos = { x: rx, z: rz };
+    const targetPos = gridToWorld(portalPos);
+    targetPos.y = 0.5;
+
+    const portalGeo = new THREE.TorusGeometry(GRID_SIZE * 0.48, 0.12, 8, 24);
+    const portalMat = new THREE.MeshStandardMaterial({
+        color: 0xff00ff,
+        emissive: 0xff00ff,
+        emissiveIntensity: 2.8,
+        roughness: 0.1,
+        metalness: 0.95
+    });
+
+    portalMesh = new THREE.Mesh(portalGeo, portalMat);
+    portalMesh.position.copy(targetPos);
+    portalMesh.rotation.x = Math.PI / 2;
+    scene.add(portalMesh);
+
+    portalLight = new THREE.PointLight(0xff00ff, 3.0, 7.0);
+    portalLight.position.copy(targetPos);
+    scene.add(portalLight);
+
+    portalActive = true;
+    pulseTile(rx, rz, 0xff00ff);
+}
+
+function closePortal() {
+    if (portalMesh) scene.remove(portalMesh);
+    if (portalLight) scene.remove(portalLight);
+    portalMesh = null;
+    portalLight = null;
+    portalActive = false;
+}
+
+// Transitions to Secret Dimension (rustic village night)
+function enterBonusLevel() {
+    inBonusLevel = true;
+    bonusDurationLeft = 60000; // 60 seconds
+    audio.playTeleport();
+
+    closePortal();
+
+    // Hide main elements
+    if (appleMesh) {
+        appleMesh.visible = false;
+        appleLight.intensity = 0;
+    }
+    orbs.forEach(o => {
+        o.mesh.visible = false;
+        o.light.intensity = 0;
+    });
+
+    // Dark reddish night mood
+    scene.background.setHex(0x0a0302);
+    scene.fog.color.setHex(0x0a0302);
+    scene.fog.density = 0.035;
+
+    // Show HUD timer
+    document.getElementById('bonus-countdown').classList.remove('hidden');
+
+    // Build static village and dynamic citizens
+    buildVillage();
+    spawnOmini();
+}
+
+function exitBonusLevel() {
+    inBonusLevel = false;
+    audio.playTeleport();
+
+    // Hide HUD countdown
+    document.getElementById('bonus-countdown').classList.add('hidden');
+
+    // Clear village elements
+    villageHouses.forEach(h => scene.remove(h.groupMesh));
+    villageHouses = [];
+    villagers.forEach(v => scene.remove(v.group));
+    villagers = [];
+
+    // Restore standard dark cyber colors
+    scene.background.setHex(0x010105);
+    scene.fog.color.setHex(0x010105);
+    scene.fog.density = 0.02;
+
+    // Restore normal elements
+    if (appleMesh) {
+        appleMesh.visible = true;
+        appleLight.intensity = 2.5;
+        spawnFood();
+    }
+    orbs.forEach(o => {
+        o.mesh.visible = true;
+        o.light.intensity = 1.8;
+    });
+
+    portalSpawnTimer = 0; // Reset portal cooldown
+}
+
+// Slice snake tail segments off to give player visual advantage
+function shortenSnake(amount) {
+    const minLength = 3;
+    const targetLength = Math.max(minLength, snake.length - amount);
+    const removedCount = snake.length - targetLength;
+    
+    if (removedCount <= 0) return;
+    
+    snake = snake.slice(0, targetLength);
+    snakePrev = snakePrev.slice(0, targetLength);
+    
+    for (let i = 0; i < removedCount; i++) {
+        const mesh = snakeSegmentMeshes.pop();
+        if (mesh) scene.remove(mesh);
+    }
+    
+    for (let i = 0; i < snakeSegmentMeshes.length; i++) {
+        const meshIdx = i + 1;
+        const tailFactor = Math.max(0.45, 1.0 - (meshIdx / snake.length) * 0.4);
+        snakeSegmentMeshes[i].scale.set(tailFactor, tailFactor, tailFactor);
+    }
+}
+
 // --- 6. LOGIC GAME LOOP TICK ---
 
 function updateGameTick() {
@@ -836,6 +1244,63 @@ function updateGameTick() {
         x: snake[0].x + snakeDir.x,
         z: snake[0].z + snakeDir.z
     };
+
+    // Check Portal Entry (if portal is spawned and not in bonus level)
+    if (portalActive && !inBonusLevel) {
+        if (nextHead.x === portalPos.x && nextHead.z === portalPos.z) {
+            enterBonusLevel();
+            return; // Skip normal movement for this tick
+        }
+    }
+
+    // Check Secret Dimension Tick Updates
+    if (inBonusLevel) {
+        // Move villagers (omini) fleeing from head
+        moveVillagers();
+
+        // Check crash with Houses
+        for (let i = 0; i < villageHouses.length; i++) {
+            const h = villageHouses[i];
+            if (nextHead.x === h.x && nextHead.z === h.z) {
+                triggerGameOver();
+                return;
+            }
+        }
+
+        // Hitting self is still Game Over
+        for (let i = 0; i < snake.length; i++) {
+            if (snake[i].x === nextHead.x && snake[i].z === nextHead.z) {
+                triggerGameOver();
+                return;
+            }
+        }
+
+        // Hitting boundary walls is still Game Over
+        if (nextHead.x < 0 || nextHead.x >= GRID_WIDTH || nextHead.z < 0 || nextHead.z >= GRID_DEPTH) {
+            triggerGameOver();
+            return;
+        }
+
+        // Move snake
+        snake.unshift(nextHead);
+
+        // Check Eat Villager
+        let ateVillagerIndex = -1;
+        for (let i = 0; i < villagers.length; i++) {
+            const v = villagers[i];
+            if (nextHead.x === v.x && nextHead.z === v.z) {
+                ateVillagerIndex = i;
+                break;
+            }
+        }
+
+        if (ateVillagerIndex !== -1) {
+            handleEatVillager(villagers[ateVillagerIndex]);
+        } else {
+            snake.pop(); // Standard move
+        }
+        return; // Don't run normal apple/orbs collisions
+    }
 
     // Collision check: boundaries
     if (nextHead.x < 0 || nextHead.x >= GRID_WIDTH || nextHead.z < 0 || nextHead.z >= GRID_DEPTH) {
@@ -930,6 +1395,82 @@ function handleEatOrb(orb) {
     spawnOrb(false);
 }
 
+// Fleeing AI for village citizens
+function moveVillagers() {
+    villagers.forEach(v => {
+        // Look at cardinal neighbors
+        const moves = [
+            { x: v.x + 1, z: v.z },
+            { x: v.x - 1, z: v.z },
+            { x: v.x, z: v.z + 1 },
+            { x: v.x, z: v.z - 1 }
+        ];
+
+        // Filter valid empty moves
+        const validMoves = moves.filter(m => {
+            if (m.x < 0 || m.x >= GRID_WIDTH || m.z < 0 || m.z >= GRID_DEPTH) return false;
+            // No houses
+            for (let i = 0; i < villageHouses.length; i++) {
+                if (villageHouses[i].x === m.x && villageHouses[i].z === m.z) return false;
+            }
+            // No snake segments
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === m.x && snake[i].z === m.z) return false;
+            }
+            // No other villagers
+            for (let i = 0; i < villagers.length; i++) {
+                const other = villagers[i];
+                if (other !== v && other.x === m.x && other.z === m.z) return false;
+            }
+            return true;
+        });
+
+        if (validMoves.length > 0) {
+            // Find choice that maximizes distance to snake head
+            const head = snake[0];
+            let bestMove = validMoves[0];
+            let maxDist = -1;
+
+            validMoves.forEach(m => {
+                const dx = m.x - head.x;
+                const dz = m.z - head.z;
+                const distSq = dx * dx + dz * dz;
+                if (distSq > maxDist) {
+                    maxDist = distSq;
+                    bestMove = m;
+                }
+            });
+
+            v.prevX = v.x;
+            v.prevZ = v.z;
+            v.x = bestMove.x;
+            v.z = bestMove.z;
+        } else {
+            v.prevX = v.x;
+            v.prevZ = v.z;
+        }
+    });
+}
+
+function handleEatVillager(v) {
+    score += 500 * level;
+    document.getElementById('current-score').innerText = formatScore(score);
+    audio.playSqueal();
+
+    // Shorten tail by 2 segments
+    shortenSnake(2);
+
+    pulseTile(v.x, v.z, 0xff0055);
+
+    // Remove villager from scene
+    scene.remove(v.group);
+    const idx = villagers.indexOf(v);
+    if (idx !== -1) villagers.splice(idx, 1);
+
+    // Spawn new villager
+    spawnSingleOmino(false);
+}
+
 function handleLevelUp() {
     level++;
     applesEaten = 0;
@@ -983,6 +1524,7 @@ function triggerGameOver() {
     speedMultiplier = 1.0;
 
     orbitControls.enabled = true;
+    document.getElementById('bonus-countdown').classList.add('hidden');
     document.getElementById('game-hud').classList.add('hidden');
     document.getElementById('screen-gameover').classList.remove('hidden');
     document.getElementById('mobile-controls').classList.add('hidden');
@@ -1002,20 +1544,27 @@ function animate(currentTime) {
         plant.rotation.z = sway;
     });
 
-    // Floating orbs animation
+    // Floating orbs animation (only animate when not in bonus level)
     orbs.forEach((orb, index) => {
-        if (!orb.isBeingPulled) {
-            orb.mesh.position.y = 0.5 + Math.sin(timeSec * 2.5 + index) * 0.08;
-            orb.light.position.y = orb.mesh.position.y;
+        if (!inBonusLevel) {
+            if (!orb.isBeingPulled) {
+                orb.mesh.position.y = 0.5 + Math.sin(timeSec * 2.5 + index) * 0.08;
+                orb.light.position.y = orb.mesh.position.y;
+            }
+            orb.mesh.rotation.y += 0.02;
         }
-        orb.mesh.rotation.y += 0.02;
     });
 
     // Floating apple animation
-    if (appleMesh && !magnetActive) {
+    if (appleMesh && !magnetActive && !inBonusLevel) {
         appleMesh.position.y = 0.5 + Math.sin(timeSec * 3.0) * 0.06;
         appleLight.position.y = appleMesh.position.y;
         appleMesh.rotation.y += 0.012;
+    }
+
+    // Rotate active portal mesh
+    if (portalActive && portalMesh) {
+        portalMesh.rotation.z += 0.05;
     }
 
     // Decay grid pulses back to standard black tiles
@@ -1033,9 +1582,56 @@ function animate(currentTime) {
         }
     });
 
-    // Dynamic magnet drag calculations
+    // Dynamic gameplay updates
     if (isPlaying && !isPaused && !isGameOver) {
-        updateMagnetLogic(deltaTime);
+        if (!inBonusLevel) {
+            updateMagnetLogic(deltaTime);
+            
+            // Handle Portal spawning timers
+            if (!portalActive) {
+                portalSpawnTimer += deltaTime;
+                if (portalSpawnTimer > 35000) { // 35 seconds cooldown
+                    spawnPortal();
+                    portalSpawnTimer = 0;
+                }
+            } else {
+                portalSpawnTimer += deltaTime;
+                if (portalSpawnTimer > 15000) { // 15 seconds open duration
+                    closePortal();
+                    portalSpawnTimer = 0;
+                }
+            }
+        } else {
+            // Count down secret dimension timer
+            bonusDurationLeft -= deltaTime;
+            document.getElementById('bonus-countdown').innerText = 'DIMENSIONE BONUS: ' + Math.ceil(bonusDurationLeft / 1000) + 's';
+            
+            if (bonusDurationLeft <= 0) {
+                exitBonusLevel();
+            }
+
+            // Animate escaping stick figures wobbly limbs
+            const ratio = tickTimer / currentTickRate;
+            villagers.forEach((v, index) => {
+                const prevPos = gridToWorld({ x: v.prevX, z: v.prevZ });
+                const currPos = gridToWorld({ x: v.x, z: v.z });
+                prevPos.y = 0.0;
+                currPos.y = 0.0;
+                v.group.position.lerpVectors(prevPos, currPos, ratio);
+                
+                if (v.x !== v.prevX || v.z !== v.prevZ) {
+                    const angle = Math.atan2(v.x - v.prevX, v.z - v.prevZ);
+                    v.group.rotation.y = angle;
+                }
+
+                // Wobbly limb wiggles
+                v.legL.rotation.x = Math.sin(timeSec * 16 + index * 5) * 0.75;
+                v.legR.rotation.x = -Math.sin(timeSec * 16 + index * 5) * 0.75;
+                v.armL.rotation.x = -Math.sin(timeSec * 16 + index * 5) * 0.55;
+                v.armR.rotation.x = Math.sin(timeSec * 16 + index * 5) * 0.55;
+            });
+        }
+
         pollGamepad();
 
         currentTickRate = baseTickRate * speedMultiplier;

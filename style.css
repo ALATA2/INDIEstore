@@ -908,3 +908,34 @@ html, body {
     }
 }
 
+/* Bonus Level countdown timer */
+.bonus-timer-glow {
+    font-family: var(--font-cyber);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--neon-orange);
+    text-shadow: 0 0 8px var(--neon-orange);
+    margin-top: 5px;
+    letter-spacing: 1px;
+    background: rgba(30, 10, 0, 0.6);
+    border: 1px solid var(--neon-orange);
+    padding: 3px 12px;
+    border-radius: 12px;
+    animation: pulse-orange 1s infinite alternate;
+}
+
+.bonus-timer-glow.hidden {
+    display: none;
+}
+
+@keyframes pulse-orange {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 159, 0, 0.3);
+        opacity: 0.8;
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(255, 159, 0, 0.7);
+        opacity: 1.0;
+    }
+}
+
