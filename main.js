@@ -246,6 +246,7 @@ let portalLight = null;
 let portalSpawnTimer = 0; // Time accumulator in ms
 let villageHouses = []; // static array of { x, z, groupMesh }
 let villagers = []; // moving array of { x, z, group, legL, legR, armL, armR, prevX, prevZ }
+let villageTickCount = 0;
 
 // Orb Colors
 const ORB_TYPES = [
@@ -462,6 +463,7 @@ function resetGameData() {
     // Reset secret dimension states
     inBonusLevel = false;
     portalSpawnTimer = 0;
+    villageTickCount = 0;
     closePortal();
     villageHouses.forEach(h => scene.remove(h.groupMesh));
     villageHouses = [];
@@ -1153,6 +1155,7 @@ function closePortal() {
 function enterBonusLevel() {
     inBonusLevel = true;
     bonusDurationLeft = 60000; // 60 seconds
+    villageTickCount = 0;
     audio.playTeleport();
 
     closePortal();
@@ -1278,8 +1281,17 @@ function updateGameTick() {
 
     // Check Secret Dimension Tick Updates
     if (inBonusLevel) {
-        // Move villagers (omini) fleeing from head
-        moveVillagers();
+        // Move villagers (omini) fleeing from head (only on every 2nd tick to slow them down)
+        villageTickCount++;
+        if (villageTickCount % 2 === 0) {
+            moveVillagers();
+        } else {
+            // Keep prev positions equal to current positions so they stay still during this tick
+            villagers.forEach(v => {
+                v.prevX = v.x;
+                v.prevZ = v.z;
+            });
+        }
 
         // Check crash with Houses
         for (let i = 0; i < villageHouses.length; i++) {
@@ -1363,7 +1375,7 @@ function updateGameTick() {
         handleEatOrb(orbs[ateOrbIndex]);
     }
 
-    if (!ateApple) {
+    if (!ateApple && ateOrbIndex === -1) {
         snake.pop(); // Standard movement segment reduction
     }
 }
@@ -1392,6 +1404,9 @@ function handleEatOrb(orb) {
     document.getElementById('current-score').innerText = formatScore(score);
     document.getElementById('gem-count').innerText = gems;
     audio.playEatOrb();
+
+    // Grow snake tail on eating any orb/pearl
+    growSnakeMesh();
 
     // 25% chance to replenish powerups based on orb color
     if (orb.type.name === 'blue' && boostCount < 5) {
