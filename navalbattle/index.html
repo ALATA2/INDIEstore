@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEO-BATTLESHIP // TACTICAL INTERFACE</title>
+    <!-- Google Fonts for futuristic Cyberpunk look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- PeerJS for WebRTC Multiplayer -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <!-- Matrix Scanline/Grid Overlay for retro-futuristic feel -->
+    <div class="scanlines"></div>
+    <div class="ambient-glow"></div>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="game-header">
+            <div class="header-status">
+                <span class="status-indicator online"></span>
+                <span class="status-text">SYS.STATUS: ACTIVE // GRID_SIZE: 10X10</span>
+            </div>
+            <h1 class="glitch-title" data-text="NEO-BATTLESHIP">NEO-BATTLESHIP</h1>
+            <div class="header-controls">
+                <!-- Help Tutorial Trigger -->
+                <button id="help-trigger-btn" class="cyber-btn mini-btn help-btn" title="Show Tactical Manual">
+                    <span class="icon">❓</span> <span class="btn-txt">MANUAL</span>
+                </button>
+                
+                <!-- AI Difficulty Toggle -->
+                <div class="control-group">
+                    <span class="control-label">AI:</span>
+                    <button id="ai-difficulty-btn" class="cyber-btn mini-btn" data-mode="tactical" title="Toggle AI Mode">
+                        <span class="btn-txt">TACTICAL</span>
+                    </button>
+                </div>
+                
+                <!-- Volume Slider -->
+                <div class="control-group volume-control-group">
+                    <span class="control-label">VOL:</span>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" class="cyber-slider" title="Master Volume">
+                </div>
+
+                <!-- Soundtrack controls -->
+                <div class="control-group">
+                    <button id="music-btn" class="cyber-btn mini-btn" title="Toggle Synthwave Music">
+                        <span class="icon">🎵</span> <span class="btn-txt">MUSIC OFF</span>
+                    </button>
+                </div>
+                <!-- Sound FX controls -->
+                <div class="control-group">
+                    <button id="mute-btn" class="cyber-btn mini-btn" title="Toggle Sound FX">
+                        <span class="icon">🔊</span> <span class="btn-txt">AUDIO ON</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN INTERFACE -->
+        <main class="tactical-deck">
+            <!-- PLAYER SECTION -->
+            <section class="tactical-station player-station">
+                <div class="station-corner top-left"></div>
+                <div class="station-corner top-right"></div>
+                <div class="station-corner bottom-left"></div>
+                <div class="station-corner bottom-right"></div>
+                <div class="station-header">
+                    <h2><span class="accent-color">//</span> FRIENDLY FLEET</h2>
+                    <div class="stat-badge">
+                        <span>SHIPS ACTIVE:</span>
+                        <span id="player-ships-count" class="counter">5/5</span>
+                    </div>
+                </div>
+                <div class="grid-outer-wrapper">
+                    <!-- Column labels A-J -->
+                    <div class="label-row">
+                        <div class="grid-label empty"></div>
+                        <div class="grid-label">A</div><div class="grid-label">B</div>
+                        <div class="grid-label">C</div><div class="grid-label">D</div>
+                        <div class="grid-label">E</div><div class="grid-label">F</div>
+                        <div class="grid-label">G</div><div class="grid-label">H</div>
+                        <div class="grid-label">I</div><div class="grid-label">J</div>
+                    </div>
+                    <div class="grid-row-container">
+                        <!-- Row labels 1-10 & Grid -->
+                        <div class="label-col">
+                            <div class="grid-label">1</div><div class="grid-label">2</div>
+                            <div class="grid-label">3</div><div class="grid-label">4</div>
+                            <div class="grid-label">5</div><div class="grid-label">6</div>
+                            <div class="grid-label">7</div><div class="grid-label">8</div>
+                            <div class="grid-label">9</div><div class="grid-label">10</div>
+                        </div>
+                        <div id="player-grid" class="battle-grid"></div>
+                    </div>
+                </div>
+                <!-- DEPLOYMENT PANEL -->
+                <div class="deployment-panel" id="deployment-panel">
+                    <div class="deploy-instructions">
+                        SELECT SHIP // CLICK ON GRID TO PLACE // PRESS [R] TO ROTATE
+                    </div>
+                    <div class="deploy-ships-list" id="deploy-ships-list">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                    <div class="deploy-actions">
+                        <button id="rotate-deploy-btn" class="cyber-btn mini-btn" style="width: 48%;">ROTATE [R]</button>
+                        <button id="random-deploy-btn" class="cyber-btn mini-btn" style="width: 48%;">AUTO PLACE</button>
+                    </div>
+                </div>
+                
+                <div class="fleet-status-display hide" id="player-fleet-status">
+                    <!-- Will be populated dynamically by JS with health bars for each ship -->
+                </div>
+            </section>
+
+            <!-- TACTICAL MONITOR (MIDDLE COLUMN) -->
+            <section class="tactical-monitor">
+                <div class="terminal-container">
+                    <div class="terminal-header">
+                        <div class="terminal-tab-group">
+                            <button id="tab-log-btn" class="terminal-tab active">// TACTICAL_LOG</button>
+                            <button id="tab-chat-btn" class="terminal-tab">// SECURE_CHAT</button>
+                        </div>
+                    </div>
+                    <div id="battle-log" class="console-log">
+                        <div class="log-entry system">[SYSTEM INITIALIZED] Welcome Commander.</div>
+                        <div class="log-entry system">[RADAR] All sonar sweeps online.</div>
+                        <div class="log-entry prompt">FLEET ALIGNMENT ENCRYPTED. READY FOR FIRING SOLUTIONS.</div>
+                    </div>
+                    <div id="chat-container" class="console-log hide">
+                        <div id="chat-log" class="chat-messages">
+                            <div class="chat-entry system">[SECURE CHAT LINK STANDBY]</div>
+                        </div>
+                        <div class="chat-input-row">
+                            <input type="text" id="chat-input" placeholder="ENTER MESSAGE..." autocomplete="off">
+                            <button id="chat-send-btn" class="cyber-btn mini-btn">SEND</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-board">
+                    <div class="score-card">
+                        <span class="score-label">ROUNDS</span>
+                        <span id="round-counter" class="score-value">0</span>
+                    </div>
+                    <div class="score-card">
+                        <span class="score-label">HIT RATIO</span>
+                        <span id="player-accuracy" class="score-value">0%</span>
+                    </div>
+                </div>
+
+                <div class="career-stats-card">
+                    <div class="career-header">// TACTICAL CAREER STATS</div>
+                    <div class="career-stats-grid">
+                        <div class="career-stat">
+                            <span class="c-stat-lbl">WINS</span>
+                            <span id="career-wins" class="c-stat-val">0</span>
+                        </div>
+                        <div class="career-stat">
+                            <span class="c-stat-lbl">LOSSES</span>
+                            <span id="career-losses" class="c-stat-val">0</span>
+                        </div>
+                        <div class="career-stat">
+                            <span class="c-stat-lbl">BEST ACC</span>
+                            <span id="career-best-acc" class="c-stat-val">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="redeploy-btn" class="cyber-btn primary-btn">
+                    <span class="btn-glitch-bg"></span>
+                    <span class="btn-text">REDEPLOY FLEET</span>
+                </button>
+            </section>
+
+            <!-- COMPUTER SECTION -->
+            <section class="tactical-station computer-station">
+                <div class="station-corner top-left"></div>
+                <div class="station-corner top-right"></div>
+                <div class="station-corner bottom-left"></div>
+                <div class="station-corner bottom-right"></div>
+                <div class="station-header">
+                    <h2><span class="accent-color">//</span> HOSTILE SECTOR</h2>
+                    <div class="stat-badge danger">
+                        <span>SHIPS TARGETED:</span>
+                        <span id="computer-ships-count" class="counter">0/5</span>
+                    </div>
+                </div>
+                <div class="grid-outer-wrapper">
+                    <!-- Column labels A-J -->
+                    <div class="label-row">
+                        <div class="grid-label empty"></div>
+                        <div class="grid-label">A</div><div class="grid-label">B</div>
+                        <div class="grid-label">C</div><div class="grid-label">D</div>
+                        <div class="grid-label">E</div><div class="grid-label">F</div>
+                        <div class="grid-label">G</div><div class="grid-label">H</div>
+                        <div class="grid-label">I</div><div class="grid-label">J</div>
+                    </div>
+                    <div class="grid-row-container">
+                        <!-- Row labels 1-10 & Grid -->
+                        <div class="label-col">
+                            <div class="grid-label">1</div><div class="grid-label">2</div>
+                            <div class="grid-label">3</div><div class="grid-label">4</div>
+                            <div class="grid-label">5</div><div class="grid-label">6</div>
+                            <div class="grid-label">7</div><div class="grid-label">8</div>
+                            <div class="grid-label">9</div><div class="grid-label">10</div>
+                        </div>
+                        <div id="computer-grid" class="battle-grid active-target"></div>
+                    </div>
+                </div>
+                <!-- SPECIAL ABILITIES PANEL -->
+                <div class="abilities-container hide" id="abilities-panel">
+                    <div class="abilities-header">// SPECIAL WEAPONS PROTOCOLS</div>
+                    <div class="abilities-grid">
+                        <button id="ability-sonar" class="cyber-btn ability-btn" title="Scan 3x3 grid sector (1x per game)">
+                            <span class="ability-name">SONAR RADAR</span>
+                            <span class="ability-status" id="status-sonar">READY</span>
+                        </button>
+                        <button id="ability-cluster" class="cyber-btn ability-btn" title="Detonate 5-cell cross pattern (1x per game)">
+                            <span class="ability-name">CLUSTER STRIKE</span>
+                            <span class="ability-status" id="status-cluster">READY</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="fleet-status-display" id="computer-fleet-status">
+                    <!-- Will be populated dynamically by JS -->
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="game-footer">
+            <p>TACTICAL COMMUNICATOR MK-VII // INDIESTORE 2026</p>
+        </footer>
+    </div>
+
+    <!-- GAME OVER OVERLAY (VICTORY / DEFEAT MODAL) -->
+    <div id="game-over-overlay" class="overlay-modal hide">
+        <div class="modal-content glassmorphism">
+            <div class="modal-corner top-left"></div>
+            <div class="modal-corner top-right"></div>
+            <div class="modal-corner bottom-left"></div>
+            <div class="modal-corner bottom-right"></div>
+            
+            <h2 id="modal-title" class="modal-header-glitch" data-text="TRANSMISSION ENDED">TRANSMISSION ENDED</h2>
+            
+            <p id="modal-desc" class="modal-description">TACTICAL ANALYSIS INCOMPLETE.</p>
+            
+            <div class="modal-stats">
+                <div class="modal-stat-box">
+                    <span class="m-stat-lbl">ROUNDS EXPENDED</span>
+                    <span id="modal-rounds" class="m-stat-val">0</span>
+                </div>
+                <div class="modal-stat-box">
+                    <span class="m-stat-lbl">FINAL HIT ACCURACY</span>
+                    <span id="modal-accuracy" class="m-stat-val">0%</span>
+                </div>
+                <div class="modal-stat-box">
+                    <span class="m-stat-lbl">SURVIVING SHIPS</span>
+                    <span id="modal-surviving" class="m-stat-val">0</span>
+                </div>
+            </div>
+
+            <button id="restart-btn" class="cyber-btn primary-btn large-btn">
+                <span class="btn-glitch-bg"></span>
+                <span class="btn-text">RE-ENGAGE TARGET</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- TACTICAL MANUAL (HELP TUTORIAL OVERLAY) -->
+    <div id="help-overlay" class="overlay-modal hide">
+        <div class="modal-content glassmorphism help-modal-content">
+            <div class="modal-corner top-left"></div>
+            <div class="modal-corner top-right"></div>
+            <div class="modal-corner bottom-left"></div>
+            <div class="modal-corner bottom-right"></div>
+
+            <h2 class="modal-header-glitch win" data-text="TACTICAL COMMAND MANUAL">TACTICAL COMMAND MANUAL</h2>
+            <p class="modal-description">BATTLEFIELD SYSTEM OPERATIONS GUIDE</p>
+
+            <div class="help-section-container">
+                <div class="help-card">
+                    <h3>1. FLEET DEPLOYMENT PHASE</h3>
+                    <p>Select a ship from the left docking panel. Click inside the left **FRIENDLY FLEET** grid. Press **R** or click **ROTATE** to change alignment between horizontal and vertical. Press **AUTO PLACE** to let the AI align your fleet instantly.</p>
+                </div>
+                <div class="help-card">
+                    <h3>2. COMBAT & FIRING CONTROLS</h3>
+                    <p>Once battles are initiated, click inside the right **HOSTILE SECTOR** to deploy missiles. Hits are marked in **RED** and misses are marked in **BLUE**. The AI acts immediately after your turn.</p>
+                </div>
+                <div class="help-card">
+                    <h3>3. CYBERPUNK WEAPONS PROTOCOLS</h3>
+                    <p>Activate special skills below the enemy grid (1x per match):</p>
+                    <ul style="list-style-type: square; padding-left: 1.2rem; text-align: left; font-size: 0.75rem; margin-top: 4px;">
+                        <li><strong>SONAR RADAR</strong>: Scans a 3x3 block sector, temporarily highlighting ship locations in yellow for 3s without taking a shot.</li>
+                        <li><strong>CLUSTER STRIKE</strong>: Detonates a 5-cell cross pattern centered at target coordinate.</li>
+                    </ul>
+                </div>
+                <div class="help-card">
+                    <h3>4. AUDIO ENGINE</h3>
+                    <p>Adjust master sound levels via the slider in the header. Background music plays the custom soundtrack HighPressure.mp3, and sound FX are generated on-the-fly via Web Audio API.</p>
+                </div>
+            </div>
+
+            <button id="close-help-btn" class="cyber-btn primary-btn large-btn" style="margin-top: 1.5rem;">
+                <span class="btn-glitch-bg"></span>
+                <span class="btn-text">DISMISS MANUAL</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- GAME MODE SELECTOR OVERLAY -->
+    <div id="mode-selection-overlay" class="overlay-modal">
+        <div class="modal-content glassmorphism mode-select-modal">
+            <div class="modal-corner top-left"></div>
+            <div class="modal-corner top-right"></div>
+            <div class="modal-corner bottom-left"></div>
+            <div class="modal-corner bottom-right"></div>
+            
+            <h2 class="modal-header-glitch" data-text="NEO-BATTLESHIP">NEO-BATTLESHIP</h2>
+            <p class="modal-description">SELECT TACTICAL OPERATING MODE</p>
+            
+            <div id="mode-selection-view" class="mode-view">
+                <div class="mode-cards-container">
+                    <button class="mode-card" id="mode-computer-btn">
+                        <div class="mode-icon">🤖</div>
+                        <div style="flex-grow: 1;">
+                            <h3>SOLO CAMPAIGN</h3>
+                            <p>Infiltrate hostile sector. Engage hunting tactical AI.</p>
+                        </div>
+                        <span class="mode-tag">// VS COMPUTER</span>
+                    </button>
+                    
+                    <button class="mode-card" id="mode-local-btn">
+                        <div class="mode-icon">👥</div>
+                        <div style="flex-grow: 1;">
+                            <h3>LOCAL PASS & PLAY</h3>
+                            <p>Simulate local battle. 2 Commanders, 1 screen.</p>
+                        </div>
+                        <span class="mode-tag">// PASS & PLAY</span>
+                    </button>
+                    
+                    <button class="mode-card" id="mode-online-btn">
+                        <div class="mode-icon">🌐</div>
+                        <div style="flex-grow: 1;">
+                            <h3>NETLINK COMBAT</h3>
+                            <p>Direct WebRTC neural connection to remote peer.</p>
+                        </div>
+                        <span class="mode-tag">// ONLINE P2P</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Netlink Connection Menu -->
+            <div id="online-lobby-view" class="mode-view hide">
+                <h3 class="lobby-title">// PEER NETWORK INITIALIZED</h3>
+                
+                <div class="lobby-section host-section">
+                    <h4>1. HOST AN ENGAGEMENT</h4>
+                    <p class="lobby-desc">Share room code with remote operator to establish connection.</p>
+                    <div class="room-code-display-container">
+                        <span class="room-code-label">YOUR ROOM CODE:</span>
+                        <span id="host-room-code" class="room-code">WAITING...</span>
+                    </div>
+                    <div id="lobby-status" class="lobby-status">INITIALIZING PEER...</div>
+                </div>
+
+                <div class="lobby-divider">OR</div>
+
+                <div class="lobby-section join-section">
+                    <h4>2. SECURE REMOTE JOIN</h4>
+                    <p class="lobby-desc">Enter 4-digit roomId generated by hostile host.</p>
+                    <div class="join-input-group">
+                        <input type="text" id="join-room-input" placeholder="ENTER CODE..." maxlength="4">
+                        <button id="join-connect-btn" class="cyber-btn primary-btn mini-btn">CONNECT</button>
+                    </div>
+                </div>
+                
+                <button id="lobby-back-btn" class="cyber-btn secondary-btn" style="margin-top: 1.5rem; width: 100%;">
+                    RETURN TO MODE MENU
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASS DEVICE OVERLAY -->
+    <div id="pass-device-overlay" class="overlay-modal hide">
+        <div class="modal-content glassmorphism">
+            <div class="modal-corner top-left"></div>
+            <div class="modal-corner top-right"></div>
+            <div class="modal-corner bottom-left"></div>
+            <div class="modal-corner bottom-right"></div>
+            
+            <h2 class="modal-header-glitch lose" data-text="SECURITY SWITCH" style="color: var(--neon-purple); text-shadow: 0 0 10px var(--neon-purple); font-size: 1.8rem;">
+                SECURITY SWITCH
+            </h2>
+            <p class="modal-description" id="pass-device-instructions">
+                PASSING TACTICAL CONTROLS.
+            </p>
+            
+            <div class="pass-cover-screen" style="margin: 1.5rem 0;">
+                <div class="flashing-warning">// TRANSFERS IN PROGRESS //</div>
+                <p style="font-size: 0.8rem; margin: 15px 0; font-family: var(--font-mono); color: rgba(255,255,255,0.7); line-height: 1.4;">
+                    Please pass the device to <strong id="pass-to-player-name" style="color: var(--neon-blue);">PLAYER 2</strong>.<br>
+                    Ensure your grid layout remains confidential.
+                </p>
+            </div>
+
+            <button id="pass-ready-btn" class="cyber-btn primary-btn large-btn" style="background: rgba(189, 0, 255, 0.2); border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(189, 0, 255, 0.3); margin-top: 1rem;">
+                <span class="btn-text">ACQUIRE COMMAND</span>
+            </button>
+        </div>
+    </div>
+    <!-- STARTUP SPLASH OVERLAY -->
+    <div id="startup-splash-overlay" class="startup-overlay">
+        <!-- Logo View -->
+        <div id="splash-logo-container" class="splash-logo-container">
+            <img src="remake-games-Logo.png" alt="Remake Games Logo" class="splash-logo">
+        </div>
+        
+        <!-- Video View -->
+        <div id="splash-video-container" class="splash-video-container hide">
+            <video id="intro-video" src="introBattleship.mp4" playsinline></video>
+            <div id="unmute-banner" class="unmute-banner hide">// CLICK TO UNMUTE AUDIO //</div>
+            <button id="skip-intro-btn" class="cyber-btn mini-btn skip-btn">// SKIP INTRO</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
