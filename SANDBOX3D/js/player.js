@@ -224,13 +224,8 @@ export class Player {
             const deltaX = e.clientX - this.previousMousePosition.x;
             const deltaY = e.clientY - this.previousMousePosition.y;
 
-            if (this.mouseButtonActive === 1) {
-                // Inverted horizontal rotation when using middle wheel click (button 1)
-                this.cameraTheta -= deltaX * 0.007;
-            } else {
-                // Standard horizontal rotation for other buttons (like left-click)
-                this.cameraTheta += deltaX * 0.007;
-            }
+            // Inverted horizontal rotation for both left-click and middle-wheel drags
+            this.cameraTheta -= deltaX * 0.007;
             this.cameraPhi -= deltaY * 0.007;
             this.cameraPhi = Math.max(this.minPhi, Math.min(this.maxPhi, this.cameraPhi));
 
