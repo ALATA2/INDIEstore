@@ -401,19 +401,108 @@ export class Player {
             if (isMoving) {
                 moveDirection.normalize();
                 
-                // Map boundaries lock
-                const newX = this.position.x + moveDirection.x * this.speed;
-                const newZ = this.position.z + moveDirection.z * this.speed;
+                // Calculate candidate coordinates
+                let nextX = this.position.x + moveDirection.x * this.speed;
+                let nextZ = this.position.z + moveDirection.z * this.speed;
                 
-                if (Math.abs(newX) < 48) this.position.x = newX;
-                if (Math.abs(newZ) < 48) this.position.z = newZ;
+                // Map boundaries lock
+                if (Math.abs(nextX) > 48) nextX = Math.sign(nextX) * 48;
+                if (Math.abs(nextZ) > 48) nextZ = Math.sign(nextZ) * 48;
 
+                // Ground height constraints
+                const stepLimit = 0.4; // Max height difference that can be automatically stepped over
+                const currentY = this.position.y;
+
+                // --- 1. Terrain Step Collision Check ---
+                // Block moving on X if the step height change is too high
+                let hX = getTerrainHeight(nextX, this.position.z);
+                if (hX - currentY > stepLimit) {
+                    nextX = this.position.x;
+                }
+
+                // Block moving on Z if the step height change is too high
+                let hZ = getTerrainHeight(this.position.x, nextZ);
+                if (hZ - currentY > stepLimit) {
+                    nextZ = this.position.z;
+                }
+
+                // --- 2. Wooden Fence Collision Check (Home Plot size 8x8 at z = -2, top is Y = 2.8) ---
+                const fenceMinX = -4.0;
+                const fenceMaxX = 4.0;
+                const fenceMinZ = -6.0;
+                const fenceMaxZ = 2.0;
+                const fenceTopY = 2.8;
+                const playerRadius = 0.28;
+
+                // Only block player horizontally if their Y is below the top of the fence
+                if (currentY < fenceTopY) {
+                    // Check Left wall
+                    if (this.position.x > fenceMinX && nextX - playerRadius < fenceMinX) {
+                        nextX = fenceMinX + playerRadius;
+                    } else if (this.position.x < fenceMinX && nextX + playerRadius > fenceMinX) {
+                        nextX = fenceMinX - playerRadius;
+                    }
+
+                    // Check Right wall
+                    if (this.position.x < fenceMaxX && nextX + playerRadius > fenceMaxX) {
+                        nextX = fenceMaxX - playerRadius;
+                    } else if (this.position.x > fenceMaxX && nextX - playerRadius < fenceMaxX) {
+                        nextX = fenceMaxX + playerRadius;
+                    }
+
+                    // Check Back wall
+                    if (this.position.z > fenceMinZ && nextZ - playerRadius < fenceMinZ) {
+                        nextZ = fenceMinZ + playerRadius;
+                    } else if (this.position.z < fenceMinZ && nextZ + playerRadius > fenceMinZ) {
+                        nextZ = fenceMinZ - playerRadius;
+                    }
+
+                    // Check Front wall (has a gate between X = -1.3 and 1.3)
+                    const isCrossingFront = (this.position.z < fenceMaxZ && nextZ + playerRadius > fenceMaxZ) || 
+                                            (this.position.z > fenceMaxZ && nextZ - playerRadius < fenceMaxZ);
+                    if (isCrossingFront) {
+                        const inGateRange = Math.abs(nextX) < 1.3 && Math.abs(this.position.x) < 1.3;
+                        if (!inGateRange) {
+                            if (this.position.z < fenceMaxZ) {
+                                nextZ = fenceMaxZ - playerRadius;
+                            } else {
+                                nextZ = fenceMaxZ + playerRadius;
+                            }
+                        }
+                    }
+                }
+
+                // --- 3. Chest Obstacle Collision Check (centered at 0, 2.0, -2) ---
+                const chestMinX = -0.5 - playerRadius;
+                const chestMaxX = 0.5 + playerRadius;
+                const chestMinZ = -2.0 - 0.325 - playerRadius;
+                const chestMaxZ = -2.0 + 0.325 + playerRadius;
+                const chestTopY = 2.6;
+
+                if (currentY < chestTopY) {
+                    if (nextX > chestMinX && nextX < chestMaxX && nextZ > chestMinZ && nextZ < chestMaxZ) {
+                        // Prevent movement on the axis that was outside
+                        const wasOutsideX = this.position.x < chestMinX || this.position.x > chestMaxX;
+                        if (wasOutsideX) {
+                            nextX = this.position.x;
+                        } else {
+                            nextZ = this.position.z;
+                        }
+                    }
+                }
+
+                // Apply confirmed movement
+                this.position.x = nextX;
+                this.position.z = nextZ;
+
+                // Character model rotation towards target direction
                 const targetRotation = Math.atan2(moveDirection.x, moveDirection.z);
                 let diff = targetRotation - this.mesh.rotation.y;
                 while (diff < -Math.PI) diff += Math.PI * 2;
                 while (diff > Math.PI) diff -= Math.PI * 2;
                 this.mesh.rotation.y += diff * this.rotationSpeed;
 
+                // Animate walking limbs
                 const swingSpeed = 12;
                 const swingAngle = 0.4;
                 const angle = Math.sin(time * swingSpeed) * swingAngle;
