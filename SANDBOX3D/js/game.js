@@ -276,7 +276,7 @@ class Game {
             }
             
             if (this.world) {
-                this.world.update(elapsed);
+                this.world.update(elapsed, this.player ? this.player.position : null);
                 
                 // Toggle proximity interaction prompt
                 if (this.world.chestGroup && this.interactionPrompt) {

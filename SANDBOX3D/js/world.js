@@ -110,8 +110,8 @@ export class World {
             fog: false            // Disable fog so the sky dome gradient remains visible
         });
         
-        const skyMesh = new THREE.Mesh(skyGeo, skyMat);
-        this.scene.add(skyMesh);
+        this.skyMesh = new THREE.Mesh(skyGeo, skyMat);
+        this.scene.add(this.skyMesh);
     }
 
     createSteppedTerrain() {
@@ -443,7 +443,7 @@ export class World {
         }
     }
 
-    update(time) {
+    update(time, playerPosition = null) {
         // Slowly drift clouds across the sky
         this.clouds.forEach(cloud => {
             cloud.position.x += cloud.userData.speed;
@@ -472,6 +472,11 @@ export class World {
                     }
                 }
             });
+        }
+
+        // Keep sky dome centered on player to prevent boundary clipping
+        if (this.skyMesh && playerPosition) {
+            this.skyMesh.position.copy(playerPosition);
         }
     }
 }
