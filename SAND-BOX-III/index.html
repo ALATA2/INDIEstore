@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summer Memories - Sandbox MMO Prototype</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☀️</text></svg>">
+    <!-- Modern clean typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Parallax HTML background elements (if any) or filters -->
+        <div class="sky-gradient-overlay"></div>
+        
+        <!-- Main Game Viewport -->
+        <div id="canvas-wrapper">
+            <canvas id="game-canvas" width="800" height="600"></canvas>
+            
+            <!-- Vignette shadow filter to match Makoto Shinkai atmosphere -->
+            <div class="vignette"></div>
+            
+            <!-- Cinematic letterbox (bars) for storytelling perspective depth -->
+            <div class="cinematic-bar top"></div>
+            <div class="cinematic-bar bottom"></div>
+        </div>
+
+        <!-- Localized HUD & State displays -->
+        <div id="hud-container">
+            <div class="hud-card zone-card">
+                <span class="hud-label">Location</span>
+                <span id="zone-display" class="hud-value">Home Plot Trail</span>
+            </div>
+            
+            <div class="hud-card info-card">
+                <span class="hud-label">Controls</span>
+                <span class="hud-value">WASD / Arrow Keys</span>
+            </div>
+        </div>
+
+        <!-- Inventory Storage Chest Modal -->
+        <div id="chest-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Storage Chest</h2>
+                    <button id="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Player Inventory (Left) -->
+                    <div class="inventory-section">
+                        <h3>🎒 Backpack</h3>
+                        <div id="player-inventory-list" class="inventory-list">
+                            <!-- Dynamically generated slots -->
+                        </div>
+                    </div>
+                    
+                    <!-- Transfer Icons -->
+                    <div class="inventory-divider">
+                        <span>⇄</span>
+                    </div>
+
+                    <!-- Chest Storage (Right) -->
+                    <div class="inventory-section">
+                        <h3>📦 Chest</h3>
+                        <div id="chest-inventory-list" class="inventory-list">
+                            <!-- Dynamically generated slots -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="modal-hint">Press <kbd>E</kbd> or <kbd>ESC</kbd> to exit</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification container -->
+        <div id="toast-container"></div>
+    </div>
+
+    <!-- Main Game Script -->
+    <script type="module" src="game.js"></script>
+</body>
+</html>

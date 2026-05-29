@@ -27,8 +27,8 @@ class Game {
     initEngine() {
         // Create Scene with a beautiful milky sky background (matches sky dome horizon)
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xe0f2fe); 
-        this.scene.fog = new THREE.FogExp2(0xe0f2fe, 0.0035); // Thinned fog for expanded 8x open map
+        this.scene.background = new THREE.Color(0xf3f8fb); 
+        this.scene.fog = new THREE.FogExp2(0xf3f8fb, 0.0035); // Thinned fog for expanded 8x open map
 
         // Create Perspective Camera
         this.camera = new THREE.PerspectiveCamera(
@@ -129,21 +129,63 @@ class Game {
         this.raycaster.setFromCamera(mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.scene.children, true);
         
-        let clickedChest = null;
+        let clickedObject = null;
+        let objectType = '';
+        
         for (const intersect of intersects) {
             let obj = intersect.object;
             while (obj) {
-                if (obj.userData && obj.userData.isInteractive && obj.userData.type === 'chest') {
-                    clickedChest = obj;
+                if (obj.userData && obj.userData.isInteractive) {
+                    clickedObject = obj;
+                    objectType = obj.userData.type;
                     break;
                 }
                 obj = obj.parent;
             }
-            if (clickedChest) break;
+            if (clickedObject) break;
         }
 
-        if (clickedChest) {
-            this.interactWithChest(clickedChest);
+        if (clickedObject) {
+            if (objectType === 'chest') {
+                this.interactWithChest(clickedObject);
+            } else if (objectType === 'tree') {
+                this.interactWithTree(clickedObject);
+            }
+        }
+    }
+
+    interactWithTree(treeMesh) {
+        const idx = treeMesh.userData.index;
+        const tree = this.world.trees[idx];
+        
+        if (!tree || tree.isChopped) return;
+        
+        // Calculate distance in horizontal plane
+        const treePos = new THREE.Vector3(tree.x, this.player.position.y, tree.z);
+        const distance = this.player.position.distanceTo(treePos);
+        
+        if (distance <= 3.0) {
+            tree.health--;
+            
+            if (tree.health > 0) {
+                // Play visual feedback shake scale animation
+                const mesh = tree.mesh;
+                mesh.scale.set(1.15, 0.9, 1.15);
+                setTimeout(() => {
+                    mesh.scale.set(1.0, 1.0, 1.0);
+                }, 80);
+                
+                this.showToast(`Hit! Tree HP: ${tree.health}/3 🪓`);
+            } else {
+                // Chop down tree
+                tree.isChopped = true;
+                tree.isChoppingAnim = true; // Triggers falling physics rotation in world.js
+                
+                this.inventory.addItem('wood', 'Oak Wood', '🪵', 3);
+                this.showToast("Tree chopped! +3 Oak Wood 🪵");
+            }
+        } else {
+            this.showToast("You are too far from the tree to chop it!");
         }
     }
 
@@ -247,6 +289,25 @@ class Game {
                     } else {
                         this.interactionPrompt.classList.add('hidden');
                     }
+                }
+
+                // Flower proximity pickup logic
+                if (this.world.flowers) {
+                    this.world.flowers.forEach(flower => {
+                        if (!flower.isGathered) {
+                            const dx = this.player.position.x - flower.x;
+                            const dz = this.player.position.z - flower.z;
+                            const distSq = dx * dx + dz * dz;
+
+                            // 1.2 meters proximity threshold (1.44 squared distance)
+                            if (distSq < 1.44) {
+                                flower.isGathered = true;
+                                this.scene.remove(flower.mesh);
+                                this.inventory.addItem('flower', 'Yellow Flower', '🌼', 1);
+                                this.showToast("+1 Yellow Flower! 🌼");
+                            }
+                        }
+                    });
                 }
             }
 

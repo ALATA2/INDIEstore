@@ -520,6 +520,32 @@ export class Player {
                     }
                 }
 
+                // --- 4. Trees Obstacle Collision Check ---
+                if (this.world && this.world.trees) {
+                    const trunkRadius = 0.18; // Cylinder half-width 0.15 + small collision tolerance
+                    const minDist = playerRadius + trunkRadius;
+
+                    this.world.trees.forEach(tree => {
+                        if (tree.isChopped) return; // Ignore already chopped trees
+
+                        const dx = nextX - tree.x;
+                        const dz = nextZ - tree.z;
+                        const distSq = dx * dx + dz * dz;
+
+                        if (distSq < minDist * minDist) {
+                            const dist = Math.sqrt(distSq);
+                            if (dist > 0.01) {
+                                // Smooth push-back collision response
+                                nextX = tree.x + (dx / dist) * minDist;
+                                nextZ = tree.z + (dz / dist) * minDist;
+                            } else {
+                                nextX = this.position.x;
+                                nextZ = this.position.z;
+                            }
+                        }
+                    });
+                }
+
                 // Apply confirmed movement
                 this.position.x = nextX;
                 this.position.z = nextZ;

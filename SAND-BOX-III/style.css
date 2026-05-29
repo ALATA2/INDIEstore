@@ -1,0 +1,436 @@
+/* --- Ghibli / Makoto Shinkai Summer Design System --- */
+:root {
+    /* Bright Summer Palette */
+    --sky-blue: #2389da;
+    --sky-light: #64b5f6;
+    --sky-deep: #0d47a1;
+    --ocean-teal: #00897b;
+    --ocean-light: #26a69a;
+    --ocean-deep: #004d40;
+    --lush-green: #2e7d32;
+    --grass-light: #81c784;
+    --grass-bright: #c8e6c9;
+    --terracotta: #e64a19;
+    --terracotta-light: #ff7043;
+    --terracotta-dark: #bf360c;
+    
+    /* Lighting & Shadows */
+    --shadow-blue: rgba(22, 33, 76, 0.4);
+    --shadow-soft: rgba(0, 0, 0, 0.15);
+    --sun-flare: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,243,224,0.1) 50%, rgba(255,255,255,0) 100%);
+    
+    /* UI styling */
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-border: rgba(255, 255, 255, 0.4);
+    --font-heading: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Reset and body */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: radial-gradient(circle at 50% 30%, #e3f2fd, #bbdefb, #90caf9);
+    font-family: var(--font-sans);
+    color: #1a202c;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Main Container framing */
+#game-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(22, 33, 76, 0.45);
+    border: 8px solid #ffffff;
+    background-color: var(--sky-blue);
+}
+
+/* Parallax backgrounds & Canvas wrapper */
+#canvas-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Vignette shadow overlay for artistic framing */
+.vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(255,255,255,0) 60%, rgba(22, 33, 76, 0.25) 100%);
+    z-index: 5;
+}
+
+/* Cinematic horizontal letterboxes to emphasize camera perspective */
+.cinematic-bar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 24px;
+    background-color: #101524;
+    pointer-events: none;
+    z-index: 10;
+    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.cinematic-bar.top {
+    top: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.cinematic-bar.bottom {
+    bottom: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* HUD System (Glassmorphic panels) */
+#hud-container {
+    position: absolute;
+    top: 40px; /* offset below cinematic top bar */
+    left: 0;
+    right: 0;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 8;
+}
+
+.hud-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 16px rgba(22, 33, 76, 0.15);
+    transform: translateY(0);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    pointer-events: auto;
+}
+
+.hud-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(22, 33, 76, 0.22);
+}
+
+.hud-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #64748b;
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+.hud-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.zone-card .hud-value {
+    color: var(--sky-deep);
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: bold;
+}
+
+/* Beautiful custom toast notification style */
+#toast-container {
+    position: absolute;
+    bottom: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.toast {
+    background: rgba(15, 23, 42, 0.9);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUpFade 0.3s ease-out forwards;
+    letter-spacing: 0.02em;
+}
+
+@keyframes slideUpFade {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Inventory & Chest Modal Styles --- */
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 36, 86, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 3px solid var(--terracotta-light);
+    border-radius: 20px;
+    width: 680px;
+    max-height: 480px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(22, 33, 76, 0.35);
+    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed rgba(230, 74, 25, 0.2);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.modal-header h2 {
+    font-family: var(--font-heading);
+    color: var(--terracotta-dark);
+    font-size: 1.8rem;
+}
+
+#modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+#modal-close-btn:hover {
+    color: var(--terracotta);
+    transform: scale(1.1);
+}
+
+.modal-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 16px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.inventory-section {
+    width: 46%;
+    display: flex;
+    flex-direction: column;
+}
+
+.inventory-section h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.inventory-list {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(26, 36, 86, 0.1);
+    border-radius: 12px;
+    padding: 8px;
+    height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Custom scrollbars */
+.inventory-list::-webkit-scrollbar {
+    width: 6px;
+}
+.inventory-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.inventory-list::-webkit-scrollbar-thumb {
+    background: rgba(230, 74, 25, 0.2);
+    border-radius: 3px;
+}
+.inventory-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(230, 74, 25, 0.4);
+}
+
+/* Inventory Item Slots */
+.inventory-item {
+    background: #ffffff;
+    border: 1.5px solid rgba(26, 36, 86, 0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inventory-item:hover {
+    transform: translateY(-1px);
+    border-color: var(--terracotta-light);
+    box-shadow: 0 4px 8px rgba(22, 33, 76, 0.08);
+}
+
+.item-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-icon {
+    font-size: 1.25rem;
+}
+
+.item-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.item-count {
+    font-size: 0.8rem;
+    font-weight: 800;
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+
+.inventory-item button {
+    background: var(--terracotta);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.inventory-item button:hover {
+    background: var(--terracotta-light);
+}
+
+.inventory-item button:active {
+    transform: scale(0.95);
+}
+
+/* Empty inventory list warning */
+.empty-list-message {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin: auto 0;
+    font-style: italic;
+}
+
+/* Divider section */
+.inventory-divider {
+    width: 8%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--terracotta);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Footer & Hints */
+.modal-footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    padding-top: 12px;
+}
+
+.modal-hint {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+kbd {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 1px 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-family: inherit;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+}

@@ -31,6 +31,7 @@ export class World {
         this.createHomePlot();
         this.createStorageChest();
         this.createTrees();
+        this.createFlowers();
         this.createClouds();
     }
 
@@ -79,7 +80,7 @@ export class World {
         return texture;
     }
 
-    // Generates a 2D canvas vertical gradient for the 3D sky dome
+    // Generates a 2D canvas vertical gradient for the 3D sky dome (pastel blue theme)
     createSkyGradientTexture() {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
@@ -87,10 +88,10 @@ export class World {
         const ctx = canvas.getContext('2d');
         
         const grad = ctx.createLinearGradient(0, 0, 0, 256);
-        grad.addColorStop(0, '#0096c7');    // Vibrant saturated azure top
-        grad.addColorStop(0.45, '#4cc9f0'); // Saturated Ghibli light blue mid
-        grad.addColorStop(0.8, '#e0f2fe');  // Milky sky-blue lower
-        grad.addColorStop(1.0, '#f0f9ff');  // Pale milky white-blue horizon
+        grad.addColorStop(0, '#a2d2ff');    // Soft pastel blue top
+        grad.addColorStop(0.45, '#bde0fe'); // Light pastel blue mid
+        grad.addColorStop(0.8, '#dbe9f6');  // Soft milky blue lower
+        grad.addColorStop(1.0, '#f3f8fb');  // Milky white-blue horizon
         
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1, 256);
@@ -297,10 +298,10 @@ export class World {
     }
 
     createTrees() {
-        // Trunk material
         const trunkMat = new THREE.MeshToonMaterial({ color: 0x7a5c43, gradientMap: this.toonGradient });
-        // Leaf material
         const leavesMat = new THREE.MeshToonMaterial({ color: 0x38b000, gradientMap: this.toonGradient });
+
+        this.trees = []; // Store trees for collisions and chopping interactions
 
         // Generate 80 random trees scattered across the land steps (Y >= 0)
         for (let i = 0; i < 80; i++) {
@@ -316,7 +317,7 @@ export class World {
             const treeGroup = new THREE.Group();
             treeGroup.position.set(rx, groundY, rz);
 
-            // Trunk: tall box
+            // Trunk: tall box (Pivot is at bottom Y = 0)
             const trunkHeight = 1.6 + Math.random() * 0.6;
             const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.3, trunkHeight, 0.3), trunkMat);
             trunk.position.y = trunkHeight / 2;
@@ -338,13 +339,70 @@ export class World {
             });
 
             this.scene.add(treeGroup);
+
+            // Register tree group for collision raycasting
+            treeGroup.userData = {
+                isInteractive: true,
+                type: 'tree',
+                index: this.trees.length
+            };
+
+            this.trees.push({
+                x: rx,
+                z: rz,
+                mesh: treeGroup,
+                health: 3,
+                isChopped: false,
+                isChoppingAnim: false,
+                fallAngle: 0
+            });
+        }
+    }
+
+    createFlowers() {
+        const stemMat = new THREE.MeshToonMaterial({ color: 0x38b000, gradientMap: this.toonGradient });
+        const petalMat = new THREE.MeshToonMaterial({ color: 0xffca3a, gradientMap: this.toonGradient });
+
+        this.flowers = []; // Store flowers for pickup proximity
+
+        // Spawn 60 Ghibli yellow flowers randomly on dry land
+        for (let i = 0; i < 60; i++) {
+            const rx = -380 + Math.random() * 760;
+            const rz = -380 + Math.random() * 760;
+
+            if (Math.abs(rx) < 5.0 && Math.abs(rz) < 5.0) continue; // Avoid Home Plot
+
+            const groundY = getTerrainHeight(rx, rz);
+            if (groundY < 0.0) continue;
+
+            const flowerGroup = new THREE.Group();
+            flowerGroup.position.set(rx, groundY, rz);
+
+            // Stem
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.25, 6), stemMat);
+            stem.position.y = 0.125;
+            flowerGroup.add(stem);
+
+            // Petals
+            const petals = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.14), petalMat);
+            petals.position.y = 0.25;
+            flowerGroup.add(petals);
+
+            this.scene.add(flowerGroup);
+
+            this.flowers.push({
+                x: rx,
+                z: rz,
+                mesh: flowerGroup,
+                isGathered: false
+            });
         }
     }
 
     createClouds() {
         const cloudMat = new THREE.MeshToonMaterial({
             color: 0xffffff,
-            gradientMap: this.cloudToonGradient // Apply custom lavender shadow gradient
+            gradientMap: this.cloudToonGradient
         });
 
         // Create 18 cloud groups scattered in the larger sky
@@ -395,5 +453,24 @@ export class World {
                 cloud.position.z = -380 + Math.random() * 760;
             }
         });
+
+        // Animate chopped trees falling to the ground
+        if (this.trees) {
+            this.trees.forEach(tree => {
+                if (tree.isChoppingAnim) {
+                    tree.fallAngle += 0.06;
+                    
+                    // Rotate group on its edge (pivot Y=0 hinges from base)
+                    tree.mesh.rotation.z = tree.fallAngle;
+                    
+                    // Once flat on ground, remove mesh
+                    if (tree.fallAngle >= Math.PI / 2) {
+                        tree.isChoppingAnim = false;
+                        tree.mesh.position.y = -10; // Sink out of sight
+                        this.scene.remove(tree.mesh);
+                    }
+                }
+            });
+        }
     }
 }

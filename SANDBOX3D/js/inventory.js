@@ -99,4 +99,19 @@ export class Inventory {
             this.grid.appendChild(slot);
         });
     }
+
+    addItem(id, name, icon, count) {
+        let item = this.items.find(i => i.id === id);
+        if (item) {
+            item.count += count;
+        } else {
+            const emptyIndex = this.items.findIndex(i => i.id === 'empty');
+            if (emptyIndex !== -1) {
+                this.items[emptyIndex] = { id, name, count, icon };
+            } else {
+                this.items.push({ id, name, count, icon });
+            }
+        }
+        this.render();
+    }
 }
