@@ -426,11 +426,11 @@ export class Player {
                     nextZ = this.position.z;
                 }
 
-                // --- 2. Wooden Fence Collision Check (Home Plot size 8x8 at z = -2, top is Y = 2.8) ---
+                // --- 2. Wooden Fence Collision Check (Home Plot size 8x8 at z = 0, top is Y = 2.8) ---
                 const fenceMinX = -4.0;
                 const fenceMaxX = 4.0;
-                const fenceMinZ = -6.0;
-                const fenceMaxZ = 2.0;
+                const fenceMinZ = -4.0; // Corrected from -6.0 to match world.js
+                const fenceMaxZ = 4.0;  // Corrected from 2.0 to match world.js
                 const fenceTopY = 2.8;
                 const playerRadius = 0.28;
 
@@ -457,11 +457,11 @@ export class Player {
                         nextZ = fenceMinZ - playerRadius;
                     }
 
-                    // Check Front wall (has a gate between X = -1.3 and 1.3)
+                    // Check Front wall (has a gate between X = -2.3 and 2.3)
                     const isCrossingFront = (this.position.z < fenceMaxZ && nextZ + playerRadius > fenceMaxZ) || 
                                             (this.position.z > fenceMaxZ && nextZ - playerRadius < fenceMaxZ);
                     if (isCrossingFront) {
-                        const inGateRange = Math.abs(nextX) < 1.3 && Math.abs(this.position.x) < 1.3;
+                        const inGateRange = Math.abs(nextX) < 2.3 && Math.abs(this.position.x) < 2.3; // Corrected from 1.3 to match gate width
                         if (!inGateRange) {
                             if (this.position.z < fenceMaxZ) {
                                 nextZ = fenceMaxZ - playerRadius;
