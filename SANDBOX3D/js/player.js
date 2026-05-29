@@ -44,8 +44,8 @@ export class Player {
         this.cameraDistance = 6.0;
         this.cameraTheta = Math.PI; // Horizontal rotation
         this.cameraPhi = Math.PI / 6;  // Vertical rotation (30 degrees)
-        this.minPhi = 0.05;
-        this.maxPhi = Math.PI / 2.2;
+        this.minPhi = -Math.PI / 2.05; // Allow looking almost straight up
+        this.maxPhi = Math.PI / 2.05;  // Allow looking almost straight down
         
         this.isMouseDown = false;
         this.previousMousePosition = { x: 0, y: 0 };
@@ -631,8 +631,14 @@ export class Player {
         } else {
             // Camera Follow alignment (Third-Person)
             const targetCameraX = this.position.x + this.cameraDistance * Math.sin(this.cameraTheta) * Math.cos(this.cameraPhi);
-            const targetCameraY = this.position.y + this.cameraDistance * Math.sin(this.cameraPhi);
+            let targetCameraY = this.position.y + this.cameraDistance * Math.sin(this.cameraPhi);
             const targetCameraZ = this.position.z + this.cameraDistance * Math.cos(this.cameraTheta) * Math.cos(this.cameraPhi);
+
+            // Avoid camera clipping below ground level
+            const cameraGroundY = getTerrainHeight(targetCameraX, targetCameraZ);
+            if (targetCameraY < cameraGroundY + 0.3) {
+                targetCameraY = cameraGroundY + 0.3;
+            }
 
             const targetCamPos = new THREE.Vector3(targetCameraX, targetCameraY, targetCameraZ);
             this.camera.position.lerp(targetCamPos, 0.1);
