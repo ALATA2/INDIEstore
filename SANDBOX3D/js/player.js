@@ -34,6 +34,9 @@ export class Player {
             Space: false
         };
 
+        // Camera perspective state
+        this.isFirstPerson = false;
+
         // Joystick Input values (for mobile)
         this.joystickInput = { x: 0, y: 0 };
 
@@ -175,6 +178,10 @@ export class Player {
     setupInputs() {
         // Keyboard inputs
         window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'v') {
+                this.togglePerspective();
+                return;
+            }
             if (e.key === ' ' || e.code === 'Space') {
                 e.preventDefault();
                 if (!this.keys[' '] && !this.keys['Space']) {
@@ -370,6 +377,15 @@ export class Player {
                 this.cancelJump();
             }, { passive: false });
         }
+
+        // Mobile Camera Mode Toggle Button
+        const camBtn = document.getElementById('mobile-cam-btn');
+        if (camBtn) {
+            camBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.togglePerspective();
+            }, { passive: false });
+        }
     }
 
     update(time, isFrozen = false) {
@@ -412,9 +428,10 @@ export class Player {
                 let nextX = this.position.x + moveDirection.x * this.speed;
                 let nextZ = this.position.z + moveDirection.z * this.speed;
                 
-                // Map boundaries lock
-                if (Math.abs(nextX) > 48) nextX = Math.sign(nextX) * 48;
-                if (Math.abs(nextZ) > 48) nextZ = Math.sign(nextZ) * 48;
+                // Map boundaries lock (scaled 8x from 48 to 384)
+                const mapLimit = 384;
+                if (Math.abs(nextX) > mapLimit) nextX = Math.sign(nextX) * mapLimit;
+                if (Math.abs(nextZ) > mapLimit) nextZ = Math.sign(nextZ) * mapLimit;
 
                 // Ground height constraints
                 const stepLimit = 0.4; // Max height difference that can be automatically stepped over
@@ -578,16 +595,41 @@ export class Player {
             this.rightArm.rotation.x *= 0.8;
         }
 
-        // Camera Follow alignment
-        const targetCameraX = this.position.x + this.cameraDistance * Math.sin(this.cameraTheta) * Math.cos(this.cameraPhi);
-        const targetCameraY = this.position.y + this.cameraDistance * Math.sin(this.cameraPhi);
-        const targetCameraZ = this.position.z + this.cameraDistance * Math.cos(this.cameraTheta) * Math.cos(this.cameraPhi);
+        // Camera Follow / First-Person positioning
+        if (this.isFirstPerson) {
+            // Place camera exactly at head position (Y offset = 1.15)
+            this.camera.position.set(this.position.x, this.position.y + 1.15, this.position.z);
+            
+            // Calculate look target vector based on cameraTheta and cameraPhi
+            const lookTarget = new THREE.Vector3(
+                this.position.x - Math.sin(this.cameraTheta) * Math.cos(this.cameraPhi),
+                this.position.y + 1.15 - Math.sin(this.cameraPhi),
+                this.position.z - Math.cos(this.cameraTheta) * Math.cos(this.cameraPhi)
+            );
+            this.camera.lookAt(lookTarget);
+        } else {
+            // Camera Follow alignment (Third-Person)
+            const targetCameraX = this.position.x + this.cameraDistance * Math.sin(this.cameraTheta) * Math.cos(this.cameraPhi);
+            const targetCameraY = this.position.y + this.cameraDistance * Math.sin(this.cameraPhi);
+            const targetCameraZ = this.position.z + this.cameraDistance * Math.cos(this.cameraTheta) * Math.cos(this.cameraPhi);
 
-        const targetCamPos = new THREE.Vector3(targetCameraX, targetCameraY, targetCameraZ);
-        this.camera.position.lerp(targetCamPos, 0.1);
-        
-        const lookTarget = new THREE.Vector3(this.position.x, this.position.y + 0.6, this.position.z);
-        this.camera.lookAt(lookTarget);
+            const targetCamPos = new THREE.Vector3(targetCameraX, targetCameraY, targetCameraZ);
+            this.camera.position.lerp(targetCamPos, 0.1);
+            
+            const lookTarget = new THREE.Vector3(this.position.x, this.position.y + 0.6, this.position.z);
+            this.camera.lookAt(lookTarget);
+        }
+    }
+
+    togglePerspective() {
+        this.isFirstPerson = !this.isFirstPerson;
+        this.mesh.visible = !this.isFirstPerson; // Hide player meshes in first-person to avoid camera clipping
+        if (this.isFirstPerson) {
+            this.cameraDistanceBackup = this.cameraDistance;
+            this.cameraDistance = 0.1; // zoom close
+        } else {
+            this.cameraDistance = this.cameraDistanceBackup || 6.0;
+        }
     }
 
     startJump() {

@@ -2,15 +2,15 @@ import * as THREE from 'three';
 
 // Export terrain height calculation to snap entities like player to the ground
 export function getTerrainHeight(x, z) {
-    // Check bounds
-    if (Math.abs(x) > 50 || Math.abs(z) > 50) return -2.0;
+    // Check bounds (scaled 8x from 50 to 400)
+    if (Math.abs(x) > 400 || Math.abs(z) > 400) return -2.0;
     
-    // Coastal town stepped slope:
-    // Z goes from -50 (back, mountain) to 50 (front, sea)
-    if (z < -24) return 6.0;        // Mountain / High Cliff
-    if (z < -12) return 4.0;        // High Terrace
-    if (z < 12) return 2.0;          // Home Plot Terrace (Flat)
-    if (z < 24) return 0.0;          // Low Terrace / Shore
+    // Coastal town stepped slope (scaled 8x):
+    // Z goes from -400 (back, mountain) to 400 (front, sea)
+    if (z < -192) return 6.0;        // Mountain / High Cliff
+    if (z < -96) return 4.0;         // High Terrace
+    if (z < 96) return 2.0;          // Home Plot Terrace (Flat)
+    if (z < 192) return 0.0;         // Low Terrace / Shore
     return -2.0;                     // Water plane level
 }
 
@@ -58,16 +58,16 @@ export class World {
         const grassLow = new THREE.MeshToonMaterial({ color: 0x80b918, gradientMap: this.toonGradient });  // Lighter grass near shore
         const sandShore = new THREE.MeshToonMaterial({ color: 0xddb892, gradientMap: this.toonGradient }); // Warm terracotta sand shore
 
-        const terrainWidth = 100;
+        const terrainWidth = 800; // Scaled by 8 (was 100)
         const baseDepth = -4.0; // The base y level where all terraces sink to
 
-        // Terrace configurations: { zStart, zEnd, topY, material }
+        // Terrace configurations: { zStart, zEnd, topY, material } (scaled 8x)
         const terraces = [
-            { zStart: -50, zEnd: -24, topY: 6.0, mat: grassHigh },
-            { zStart: -24, zEnd: -12, topY: 4.0, mat: grassHigh },
-            { zStart: -12, zEnd: 12,  topY: 2.0, mat: grassMid },  // Home plot sits here
-            { zStart: 12,  zEnd: 24,  topY: 0.0, mat: grassLow },
-            { zStart: 24,  zEnd: 50,  topY: -2.0, mat: sandShore } // Snaps below water level
+            { zStart: -400, zEnd: -192, topY: 6.0, mat: grassHigh },
+            { zStart: -192, zEnd: -96,  topY: 4.0, mat: grassHigh },
+            { zStart: -96,  zEnd: 96,   topY: 2.0, mat: grassMid },  // Home plot sits here
+            { zStart: 96,   zEnd: 192,  topY: 0.0, mat: grassLow },
+            { zStart: 192,  zEnd: 400,  topY: -2.0, mat: sandShore } // Snaps below water level
         ];
 
         terraces.forEach((t) => {
@@ -97,8 +97,8 @@ export class World {
             opacity: 0.85
         });
 
-        // Giant water plane
-        const waterGeo = new THREE.PlaneGeometry(150, 150);
+        // Giant water plane (scaled 8x)
+        const waterGeo = new THREE.PlaneGeometry(1000, 1000);
         const water = new THREE.Mesh(waterGeo, waterMat);
         
         // Orient horizontally and place slightly above sand shore level
@@ -241,21 +241,19 @@ export class World {
         // Leaf material
         const leavesMat = new THREE.MeshToonMaterial({ color: 0x38b000, gradientMap: this.toonGradient });
 
-        const treePositions = [
-            { x: -14, z: -35 }, // Terrace 1 (Y=6)
-            { x: 18,  z: -30 }, // Terrace 1 (Y=6)
-            { x: -16, z: -18 }, // Terrace 2 (Y=4)
-            { x: 20,  z: -16 }, // Terrace 2 (Y=4)
-            { x: -12, z: 2 },   // Terrace 3 (Y=2)
-            { x: 15,  z: -4 },  // Terrace 3 (Y=2)
-            { x: -14, z: 16 },  // Terrace 4 (Y=0)
-            { x: 16,  z: 18 }   // Terrace 4 (Y=0)
-        ];
+        // Generate 80 random trees scattered across the land steps (Y >= 0)
+        for (let i = 0; i < 80; i++) {
+            const rx = -380 + Math.random() * 760;
+            const rz = -380 + Math.random() * 760;
+            
+            // Avoid placing trees inside the Home Plot fence area (X: [-5, 5], Z: [-5, 5])
+            if (Math.abs(rx) < 5.0 && Math.abs(rz) < 5.0) continue;
 
-        treePositions.forEach(pos => {
-            const groundY = getTerrainHeight(pos.x, pos.z);
+            const groundY = getTerrainHeight(rx, rz);
+            if (groundY < 0.0) continue; // Only grow trees on dry terraces
+
             const treeGroup = new THREE.Group();
-            treeGroup.position.set(pos.x, groundY, pos.z);
+            treeGroup.position.set(rx, groundY, rz);
 
             // Trunk: tall box
             const trunkHeight = 1.6 + Math.random() * 0.6;
@@ -265,11 +263,11 @@ export class World {
             trunk.receiveShadow = true;
             treeGroup.add(trunk);
 
-            // Leaves: 3 blocky overlapping boxes for Studio Ghibli/Minecraft blend
+            // Leaves: 3 blocky overlapping boxes
             const leafSizes = [1.2, 0.9, 0.6];
             let leafY = trunkHeight - 0.2;
 
-            leafSizes.forEach((size, idx) => {
+            leafSizes.forEach((size) => {
                 const leaves = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), leavesMat);
                 leaves.position.y = leafY + size / 2;
                 leaves.castShadow = true;
@@ -279,7 +277,7 @@ export class World {
             });
 
             this.scene.add(treeGroup);
-        });
+        }
     }
 
     createClouds() {
@@ -288,14 +286,14 @@ export class World {
             gradientMap: this.toonGradient
         });
 
-        // Create 5 cloud groups
-        for (let i = 0; i < 5; i++) {
+        // Create 18 cloud groups scattered in the larger sky
+        for (let i = 0; i < 18; i++) {
             const cloud = new THREE.Group();
             
-            // Random horizontal positions, high in the sky (y=16 to 22)
-            const cx = -40 + Math.random() * 80;
-            const cy = 16 + Math.random() * 5;
-            const cz = -40 + Math.random() * 80;
+            // Random horizontal positions, high in the sky (scaled 8x)
+            const cx = -380 + Math.random() * 760;
+            const cy = 16 + Math.random() * 6;
+            const cz = -380 + Math.random() * 760;
             cloud.position.set(cx, cy, cz);
 
             // Create 5-8 overlapping spheres to form a fluffy shape
@@ -317,7 +315,7 @@ export class World {
 
             // Save speed attribute for loop animation
             cloud.userData = {
-                speed: 0.03 + Math.random() * 0.05
+                speed: 0.02 + Math.random() * 0.04
             };
 
             this.scene.add(cloud);
@@ -330,10 +328,10 @@ export class World {
         this.clouds.forEach(cloud => {
             cloud.position.x += cloud.userData.speed;
             
-            // Wrap around screen boundaries
-            if (cloud.position.x > 65) {
-                cloud.position.x = -65;
-                cloud.position.z = -50 + Math.random() * 100;
+            // Wrap around screen boundaries (scaled 8x)
+            if (cloud.position.x > 400) {
+                cloud.position.x = -400;
+                cloud.position.z = -380 + Math.random() * 760;
             }
         });
     }
