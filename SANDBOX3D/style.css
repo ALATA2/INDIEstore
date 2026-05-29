@@ -459,6 +459,13 @@ body, html {
     transition: transform 0.05s ease-out;
 }
 
+/* Action Buttons Group */
+.mobile-buttons-group {
+    display: flex;
+    gap: 16px;
+    pointer-events: none;
+}
+
 /* Quick Action / Interact Button */
 .mobile-action-btn {
     width: 76px;
@@ -483,6 +490,32 @@ body, html {
 .mobile-action-btn:active {
     transform: scale(0.9);
     box-shadow: 0 4px 12px rgba(216, 90, 56, 0.15);
+}
+
+/* Mobile Jump Button */
+.mobile-jump-btn {
+    width: 76px;
+    height: 76px;
+    background: radial-gradient(circle, #ffca3a 0%, #e6a917 100%);
+    border: 3px solid #fdf6e2;
+    border-radius: 50%;
+    color: white;
+    font-family: var(--font-main);
+    font-weight: 800;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(230, 169, 23, 0.3);
+    pointer-events: auto;
+    cursor: pointer;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.mobile-jump-btn:active {
+    transform: scale(0.9);
+    box-shadow: 0 4px 12px rgba(230, 169, 23, 0.15);
 }
 
 /* Mobile responsive scaling overrides */

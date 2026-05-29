@@ -13,6 +13,12 @@ export class Player {
         
         // Start on Home Plot terrace (Y = 2.0)
         this.position = new THREE.Vector3(0, 2.0, 0); 
+
+        // Gravity and Jump physics
+        this.vy = 0;
+        this.gravity = 0.012;
+        this.jumpStrength = 0.24;
+        this.isGrounded = true;
         
         // Input states
         this.keys = {
@@ -23,7 +29,9 @@ export class Player {
             ArrowUp: false,
             ArrowLeft: false,
             ArrowDown: false,
-            ArrowRight: false
+            ArrowRight: false,
+            ' ': false,
+            Space: false
         };
 
         // Joystick Input values (for mobile)
@@ -167,12 +175,28 @@ export class Player {
     setupInputs() {
         // Keyboard inputs
         window.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                if (!this.keys[' '] && !this.keys['Space']) {
+                    this.startJump();
+                }
+                this.keys[' '] = true;
+                this.keys['Space'] = true;
+                return;
+            }
             const key = e.key.toLowerCase();
             if (key in this.keys) this.keys[key] = true;
             if (e.key in this.keys) this.keys[e.key] = true;
         });
 
         window.addEventListener('keyup', (e) => {
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                this.cancelJump();
+                this.keys[' '] = false;
+                this.keys['Space'] = false;
+                return;
+            }
             const key = e.key.toLowerCase();
             if (key in this.keys) this.keys[key] = false;
             if (e.key in this.keys) this.keys[e.key] = false;
@@ -325,6 +349,20 @@ export class Player {
 
         this.domElement.addEventListener('touchend', endCanvasTouch, { passive: true });
         this.domElement.addEventListener('touchcancel', endCanvasTouch, { passive: true });
+
+        // Mobile Jump Button
+        const jumpBtn = document.getElementById('mobile-jump-btn');
+        if (jumpBtn) {
+            jumpBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.startJump();
+            }, { passive: false });
+
+            jumpBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.cancelJump();
+            }, { passive: false });
+        }
     }
 
     update(time, isFrozen = false) {
@@ -387,13 +425,47 @@ export class Player {
             }
         }
 
-        // Stepped terrain heights snapping
+        // Stepped terrain heights collision/snapping
         const targetY = getTerrainHeight(this.position.x, this.position.z);
-        this.position.y += (targetY - this.position.y) * 0.18;
+
+        if (!isFrozen) {
+            // Apply gravity and update vertical position if not grounded
+            if (!this.isGrounded) {
+                this.vy -= this.gravity;
+                this.position.y += this.vy;
+
+                // Ground collision check
+                if (this.position.y <= targetY) {
+                    this.position.y = targetY;
+                    this.vy = 0;
+                    this.isGrounded = true;
+                }
+            } else {
+                // Ground snapping (smooth climbing up/down small steps)
+                this.position.y += (targetY - this.position.y) * 0.22;
+                this.vy = 0;
+                
+                // If player walked off a ledge, trigger falling
+                if (this.position.y > targetY + 0.15) {
+                    this.isGrounded = false;
+                }
+            }
+        } else {
+            // If frozen, just snap to terrain
+            this.position.y += (targetY - this.position.y) * 0.22;
+            this.vy = 0;
+        }
         
         this.mesh.position.copy(this.position);
 
-        if (!isMoving) {
+        if (!this.isGrounded) {
+            // Airborne pose: legs slightly bent, arms raised a bit
+            this.leftLeg.rotation.x = 0.25;
+            this.rightLeg.rotation.x = -0.15;
+            this.leftArm.rotation.x = -0.4;
+            this.rightArm.rotation.x = -0.4;
+        } else if (!isMoving) {
+            // Damp limb rotation back to idle state
             this.leftLeg.rotation.x *= 0.8;
             this.rightLeg.rotation.x *= 0.8;
             this.leftArm.rotation.x *= 0.8;
@@ -410,5 +482,19 @@ export class Player {
         
         const lookTarget = new THREE.Vector3(this.position.x, this.position.y + 0.6, this.position.z);
         this.camera.lookAt(lookTarget);
+    }
+
+    startJump() {
+        if (this.isGrounded) {
+            this.vy = this.jumpStrength;
+            this.isGrounded = false;
+        }
+    }
+
+    cancelJump() {
+        // Variable jump height limit on early release
+        if (this.vy > 0.07) {
+            this.vy = 0.07;
+        }
     }
 }
