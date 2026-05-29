@@ -72,6 +72,26 @@
         let primaryColor = '#bd00ff';
         let secondaryColor = '#00ffff';
 
+        // Helper function to convert Hex color to RGB string
+        function hexToRgb(hex) {
+            let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+            let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+        }
+
+        // Collision detection helper
+        function checkCollision(p, obj, isCollectible) {
+            let padX = isCollectible ? 4 : 12;
+            let padY = isCollectible ? 4 : 12;
+            return (
+                p.x + padX < obj.x + obj.w &&
+                p.x + p.width - padX > obj.x &&
+                p.y + padY < obj.y + obj.h &&
+                p.y + p.height - padY > obj.y
+            );
+        }
+
         // --- AUDIO SYNTHESIZER ENGINE (Web Audio API) ---
         // Generates arcade sound effects in real-time without external asset dependencies
         const Sound = {
@@ -403,6 +423,19 @@
         let bestScore = localStorage.getItem('ninja_best_score') || 0;
         let dashEnergy = 100;
         const MAX_ENERGY = 100;
+        let obstacleTimer = 100;
+
+        // Star background array
+        let stars = [];
+        for (let i = 0; i < 45; i++) {
+            stars.push({
+                x: Math.random() * LOGICAL_WIDTH,
+                y: Math.random() * (FLOOR_Y - 120),
+                size: Math.random() * 2 + 1,
+                speed: Math.random() * 0.4 + 0.1,
+                twinkle: Math.random() * Math.PI
+            });
+        }
 
         // Magnet Power-Up Timer
         let magnetTimer = 0;
