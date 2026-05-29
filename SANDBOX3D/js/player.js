@@ -8,7 +8,9 @@ export class Player {
         this.domElement = domElement;
 
         // Player movement attributes
-        this.speed = 0.08;
+        this.walkSpeed = 0.045; // Walking speed
+        this.runSpeed = 0.08;   // Running speed (previous default)
+        this.currentSpeed = 0.045;
         this.rotationSpeed = 0.15;
         
         // Start on Home Plot terrace (Y = 2.0)
@@ -31,7 +33,8 @@ export class Player {
             ArrowDown: false,
             ArrowRight: false,
             ' ': false,
-            Space: false
+            Space: false,
+            shift: false
         };
 
         // Camera perspective state
@@ -419,9 +422,24 @@ export class Player {
             if (isMoving) {
                 moveDirection.normalize();
                 
+                // Determine speed (Walk vs Run)
+                let currentSpeed = this.walkSpeed;
+                if (this.keys.shift) {
+                    currentSpeed = this.runSpeed;
+                }
+                
+                // Mobile joystick speed scaling
+                const hasJoystick = Math.abs(this.joystickInput.x) > 0.05 || Math.abs(this.joystickInput.y) > 0.05;
+                if (hasJoystick) {
+                    const joyMag = Math.min(1.0, Math.sqrt(this.joystickInput.x * this.joystickInput.x + this.joystickInput.y * this.joystickInput.y));
+                    currentSpeed = joyMag > 0.75 ? this.runSpeed : this.walkSpeed;
+                }
+
+                this.currentSpeed = currentSpeed;
+
                 // Calculate candidate coordinates
-                let nextX = this.position.x + moveDirection.x * this.speed;
-                let nextZ = this.position.z + moveDirection.z * this.speed;
+                let nextX = this.position.x + moveDirection.x * this.currentSpeed;
+                let nextZ = this.position.z + moveDirection.z * this.currentSpeed;
                 
                 // Map boundaries lock (scaled 8x from 48 to 384)
                 const mapLimit = 384;
@@ -557,9 +575,10 @@ export class Player {
                 while (diff > Math.PI) diff -= Math.PI * 2;
                 this.mesh.rotation.y += diff * this.rotationSpeed;
 
-                // Animate walking limbs
-                const swingSpeed = 12;
-                const swingAngle = 0.4;
+                // Animate walking/running limbs
+                const isRunningMode = this.currentSpeed > this.walkSpeed;
+                const swingSpeed = isRunningMode ? 16 : 10;
+                const swingAngle = isRunningMode ? 0.55 : 0.38;
                 const angle = Math.sin(time * swingSpeed) * swingAngle;
                 
                 this.leftLeg.rotation.x = angle;
