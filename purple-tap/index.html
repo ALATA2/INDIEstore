@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Purple Tap - One-Tap Action Ninja</title>
-    <!-- Carica i font Orbitron per un look sci-fi neon e Outfit per testi puliti -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Load Orbitron fonts for a sci-fi neon style and Outfit for clean copy -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        /* Reset CSS di base */
+        /* Base CSS reset */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -24,13 +24,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            touch-action: none; /* Disabilita i gesti di zoom/pan del browser */
+            touch-action: none; /* Disables double-tap zoom/scrolling gestures */
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* Contenitore responsive che forza il rapporto d'aspetto 16:9 */
+        /* Responsive container forcing 16:9 aspect ratio */
         #game-container {
             position: relative;
             width: 100vw;
@@ -58,22 +58,22 @@
     </div>
 
     <script>
-        // --- CONFIGURAZIONE E INIZIALIZZAZIONE ---
+        // --- CONFIGURATION AND INITIALIZATION ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Risoluzione logica interna del Canvas (indipendente dal display fisico)
+        // Internal logical resolution of the Canvas (independent from physical display size)
         const LOGICAL_WIDTH = 1280;
         const LOGICAL_HEIGHT = 720;
         canvas.width = LOGICAL_WIDTH;
         canvas.height = LOGICAL_HEIGHT;
 
-        // Colori primari e secondari dinamici (cambiano nella fase 3)
+        // Dynamic primary and secondary neon colors (shift in Phase 3)
         let primaryColor = '#bd00ff';
         let secondaryColor = '#00ffff';
 
-        // --- MOTORE DI SINTESI AUDIO (Web Audio API) ---
-        // Genera effetti sonori sintetizzati in tempo reale senza asset esterni
+        // --- AUDIO SYNTHESIZER ENGINE (Web Audio API) ---
+        // Generates arcade sound effects in real-time without external asset dependencies
         const Sound = {
             ctx: null,
             init() {
@@ -113,7 +113,7 @@
                 osc.frequency.setValueAtTime(110, this.ctx.currentTime);
                 osc.frequency.linearRampToValueAtTime(260, this.ctx.currentTime + 0.2);
                 
-                // Filtro passa basso per rendere il dash più cupo e futuristico
+                // Lowpass filter sweeps the frequencies to give the dash a futuristic depth
                 let filter = this.ctx.createBiquadFilter();
                 filter.type = 'lowpass';
                 filter.frequency.setValueAtTime(600, this.ctx.currentTime);
@@ -131,7 +131,7 @@
                 this.init();
                 if (!this.ctx) return;
 
-                // Generatore di rumore bianco per l'esplosione
+                // White noise generator for the impact explosion
                 let bufferSize = this.ctx.sampleRate * 0.45;
                 let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 let data = buffer.getChannelData(0);
@@ -157,7 +157,7 @@
                 noise.start();
                 noise.stop(this.ctx.currentTime + 0.45);
                 
-                // Onda sinusoidale sub-bass per dare peso all'esplosione
+                // Sub-bass sine wave thump
                 let subOsc = this.ctx.createOscillator();
                 let subGain = this.ctx.createGain();
                 subOsc.type = 'sine';
@@ -243,11 +243,58 @@
                 gain.connect(this.ctx.destination);
                 osc.start();
                 osc.stop(this.ctx.currentTime + 0.18);
+            },
+            playPowerup() {
+                this.init();
+                if (!this.ctx) return;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
+                osc.frequency.exponentialRampToValueAtTime(1760, this.ctx.currentTime + 0.3);
+                
+                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            },
+            playShatter() {
+                this.init();
+                if (!this.ctx) return;
+                // Highpass filtered white noise burst for shield breaking
+                let bufferSize = this.ctx.sampleRate * 0.25;
+                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                
+                let noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                let filter = this.ctx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.setValueAtTime(2000, this.ctx.currentTime);
+                
+                let gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+                noise.stop(this.ctx.currentTime + 0.25);
             }
         };
 
-        // --- GENERATORE DI MUSICA BGM PROCEDURALE ---
-        // Genera un giro di basso synthwave a 120 BPM che si adatta allo slow-motion
+        // --- PROCEDURAL BGM ENGINE ---
+        // Generates a dynamic 120 BPM Synthwave bassline that morphs in slow-motion
         const BGM = {
             ctx: null,
             nextNoteTime: 0.0,
@@ -256,7 +303,7 @@
             timerId: null,
             activeNodes: [],
             
-            // Frequenze di basso: Mi (E1, E2), Sol (G1, G2), La (A1, A2), Do (C2, C3)
+            // Bass line sequence frequencies: E1, E1, E2, E1, G1, G1, G2, G1, A1, A1, A2, A1, C2, C2, C3, C2
             notes: [41.20, 41.20, 82.40, 41.20, 49.00, 49.00, 98.00, 49.00, 55.00, 55.00, 110.00, 55.00, 65.41, 65.41, 130.81, 65.41],
             
             init(audioCtx) {
@@ -277,7 +324,6 @@
                     clearTimeout(this.timerId);
                     this.timerId = null;
                 }
-                // Arresto immediato di tutte le note in riproduzione
                 this.activeNodes.forEach(node => {
                     try { node.stop(); } catch(e) {}
                 });
@@ -287,11 +333,11 @@
             tick() {
                 if (!this.isPlaying) return;
                 
-                let scheduleAheadTime = 0.2; // Quanti secondi programmare in anticipo
+                let scheduleAheadTime = 0.2; // Schedules 200ms ahead
                 while (this.nextNoteTime < this.ctx.currentTime + scheduleAheadTime) {
                     this.scheduleNote(this.noteIndex, this.nextNoteTime);
                     
-                    // La durata dello step musicale si allunga se siamo in slow-motion
+                    // Beat tempo expands inversely proportional to the slow-mo factor
                     let stepDuration = 0.22 * (1.0 / timeScale);
                     this.nextNoteTime += stepDuration;
                     this.noteIndex = (this.noteIndex + 1) % this.notes.length;
@@ -310,19 +356,19 @@
                 osc.type = 'sawtooth';
                 let freq = this.notes[index];
                 
-                // Abbassa di un'ottava la tonalità durante il dash (slow-mo) per un effetto cupo e pesante
+                // Shifts bass down by 1 full octave during slow-mo for a heavy, distorted timeline effect
                 if (timeScale < 0.5) {
                     freq = freq * 0.5;
                 }
                 osc.frequency.setValueAtTime(freq, time);
                 
-                // Inviluppo del filtro
+                // Classic filter envelope
                 filter.type = 'lowpass';
                 filter.frequency.setValueAtTime(250, time);
                 filter.frequency.exponentialRampToValueAtTime(1100, time + 0.04);
                 filter.frequency.exponentialRampToValueAtTime(80, time + 0.18);
                 
-                // Inviluppo del volume
+                // Volume envelope
                 gain.gain.setValueAtTime(0.0, time);
                 gain.gain.linearRampToValueAtTime(0.12, time + 0.02);
                 gain.gain.exponentialRampToValueAtTime(0.001, time + 0.20);
@@ -341,39 +387,50 @@
             }
         };
 
-        // --- STATI DI GIOCO ---
+        // --- GAME STATES ---
         const STATE_START = 'START';
         const STATE_PLAYING = 'PLAYING';
         const STATE_GAMEOVER = 'GAMEOVER';
         let gameState = STATE_START;
 
-        // --- VARIABILI DI GIOCO ---
-        const FLOOR_Y = 580; // Coordinata Y del terreno
-        let scrollX = 0; // Utilizzato per far scorrere lo sfondo e la griglia del terreno
-        let timeScale = 1.0; // Scala temporale per l'effetto di slow-motion (1.0 = normale, 0.2 = slow-mo)
-        let gameFrames = 0; // Contatore globale dei frame di gioco
-        let gameTime = 0; // Tempo di gioco effettivo in secondi (avanza proporzionalmente a timeScale)
+        // --- GAMEPLAY VARIABLES ---
+        const FLOOR_Y = 580; // Y coordinate representing the solid ground
+        let scrollX = 0; // Scrolling background and perspectives grid factor
+        let timeScale = 1.0; // Current time dilation factor (1.0 = normal, 0.2 = slow-mo)
+        let gameFrames = 0; // Total frames elapsed
+        let gameTime = 0; // Time in seconds, progresses relative to timeScale
         let score = 0;
         let bestScore = localStorage.getItem('ninja_best_score') || 0;
         let dashEnergy = 100;
         const MAX_ENERGY = 100;
 
-        // Gestione Tutorial
+        // Magnet Power-Up Timer
+        let magnetTimer = 0;
+
+        // Shield Power-Up Active State
+        let hasShield = false;
+
+        // Hitstop (Freeze frame duration in frames)
+        let hitstopFrames = 0;
+
+        // Style Rank System (Combo Points)
+        let comboPoints = 0;
+        let comboRank = 'D';
+
+        // Invisible Tutorial Flags
         let tutorialAlpha = 1.0;
         let tutorialDismissed = false;
 
-        // Gestione Screen Shake
+        // Screen Shake Timer & Amplitude
         let shakeTime = 0;
         let shakeIntensity = 0;
 
-        // Gestione Input
+        // Input Tracking States
         let isPressing = false;
         let pressDuration = 0;
-        let touchActive = false; // Impedisce il double-firing su dispositivi ibridi touch+mouse
+        let touchActive = false; // Guard to avoid duplicate touch/mouse triggers
 
-        // --- ENTITÀ ---
-        
-        // Il Giocatore (Ninja)
+        // --- PLAYER (Ninja) ---
         const player = {
             x: 200,
             y: FLOOR_Y - 50,
@@ -384,13 +441,13 @@
             jumpStrength: 19,
             isGrounded: true,
             
-            // Variabili per l'animazione di squash e stretch ("juice")
+            // Squash and Stretch parameters for movement juice
             scaleX: 1,
             scaleY: 1,
             landSquash: 0,
             runCycle: 0,
 
-            // Scia del Ninja
+            // Ghost Trail for fast dash visuals
             trail: [],
             maxTrailLength: 12,
 
@@ -412,80 +469,80 @@
                     this.isGrounded = false;
                     this.landSquash = 0;
                     Sound.playJump();
-                    // Genera particelle di salto
+                    // Increment style points slightly on jump
+                    addComboPoints(1);
+                    // Spawn jump puff particles
                     spawnJumpParticles(this.x + this.width / 2, FLOOR_Y);
                 }
             },
 
             update() {
-                // Calcola lo stato del Dash (Slow-Motion)
-                let isDashing = isPressing && pressDuration > 8; // Attivo se premuto per più di 8 frame (~130ms)
+                let isDashing = isPressing && pressDuration > 8;
 
                 if (isDashing) {
-                    // Dilation temporale: interpolazione fluida verso 0.2
+                    // Time scale transitions down to 0.2
                     timeScale = Math.max(0.2, timeScale - 0.15);
-                    // Diminuisce drasticamente la gravità e decelera la velocità verticale (floating effect)
+                    // Floatiness: vertical velocity damped to slide horizontally
                     this.vy *= 0.88;
-                    // Sposta il Ninja in avanti orizzontalmente
+                    // Move player forward in viewport
                     this.x += (520 - this.x) * 0.15;
                 } else {
-                    // Ripristino tempo alla velocità normale
+                    // Normalize game time speed
                     timeScale = Math.min(1.0, timeScale + 0.15);
-                    // Ritorna alla posizione X di base
+                    // Reset ninja back to default horizontal position
                     this.x += (200 - this.x) * 0.08;
                 }
 
-                // Applica gravità normale o ridotta (in base al dash e a timeScale)
+                // Apply gravity factor scaled by dash and slow-mo rate
                 let currentGravity = this.gravity * (isDashing ? 0.08 : 1.0) * timeScale;
                 this.vy += currentGravity;
                 this.y += this.vy * timeScale;
 
-                // Collisione con il terreno
+                // Collide with the floor
                 if (this.y >= FLOOR_Y - this.height) {
                     this.y = FLOOR_Y - this.height;
                     this.vy = 0;
                     if (!this.isGrounded) {
                         this.isGrounded = true;
-                        this.landSquash = 1.0; // Innesca lo squash da atterraggio
+                        this.landSquash = 1.0; // Trigger landing impact squash
                     }
                 }
 
-                // Ciclo di corsa (utilizzato per deformare il cubo mentre corre)
+                // Run cycle oscillation
                 if (this.isGrounded) {
                     this.runCycle += 0.35 * timeScale;
-                    // Piccole particelle di polvere mentre corre
+                    // Spawn ground dust particles while running
                     if (gameFrames % 6 === 0 && Math.abs(this.x - 200) < 50) {
                         spawnRunParticles(this.x, FLOOR_Y);
                     }
                 }
 
-                // Calcolo dello Squash & Stretch
+                // Calculate Squash & Stretch parameters
                 if (this.isGrounded) {
                     if (this.landSquash > 0) {
-                        // Atterraggio: si schiaccia verticalmente e si allarga orizzontalmente
+                        // Impact Squash: squeeze vertically, widen horizontally
                         this.scaleY = 1 - this.landSquash * 0.25;
                         this.scaleX = 1 + this.landSquash * 0.25;
                         this.landSquash -= 0.08 * timeScale;
                     } else {
-                        // Corsa: oscillazione sinusoidale per simulare il movimento
+                        // Bouncing run oscillation
                         let bob = Math.sin(this.runCycle) * 0.06;
                         this.scaleY = 1 + bob;
                         this.scaleX = 1 - bob;
                     }
                 } else {
-                    // In aria: si allunga verticalmente in base alla velocità
+                    // Aerial Stretch proportional to vertical velocity
                     let stretch = Math.min(0.25, Math.max(-0.25, this.vy * 0.015));
                     this.scaleY = 1 - stretch;
                     this.scaleX = 1 + stretch;
                 }
 
-                // Gestione della scia (ghost trail) durante il dash o in aria ad alta velocità
+                // Append trail nodes when in dash mode or fast aerial velocities
                 if (isDashing || !this.isGrounded) {
                     this.trail.push({ x: this.x, y: this.y, scaleX: this.scaleX, scaleY: this.scaleY });
                     if (this.trail.length > this.maxTrailLength) {
                         this.trail.shift();
                     }
-                    // Emette scintille luminose durante lo scatto
                     if (isDashing && Math.random() < 0.6) {
                         spawnDashSpark(this.x, this.y + Math.random() * this.height);
                     }
@@ -497,7 +554,7 @@
             },
 
             draw() {
-                // Disegna la scia (Ghost Trail) con il colore primario neon dinamico
+                // Draw trails
                 for (let i = 0; i < this.trail.length; i++) {
                     let pt = this.trail[i];
                     let alpha = (i + 1) / this.trail.length * 0.22;
@@ -511,20 +568,20 @@
                     ctx.restore();
                 }
 
-                // Disegna il corpo principale del Ninja con bagliore neon
+                // Draw main player body with neon glow
                 ctx.save();
                 ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
                 ctx.scale(this.scaleX, this.scaleY);
 
-                // Ombra/Bagliore neon del colore principale
+                // Neon glow outline
                 ctx.shadowBlur = 22;
                 ctx.shadowColor = primaryColor;
-                ctx.fillStyle = primaryColor === '#bd00ff' ? '#f5c6ff' : '#ffccd5'; // Tonalità di fucsia o rosso chiaro
+                ctx.fillStyle = primaryColor === '#bd00ff' ? '#f5c6ff' : '#ffccd5';
                 ctx.beginPath();
                 ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 8);
                 ctx.fill();
 
-                // Nucleo luminoso interno
+                // Bright inner core
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
@@ -532,37 +589,73 @@
                 ctx.fill();
 
                 ctx.restore();
+
+                // Draw Shield Bubble around player if active
+                if (hasShield) {
+                    ctx.save();
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#00ffff';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.85, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Subtle shield center shimmer
+                    ctx.fillStyle = 'rgba(0, 255, 255, 0.08)';
+                    ctx.fill();
+                    ctx.restore();
+                }
             }
         };
 
-        // Helper per convertire HEX in RGB
-        function hexToRgb(hex) {
-            let bigint = parseInt(hex.replace('#', ''), 16);
-            let r = (bigint >> 16) & 255;
-            let g = (bigint >> 8) & 255;
-            let b = bigint & 255;
-            return `${r}, ${g}, ${b}`;
+        // --- DASH SPEED WARP LINES ---
+        let speedLines = [];
+        for (let i = 0; i < 15; i++) {
+            speedLines.push({
+                x: Math.random() * LOGICAL_WIDTH,
+                y: Math.random() * LOGICAL_HEIGHT,
+                length: Math.random() * 80 + 40,
+                speed: Math.random() * 20 + 20
+            });
         }
 
-        // --- ELEMENTI DI GIOCO (Spine, Scudi, Droni e Chip) ---
+        function drawSpeedWarpLines() {
+            ctx.save();
+            ctx.strokeStyle = `rgba(${hexToRgb(secondaryColor)}, 0.2)`;
+            ctx.lineWidth = 2;
+            for (let line of speedLines) {
+                line.x -= line.speed * 2.2 * timeScale;
+                if (line.x + line.length < 0) {
+                    line.x = LOGICAL_WIDTH + 10;
+                    line.y = Math.random() * LOGICAL_HEIGHT;
+                }
+                ctx.beginPath();
+                ctx.moveTo(line.x, line.y);
+                ctx.lineTo(line.x + line.length, line.y);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // --- ENTIY POOL (Spikes, Shields, Drones, Chips, Powerups) ---
         let gameObjects = [];
-        let obstacleTimer = 0;
         let doubleObstacleQueued = false;
         let doubleObstacleTimer = 0;
 
-        // Fase di spawn corrente
+        // Difficulty curves
         let currentPhase = 1;
         let baseObstacleSpeed = 6.0;
         let minSpawnDelay = 160;
         let maxSpawnDelay = 220;
 
         function updateObstacleSpawning() {
-            // Nei primissimi secondi di tutorial non spawnano ostacoli
+            // Wait until tutorial phase finishes
             if (gameState === STATE_PLAYING && gameTime < 3.0) {
                 return;
             }
 
-            // Calcola la fase in base ai secondi trascorsi
+            // Determine difficulty curves based on elapsed playtime
             if (gameTime < 10.0) {
                 currentPhase = 1;
                 baseObstacleSpeed = 6.0;
@@ -574,28 +667,27 @@
                 minSpawnDelay = 100;
                 maxSpawnDelay = 140;
             } else {
-                // Fase 3 (Cap massimo di difficoltà reached e Color Shift in rosso/oro)
+                // Phase 3 (Overdrive difficulty - triggers crimson red/gold visual overdrive shift)
                 currentPhase = 3;
                 baseObstacleSpeed = 12.0;
                 minSpawnDelay = 65;
                 maxSpawnDelay = 85;
             }
 
-            // Timer di spawn regolare
+            // Main spawn counter ticks down
             obstacleTimer -= 1 * timeScale;
             if (obstacleTimer <= 0) {
                 spawnRandomElement();
-                // Reimposta il timer dinamicamente in base alla fase corrente
                 obstacleTimer = Math.floor(Math.random() * (maxSpawnDelay - minSpawnDelay)) + minSpawnDelay;
                 
-                // Fase 3: Possibilità di accodare un ostacolo doppio
+                // Phase 3: Chance to spawn double sequence obstacles
                 if (currentPhase === 3 && Math.random() < 0.35) {
                     doubleObstacleQueued = true;
-                    doubleObstacleTimer = Math.floor(Math.random() * 20) + 25; // 25-45 frame dopo
+                    doubleObstacleTimer = Math.floor(Math.random() * 20) + 25; // 25-45 frames later
                 }
             }
 
-            // Gestione dell'ostacolo doppio accodato
+            // Handle secondary stacked spawns
             if (doubleObstacleQueued) {
                 doubleObstacleTimer -= 1 * timeScale;
                 if (doubleObstacleTimer <= 0) {
@@ -608,17 +700,23 @@
         function spawnRandomElement() {
             let rand = Math.random();
             
+            // Check extremely rare powerups spawn chance (5% Magnet, 5% Shield PU)
+            if (Math.random() < 0.07) {
+                spawnPowerup(Math.random() < 0.5 ? 'magnet' : 'shield_pu');
+                return;
+            }
+
             if (currentPhase === 1) {
-                // Fase 1: Solo ostacoli a terra e volanti, sempre guidati da Chip
+                // Phase 1: Ground Spikes and floating force shields
                 if (rand < 0.7) spawnObstacle('spike');
                 else spawnObstacle('shield');
             } else if (currentPhase === 2) {
-                // Fase 2: Introduzione Droni (20% di chance)
+                // Phase 2: Introduces Flying Drones (20% chance)
                 if (rand < 0.5) spawnObstacle('spike');
                 else if (rand < 0.75) spawnObstacle('shield');
                 else spawnDrone();
             } else {
-                // Fase 3: Difficoltà massima, più Droni e combinazioni veloci
+                // Phase 3: Fast, consecutive sequences
                 if (rand < 0.4) spawnObstacle('spike');
                 else if (rand < 0.7) spawnObstacle('shield');
                 else spawnDrone();
@@ -626,12 +724,12 @@
         }
 
         function spawnObstacle(type) {
-            let width = Math.floor(Math.random() * 30) + 45; // Larghezza: 45 - 75
-            let height = Math.floor(Math.random() * 60) + 60; // Altezza: 60 - 120
+            let width = Math.floor(Math.random() * 30) + 45; // Width: 45 - 75
+            let height = Math.floor(Math.random() * 60) + 60; // Height: 60 - 120
             let y = FLOOR_Y - height;
 
             if (type === 'shield') {
-                // Lo scudo fluttuante lascia spazio sotto per scivolare (125px)
+                // Shield forcefield floats Y, allowing Ninja to slide/dash underneath
                 let gapHeight = 125;
                 y = FLOOR_Y - height - gapHeight;
             }
@@ -647,19 +745,16 @@
                 nearMissTriggered: false
             });
 
-            // SPONA UN CHIP GUIDA SOPRA/SOTTO L'OSTACOLO (Design intelligente)
+            // Spawns guiding energy chips surrounding barriers
             if (type === 'spike') {
-                // Chip fluttuante sopra le spine per incoraggiare il salto mirato
                 spawnChip(LOGICAL_WIDTH + 50 + width / 2 - 10, y - 80);
             } else if (type === 'shield') {
-                // Chip a terra sotto lo scudo per ricompensare la scivolata audace
                 spawnChip(LOGICAL_WIDTH + 50 + width / 2 - 10, FLOOR_Y - 35);
             }
         }
 
         function spawnDrone() {
             let size = 36;
-            // Altezza variabile fluttuante a mezz'aria
             let baseY = FLOOR_Y - size - (Math.random() * 110 + 60);
 
             gameObjects.push({
@@ -687,27 +782,56 @@
             });
         }
 
+        function spawnPowerup(type) {
+            let size = 30;
+            let y = FLOOR_Y - 80;
+            gameObjects.push({
+                type: type,
+                x: LOGICAL_WIDTH + 50,
+                y: y,
+                w: size,
+                h: size,
+                phaseOffset: Math.random() * Math.PI * 2,
+                passed: false
+            });
+        }
+
         function updateAndDrawGameObjects() {
             let isDashing = isPressing && pressDuration > 8;
 
             for (let i = gameObjects.length - 1; i >= 0; i--) {
                 let obj = gameObjects[i];
                 
-                // Spostamento orizzontale generale basato sulla velocità e scala temporale
-                obj.x -= baseObstacleSpeed * timeScale;
+                // Pull Chips toward player if Magnet buff is active
+                if (obj.type === 'chip' && magnetTimer > 0) {
+                    let dx = (player.x + player.width / 2) - (obj.x + obj.w / 2);
+                    let dy = (player.y + player.height / 2) - (obj.y + obj.h / 2);
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 380) {
+                        obj.x += (dx / dist) * 14 * timeScale;
+                        obj.y += (dy / dist) * 14 * timeScale;
+                        obj.baseY = obj.y; // Damp normal oscillation during attraction
+                    } else {
+                        obj.x -= baseObstacleSpeed * timeScale;
+                    }
+                } else {
+                    obj.x -= baseObstacleSpeed * timeScale;
+                }
 
-                // Animazione di fluttuazione sinusoidale per Droni e Chip
+                // Sinusoidal bobbing hover animations
                 if (obj.type === 'drone') {
                     obj.y = obj.baseY + Math.sin(gameFrames * 0.08 + obj.phaseOffset) * 35;
                 } else if (obj.type === 'chip') {
                     obj.y = obj.baseY + Math.sin(gameFrames * 0.12 + obj.phaseOffset) * 8;
+                } else if (obj.type === 'magnet' || obj.type === 'shield_pu') {
+                    obj.y = obj.baseY + Math.sin(gameFrames * 0.07 + obj.phaseOffset) * 10;
                 }
 
-                // 1. DISEGNO DEI DIVERSI ELEMENTI
+                // DRAW GAME OBJECTS
                 ctx.save();
                 
                 if (obj.type === 'spike') {
-                    // --- SPINE NEON TERRESTRI ---
+                    // --- NEON GROUND SPIKES ---
                     let spikeGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
                     ctx.shadowBlur = 18;
                     ctx.shadowColor = spikeGlow;
@@ -729,7 +853,7 @@
                     ctx.stroke();
 
                 } else if (obj.type === 'shield') {
-                    // --- SCUDO CYBERNETICO FLUTTUANTE ---
+                    // --- NEON FLOATING FORCEFIELD SHIELDS ---
                     let shieldGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
                     ctx.shadowBlur = 18;
                     ctx.shadowColor = shieldGlow;
@@ -742,7 +866,6 @@
                     ctx.fill();
                     ctx.stroke();
 
-                    // Linee di pericolo orizzontali interne allo scudo
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 1;
                     for (let sy = obj.y + 15; sy < obj.y + obj.h; sy += 25) {
@@ -753,7 +876,7 @@
                     }
 
                 } else if (obj.type === 'drone') {
-                    // --- DRONE VOLANTE (Cyan/Orange) ---
+                    // --- CYBER DRONES (Diamond glow shape) ---
                     let droneGlow = currentPhase === 3 ? '#ffaa00' : '#00ffff';
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = droneGlow;
@@ -761,7 +884,6 @@
                     ctx.strokeStyle = droneGlow;
                     ctx.lineWidth = 3;
 
-                    // Forma di rombo diamante
                     ctx.beginPath();
                     ctx.moveTo(obj.x + obj.w / 2, obj.y);
                     ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
@@ -771,7 +893,6 @@
                     ctx.fill();
                     ctx.stroke();
 
-                    // Nucleo bianco rotante
                     ctx.fillStyle = '#ffffff';
                     ctx.shadowBlur = 0;
                     ctx.beginPath();
@@ -779,7 +900,7 @@
                     ctx.fill();
 
                 } else if (obj.type === 'chip') {
-                    // --- CHIP DI ENERGIA COLLEZIONABILE ---
+                    // --- NEON GOLD COLLECTIBLE ENERGY CHIPS ---
                     ctx.shadowBlur = 12;
                     ctx.shadowColor = '#ffaa00';
                     ctx.fillStyle = '#221500';
@@ -800,35 +921,98 @@
                     ctx.beginPath();
                     ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 3, 0, Math.PI * 2);
                     ctx.fill();
+
+                } else if (obj.type === 'magnet') {
+                    // --- MAGNET POWER-UP ITEM ---
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#d35400';
+                    ctx.fillStyle = '#110500';
+                    ctx.strokeStyle = '#e67e22';
+                    ctx.lineWidth = 3;
+
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Magnet letter icon "M"
+                    ctx.font = '900 16px "Orbitron", sans-serif';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.shadowBlur = 0;
+                    ctx.fillText("M", obj.x + obj.w / 2, obj.y + obj.h / 2 + 5);
+
+                } else if (obj.type === 'shield_pu') {
+                    // --- SHIELD POWER-UP ITEM ---
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#00ffff';
+                    ctx.fillStyle = '#001a1a';
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.lineWidth = 3;
+
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Shield icon glyph "S"
+                    ctx.font = '900 16px "Orbitron", sans-serif';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.shadowBlur = 0;
+                    ctx.fillText("S", obj.x + obj.w / 2, obj.y + obj.h / 2 + 5);
                 }
 
                 ctx.restore();
 
-                // 2. LOGICA DI COLLISIONE ED EVENTI SPECIALI
-                
-                // Collisione generica
-                let isColliding = checkCollision(player, obj, obj.type === 'chip');
+                // COLLISION AND SCORE CHECKS
+                let isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu');
 
                 if (isColliding) {
                     if (obj.type === 'chip') {
-                        // Raccolta Microchip
-                        score += 20;
+                        // Gather Chip
+                        let chipVal = Math.round(20 * getComboMultiplier());
+                        score += chipVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 15);
                         Sound.playChip();
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "+20");
+                        addComboPoints(5);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `+${chipVal}`);
                         spawnChipCollectParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
                         gameObjects.splice(i, 1);
                         continue;
 
+                    } else if (obj.type === 'magnet') {
+                        // Magnet Powerup Active
+                        magnetTimer = 360; // 6 seconds at 60fps
+                        Sound.playPowerup();
+                        addComboPoints(10);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "MAGNET");
+                        gameObjects.splice(i, 1);
+                        continue;
+
+                    } else if (obj.type === 'shield_pu') {
+                        // Shield Powerup Active
+                        hasShield = true;
+                        Sound.playPowerup();
+                        addComboPoints(10);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "SHIELD ACTIVE");
+                        gameObjects.splice(i, 1);
+                        continue;
+
                     } else if (obj.type === 'drone' && isDashing) {
-                        // --- DASH ATTACK: Distruzione del Drone nemico ---
-                        score += 50;
+                        // --- DASH ATTACK (Destroys Flying Drones) ---
+                        let killVal = Math.round(50 * getComboMultiplier());
+                        score += killVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 25);
                         Sound.playKill();
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, "KILL +50");
+                        addComboPoints(20);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, `KILL +${killVal}`);
                         spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
                         
-                        // Screen shake ad impatto
+                        // Hitstop: Freeze frames on impact
+                        hitstopFrames = 5;
+                        
+                        // Heavy screen shake on collision
                         shakeTime = 12;
                         shakeIntensity = 8;
                         
@@ -836,59 +1020,123 @@
                         continue;
 
                     } else {
-                        // Impatto letale (Spine, Scudi, o Drone senza Dash)
-                        triggerGameOver();
+                        // Collision hazard
+                        if (hasShield) {
+                            // Shatter shield bubble, absorb hit
+                            hasShield = false;
+                            Sound.playShatter();
+                            spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                            shakeTime = 12;
+                            shakeIntensity = 6;
+                            
+                            // Splice the barrier object so it doesn't double-trigger
+                            gameObjects.splice(i, 1);
+                            continue;
+                        } else {
+                            // Fatal crash without shield protection
+                            triggerGameOver();
+                        }
                     }
                 }
 
-                // 3. LOGICA DI NEAR-MISS (Sfioramento ravvicinato premiato)
+                // PRECISION NEAR-MISS CALCULATION
                 if ((obj.type === 'spike' || obj.type === 'shield') && !obj.passed && !obj.nearMissTriggered) {
-                    // Verifica se il ninja sta attraversando l'ostacolo sull'asse X
                     if (obj.x < player.x + player.width && obj.x + obj.w > player.x) {
                         let gap = 999;
                         if (obj.type === 'spike') {
-                            // Distanza tra piedi del Ninja e punta dello spike
                             gap = obj.y - (player.y + player.height);
                         } else if (obj.type === 'shield') {
-                            // Distanza tra testa del Ninja e fondo dello scudo
                             gap = player.y - (obj.y + obj.h);
                         }
 
-                        // Se passa a meno di 42 pixel (gap molto stretto)
+                        // Close crossing distance trigger (<42 pixels)
                         if (gap > 0 && gap < 42) {
                             obj.nearMissPossible = true;
                         }
                     }
                 }
 
-                // Quando l'ostacolo è superato, assegna i punti Near-Miss se applicabile
+                // Supered barrier rewards styling points
                 if (obj.x + obj.w < player.x) {
                     if (!obj.passed) {
                         obj.passed = true;
                         
                         if (obj.type === 'spike' || obj.type === 'shield') {
-                            score += 10;
+                            let passVal = Math.round(10 * getComboMultiplier());
+                            score += passVal;
                             Sound.playScore();
                             
-                            // Se ha superato l'ostacolo sfiorandolo all'ultimo secondo
                             if (obj.nearMissPossible && !obj.nearMissTriggered) {
                                 obj.nearMissTriggered = true;
-                                score += 15;
+                                let nearMissVal = Math.round(15 * getComboMultiplier());
+                                score += nearMissVal;
                                 Sound.playNearMiss();
-                                spawnScorePopup(player.x + player.width / 2, player.y - 45, "NEAR MISS +15");
+                                addComboPoints(15);
+                                spawnScorePopup(player.x + player.width / 2, player.y - 45, `NEAR MISS +${nearMissVal}`);
                             }
                         }
                     }
                 }
 
-                // Rimozione degli oggetti fuori dallo schermo
+                // Purge entities scrolling out of bounds
                 if (obj.x + obj.w < -100) {
                     gameObjects.splice(i, 1);
                 }
             }
         }
 
-        // --- POPUP DI GRATIFICAZIONE (+10) ---
+        // --- STYLE COMBO SYSTEM (Rank D -> SSS) ---
+        function addComboPoints(points) {
+            comboPoints += points;
+            updateComboRank();
+        }
+
+        function updateComboRank() {
+            // Decay points slowly during loop
+            if (comboPoints < 10) {
+                comboRank = 'D';
+            } else if (comboPoints < 30) {
+                comboRank = 'C';
+            } else if (comboPoints < 60) {
+                comboRank = 'B';
+            } else if (comboPoints < 100) {
+                comboRank = 'A';
+            } else if (comboPoints < 150) {
+                comboRank = 'S';
+            } else if (comboPoints < 220) {
+                comboRank = 'SS';
+            } else {
+                comboRank = 'SSS';
+            }
+        }
+
+        function getComboMultiplier() {
+            switch (comboRank) {
+                case 'D': return 1.0;
+                case 'C': return 1.5;
+                case 'B': return 2.0;
+                case 'A': return 3.0;
+                case 'S': return 4.0;
+                case 'SS': return 5.0;
+                case 'SSS': return 6.0;
+                default: return 1.0;
+            }
+        }
+
+        function getComboRankColor() {
+            switch (comboRank) {
+                case 'D': return '#7f8c8d'; // Grey
+                case 'C': return '#2ecc71'; // Green
+                case 'B': return '#3498db'; // Blue
+                case 'A': return '#9b59b6'; // Purple
+                case 'S': return '#f1c40f'; // Yellow Gold
+                case 'SS': return '#e67e22'; // Orange
+                case 'SSS': return '#ff0055'; // Intense Red/Pink
+                default: return '#ffffff';
+            }
+        }
+
+        // --- SCORE POPUPS ---
         let popups = [];
 
         function spawnScorePopup(x, y, text) {
@@ -923,7 +1171,7 @@
             }
         }
 
-        // --- SISTEMA DI PARTICELLE (Juice & Polish) ---
+        // --- PARTICLE SYSTEM ---
         let particles = [];
 
         function spawnParticle(x, y, vx, vy, size, color, decay, shrink = 0) {
@@ -959,7 +1207,7 @@
         }
 
         function spawnDashSpark(x, y) {
-            let vx = -12 - Math.random() * 6; // Scintille spinte molto all'indietro
+            let vx = -12 - Math.random() * 6;
             let vy = (Math.random() - 0.5) * 4;
             let size = Math.random() * 4 + 2;
             let decay = Math.random() * 0.06 + 0.04;
@@ -967,7 +1215,6 @@
         }
 
         function spawnChipCollectParticles(x, y) {
-            // Esplosione dorata per i chip
             for (let i = 0; i < 8; i++) {
                 let angle = Math.random() * Math.PI * 2;
                 let speed = Math.random() * 4 + 2;
@@ -980,7 +1227,6 @@
         }
 
         function spawnDroneExplosionParticles(x, y) {
-            // Forte burst ciano/arancione per la distruzione del drone
             let droneColor = currentPhase === 3 ? '#ffaa00' : '#00ffff';
             for (let i = 0; i < 15; i++) {
                 let angle = Math.random() * Math.PI * 2;
@@ -994,7 +1240,6 @@
         }
 
         function spawnDeathExplosion(x, y) {
-            // Esplosione del colore primario neon corrente
             for (let i = 0; i < 40; i++) {
                 let angle = Math.random() * Math.PI * 2;
                 let speed = Math.random() * 12 + 4;
@@ -1004,7 +1249,6 @@
                 let decay = Math.random() * 0.02 + 0.015;
                 spawnParticle(x, y, vx, vy, size, primaryColor, decay, 0.05);
             }
-            // Scintille del colore secondario neon
             for (let i = 0; i < 20; i++) {
                 let angle = Math.random() * Math.PI * 2;
                 let speed = Math.random() * 16 + 2;
@@ -1043,69 +1287,28 @@
             if (isDashing) {
                 dashEnergy = Math.max(0, dashEnergy - 1.25);
                 if (dashEnergy <= 0) {
-                    // Scarico: ferma il dash forzatamente
                     isPressing = false;
                     pressDuration = 0;
                 }
             } else {
-                // Ricarica quando non si è in modalità dash
                 dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 0.65);
             }
         }
 
-        // --- COLLISION DETECTOR (AABB con Hitbox tollerante) ---
-        function checkCollision(r1, r2, isChip = false) {
-            if (isChip) {
-                // Per il chip collisione generosa senza tolleranze per facilitare la raccolta
-                return (
-                    r1.x < r2.x + r2.w &&
-                    r1.x + r1.width > r2.x &&
-                    r1.y < r2.y + r2.h &&
-                    r1.y + r1.height > r2.y
-                );
-            }
-
-            // Riduciamo la hitbox del Ninja del 15% per rendere le collisioni più eque ed evitare frustrazioni
-            let padX = r1.width * 0.15;
-            let padY = r1.height * 0.15;
-
-            return (
-                r1.x + padX < r2.x + r2.w &&
-                r1.x + r1.width - padX > r2.x &&
-                r1.y + padY < r2.y + r2.h &&
-                r1.y + r1.height - padY > r2.y
-            );
-        }
-
-        // --- AMBIENTE E STRUTTURE DI SFONDO (Parallax & Grid) ---
-        
-        // Generazione delle stelle nello sfondo
-        let stars = [];
-        for (let i = 0; i < 55; i++) {
-            stars.push({
-                x: Math.random() * LOGICAL_WIDTH,
-                y: Math.random() * 320,
-                size: Math.random() * 2 + 1,
-                speed: Math.random() * 0.4 + 0.1,
-                twinkle: Math.random() * Math.PI
-            });
-        }
-
+        // --- ENVIRONMENT BACKGROUND DRAW ROUTINES (Parallax & perspective Floor) ---
         function drawBackground() {
-            // Gradient del cielo notturno
             let skyGrad = ctx.createRadialGradient(
                 LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, 50,
                 LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, LOGICAL_WIDTH
             );
-            skyGrad.addColorStop(0, currentPhase === 3 ? '#2a071c' : '#190a2c'); // Sfumatura più fiammeggiante in Phase 3
+            skyGrad.addColorStop(0, currentPhase === 3 ? '#2a071c' : '#190a2c');
             skyGrad.addColorStop(0.6, '#090312');
             skyGrad.addColorStop(1, '#020006');
             ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-            // Disegna e fa muovere le stelle con leggero bagliore del colore secondario
             for (let star of stars) {
-                if (gameState === STATE_PLAYING) {
+                if (gameState === STATE_PLAYING && hitstopFrames === 0) {
                     star.x -= star.speed * timeScale;
                     if (star.x < 0) star.x = LOGICAL_WIDTH;
                 }
@@ -1116,7 +1319,6 @@
                 ctx.fillRect(star.x, star.y, star.size, star.size);
             }
 
-            // Sole neon futuristico a cerchi concentrici (colore dinamico)
             ctx.save();
             ctx.shadowBlur = 25;
             ctx.shadowColor = primaryColor;
@@ -1131,9 +1333,8 @@
             ctx.stroke();
             ctx.restore();
 
-            // Montagne in parallasse
-            drawMountains(0.12, currentPhase === 3 ? '#230310' : '#15062a', 250, 120); // Montagne lontane
-            drawMountains(0.35, currentPhase === 3 ? '#3c0316' : '#20083c', 160, 60);  // Montagne medie
+            drawMountains(0.12, currentPhase === 3 ? '#230310' : '#15062a', 250, 120);
+            drawMountains(0.35, currentPhase === 3 ? '#3c0316' : '#20083c', 160, 60);
         }
 
         function drawMountains(speedMultiplier, color, baseHeight, amplitude) {
@@ -1144,7 +1345,6 @@
 
             for (let x = 0; x <= LOGICAL_WIDTH + 100; x += 10) {
                 let worldX = x + offset;
-                // Equazione sinusoidale per generare vette montuose stilizzate
                 let y = FLOOR_Y - baseHeight - Math.sin(worldX * 0.005) * amplitude - Math.cos(worldX * 0.012) * (amplitude * 0.4);
                 ctx.lineTo(x, y);
             }
@@ -1155,7 +1355,6 @@
         }
 
         function drawFloorGrid() {
-            // Linea del terreno luminosa (neon con colore dinamico)
             ctx.save();
             ctx.shadowBlur = 15;
             ctx.shadowColor = primaryColor;
@@ -1167,12 +1366,10 @@
             ctx.stroke();
             ctx.restore();
 
-            // Griglia prospettica sotto il terreno (effetto Synthwave)
             ctx.save();
             ctx.strokeStyle = `rgba(${hexToRgb(primaryColor)}, 0.12)`;
             ctx.lineWidth = 1.5;
 
-            // Linee orizzontali ad altezza variabile per dare profondità di prospettiva
             for (let y = FLOOR_Y; y <= LOGICAL_HEIGHT; y += 22) {
                 ctx.beginPath();
                 ctx.moveTo(0, y);
@@ -1180,13 +1377,11 @@
                 ctx.stroke();
             }
 
-            // Linee diagonali prospettiche che scorrono
             let gridSpacing = 50;
             let currentOffset = (scrollX * 1.6) % gridSpacing;
 
             for (let x = -200; x < LOGICAL_WIDTH + 200; x += gridSpacing) {
                 ctx.beginPath();
-                // Punti di partenza e di arrivo slittati lateralmente per simulare la prospettiva
                 ctx.moveTo(x - currentOffset, FLOOR_Y);
                 ctx.lineTo(x - currentOffset - 120, LOGICAL_HEIGHT);
                 ctx.stroke();
@@ -1194,9 +1389,9 @@
             ctx.restore();
         }
 
-        // --- HUD / INTERFACCIA ---
+        // --- HUD HUD / OVERLAYS ---
         function drawHUD() {
-            // Contenitore Score (in alto a sinistra)
+            // Score Board (Top-left panel)
             ctx.save();
             ctx.fillStyle = 'rgba(16, 6, 36, 0.6)';
             ctx.strokeStyle = `rgba(${hexToRgb(primaryColor)}, 0.35)`;
@@ -1206,28 +1401,50 @@
             ctx.fill();
             ctx.stroke();
 
-            // Testo Punteggio Corrente
             ctx.font = 'bold 24px "Orbitron", sans-serif';
             ctx.fillStyle = secondaryColor;
             ctx.shadowBlur = 5;
             ctx.shadowColor = secondaryColor;
             ctx.fillText(`SCORE: ${score}`, 50, 58);
 
-            // Testo Record
             ctx.font = '600 14px "Outfit", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.shadowBlur = 0;
             ctx.fillText(`BEST: ${bestScore}`, 50, 82);
             ctx.restore();
 
-            // Indicatore Barra di Energia Dash (in alto al centro)
+            // Style Rank Combo Board (Adjacent to Score panel)
+            ctx.save();
+            ctx.fillStyle = 'rgba(16, 6, 36, 0.6)';
+            ctx.strokeStyle = `rgba(${hexToRgb(getComboRankColor())}, 0.5)`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(265, 25, 110, 75, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // Style header label
+            ctx.font = '900 10px "Orbitron", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.textAlign = 'center';
+            ctx.fillText("STYLE", 320, 42);
+
+            // Combo rank letter
+            ctx.font = '900 32px "Orbitron", sans-serif';
+            ctx.fillStyle = getComboRankColor();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = getComboRankColor();
+            ctx.textAlign = 'center';
+            ctx.fillText(comboRank, 320, 75);
+            ctx.restore();
+
+            // Dash Stamina energy bar (Top-center panel)
             ctx.save();
             let barW = 320;
             let barH = 14;
             let barX = LOGICAL_WIDTH / 2 - barW / 2;
             let barY = 35;
 
-            // Sfondo barra
             ctx.fillStyle = 'rgba(16, 6, 36, 0.6)';
             ctx.strokeStyle = `rgba(${hexToRgb(secondaryColor)}, 0.2)`;
             ctx.beginPath();
@@ -1235,7 +1452,6 @@
             ctx.fill();
             ctx.stroke();
 
-            // Riempimento energia dinamico con sfumatura neon
             let energyRatio = dashEnergy / MAX_ENERGY;
             let fillW = barW * energyRatio;
 
@@ -1248,7 +1464,6 @@
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = energyRatio < 0.2 ? '#ff0055' : secondaryColor;
                 
-                // Se l'energia è critica, la barra lampeggia in rosso
                 if (energyRatio < 0.2 && Math.floor(gameFrames / 6) % 2 === 0) {
                     ctx.fillStyle = '#ff0055';
                 }
@@ -1258,22 +1473,39 @@
                 ctx.fill();
             }
 
-            // Etichetta "ENERGY"
             ctx.font = '900 11px "Orbitron", sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.shadowBlur = 0;
             ctx.fillText("DASH ENERGY", LOGICAL_WIDTH / 2, barY - 8);
             ctx.restore();
+
+            // Permanent "Radura d'estate plot042" label in the top-right corner
+            ctx.save();
+            ctx.font = '600 16px "Outfit", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.textAlign = 'right';
+            ctx.fillText("Radura d'estate plot042", LOGICAL_WIDTH - 30, 45);
+            ctx.restore();
+
+            // Magnet Timer Indicator if active
+            if (magnetTimer > 0) {
+                ctx.save();
+                ctx.font = '900 12px "Orbitron", sans-serif';
+                ctx.fillStyle = '#e67e22';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = '#e67e22';
+                ctx.textAlign = 'right';
+                ctx.fillText(`MAGNET: ${(magnetTimer / 60).toFixed(1)}s`, LOGICAL_WIDTH - 30, 75);
+                ctx.restore();
+            }
         }
 
-        // --- SCHERMATA START & GAMEOVER ---
+        // --- TITLE AND GAMEOVER HUD ---
         function drawStartScreen() {
-            // Sfondo oscurato semitrasparente
             ctx.fillStyle = 'rgba(8, 3, 18, 0.35)';
             ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-            // Titolo del Gioco
             ctx.save();
             ctx.textAlign = 'center';
             ctx.shadowBlur = 25;
@@ -1287,7 +1519,6 @@
             ctx.fillText("ONE-TAP ACTION NINJA", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 75);
             ctx.restore();
 
-            // Pulsante d'inizio stilizzato
             ctx.save();
             let btnW = 340;
             let btnH = 65;
@@ -1304,28 +1535,32 @@
             ctx.fill();
             ctx.stroke();
 
-            // Testo pulsante
             ctx.font = 'bold 20px "Orbitron", sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.shadowBlur = 0;
             
-            // Effetto pulsazione del testo
             let scalePulse = 1.0 + Math.sin(Date.now() * 0.007) * 0.04;
             ctx.save();
             ctx.translate(LOGICAL_WIDTH / 2, btnY + 40);
             ctx.scale(scalePulse, scalePulse);
-            ctx.fillText("TOCCA PER INIZIARE", 0, 0);
+            ctx.fillText("TAP TO START", 0, 0);
             ctx.restore();
+            ctx.restore();
+
+            // Mobile tag "Radura d'estate plot042" drawn on title screen as well
+            ctx.save();
+            ctx.font = '600 16px "Outfit", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.textAlign = 'right';
+            ctx.fillText("Radura d'estate plot042", LOGICAL_WIDTH - 30, 45);
             ctx.restore();
         }
 
         function drawGameOverScreen() {
-            // Overlay nero semitrasparente graduale
             ctx.fillStyle = 'rgba(5, 1, 10, 0.78)';
             ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-            // Testo Game Over con bagliore rosso neon
             ctx.save();
             ctx.textAlign = 'center';
             ctx.shadowBlur = 30;
@@ -1335,7 +1570,6 @@
             ctx.fillText("GAME OVER", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 100);
             ctx.restore();
 
-            // Box riassunto punteggi
             let boxW = 400;
             let boxH = 150;
             let boxX = LOGICAL_WIDTH / 2 - boxW / 2;
@@ -1350,45 +1584,47 @@
             ctx.fill();
             ctx.stroke();
 
-            // Testi punteggi interni al box
             ctx.textAlign = 'center';
             ctx.font = 'bold 24px "Orbitron", sans-serif';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(`PUNTEGGIO: ${score}`, LOGICAL_WIDTH / 2, boxY + 55);
+            ctx.fillText(`SCORE: ${score}`, LOGICAL_WIDTH / 2, boxY + 55);
 
             ctx.font = 'bold 24px "Orbitron", sans-serif';
             ctx.fillStyle = '#00ffff';
             ctx.shadowBlur = 10;
             ctx.shadowColor = '#00ffff';
-            ctx.fillText(`RECORD: ${bestScore}`, LOGICAL_WIDTH / 2, boxY + 110);
+            ctx.fillText(`BEST: ${bestScore}`, LOGICAL_WIDTH / 2, boxY + 110);
             ctx.restore();
 
-            // Scritta "Tocca per riprovare" pulsante
             ctx.save();
             ctx.textAlign = 'center';
             ctx.font = '600 20px "Outfit", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             let pulse = Math.abs(Math.sin(Date.now() * 0.005));
             ctx.globalAlpha = 0.4 + pulse * 0.6;
-            ctx.fillText("Tocca ovunque per riprovare", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 170);
+            ctx.fillText("Tap anywhere to restart", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 170);
+            ctx.restore();
+
+            // Mobile tag drawn on gameover screen
+            ctx.save();
+            ctx.font = '600 16px "Outfit", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.textAlign = 'right';
+            ctx.fillText("Radura d'estate plot042", LOGICAL_WIDTH - 30, 45);
             ctx.restore();
         }
 
-        // --- GESTIONE DEI FLUSSI ED EVENTI ---
-        
+        // --- CONTROL LOOPS AND GAME RESET ---
         function triggerGameOver() {
             gameState = STATE_GAMEOVER;
             Sound.playDeath();
-            BGM.stop(); // Ferma la musica di sottofondo
+            BGM.stop();
             
-            // Screen shake forte all'impatto
             shakeTime = 25;
             shakeIntensity = 20;
 
-            // Genera l'esplosione di particelle
             spawnDeathExplosion(player.x + player.width / 2, player.y + player.height / 2);
 
-            // Aggiorna e salva il record locale
             if (score > bestScore) {
                 bestScore = score;
                 localStorage.setItem('ninja_best_score', bestScore);
@@ -1396,12 +1632,16 @@
         }
 
         function restartGame() {
-            // Reimposta le variabili di gioco
             score = 0;
             gameFrames = 0;
             gameTime = 0;
             timeScale = 1.0;
             dashEnergy = 100;
+            magnetTimer = 0;
+            hasShield = false;
+            hitstopFrames = 0;
+            comboPoints = 0;
+            comboRank = 'D';
             gameObjects = [];
             particles = [];
             popups = [];
@@ -1410,26 +1650,22 @@
             
             player.reset();
             gameState = STATE_PLAYING;
-            Sound.playScore(); // Chime di avvio rapido
-            BGM.start(); // Avvia la musica di sottofondo
+            Sound.playScore();
+            BGM.start();
         }
 
-        // Gestione degli input generalizzata
         function onPress() {
             if (gameState === STATE_START) {
-                // Primo avvio del gioco
                 Sound.playScore();
                 gameState = STATE_PLAYING;
                 tutorialDismissed = true;
-                obstacleTimer = 180; // Dà qualche secondo prima del primo spawn
-                BGM.start(); // Avvia la musica di sottofondo procedurale
+                obstacleTimer = 180;
+                BGM.start();
             } else if (gameState === STATE_GAMEOVER) {
-                // Riavvio istantaneo dopo il Game Over
                 restartGame();
             } else if (gameState === STATE_PLAYING) {
                 isPressing = true;
                 pressDuration = 0;
-                // Salto immediato su tap
                 player.jump();
             }
         }
@@ -1441,8 +1677,7 @@
             }
         }
 
-        // Associazione eventi per Mobile (Touch) e PC (Mouse)
-        // Disabilitazione comportamenti di default come scrolling
+        // Touch event bindings for mobile, mousedown/up for desktop
         canvas.addEventListener('touchstart', (e) => {
             touchActive = true;
             onPress();
@@ -1455,7 +1690,7 @@
         }, { passive: false });
 
         canvas.addEventListener('mousedown', (e) => {
-            if (touchActive) return; // Salta se il touch è attivo su mobile
+            if (touchActive) return;
             onPress();
         });
 
@@ -1464,18 +1699,15 @@
             onRelease();
         });
 
-        // Blocco menu contestuale del mouse (ottimizzazione mobile)
         window.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
 
-
-        // --- LOOP PRINCIPALE DI GIOCO (Game Loop) ---
+        // --- MAIN CORE GAME LOOP ---
         function gameLoop() {
-            // Salva lo stato del canvas per gestire lo Screen Shake
             ctx.save();
 
-            // Applicazione dello Screen Shake se attivo
+            // Apply Screen Shake if active
             if (shakeTime > 0) {
                 let dx = (Math.random() - 0.5) * shakeIntensity;
                 let dy = (Math.random() - 0.5) * shakeIntensity;
@@ -1483,62 +1715,163 @@
                 shakeTime--;
             }
 
-            // Aggiorna lo schema dei colori in base alla fase corrente (Color Shift)
+            // Phase Color Shift overrides
             if (currentPhase === 3) {
-                primaryColor = '#ff0055'; // Rosso Neon
-                secondaryColor = '#ffaa00'; // Oro Neon
+                primaryColor = '#ff0055'; // Neon Crimson
+                secondaryColor = '#ffaa00'; // Neon Gold
             } else {
-                primaryColor = '#bd00ff'; // Viola Neon
-                secondaryColor = '#00ffff'; // Ciano Neon
+                primaryColor = '#bd00ff'; // Neon Purple
+                secondaryColor = '#00ffff'; // Neon Cyan
             }
 
-            // 1. Rendering Sfondo Parallasse
+            // Draw sky star backdrop
             drawBackground();
 
-            if (gameState === STATE_PLAYING) {
-                gameFrames++;
-                // Avanzamento tempo modulato dal timeScale
-                gameTime += (1 / 60) * timeScale;
-                // Scorrimento progressivo della griglia del terreno
-                scrollX += 7 * timeScale;
+            // Execute logic updates only when Hitstop freeze is inactive
+            if (hitstopFrames > 0) {
+                hitstopFrames--;
+            } else {
+                if (gameState === STATE_PLAYING) {
+                    gameFrames++;
+                    gameTime += (1 / 60) * timeScale;
+                    scrollX += 7 * timeScale;
 
-                // Incremento punteggio progressivo basato sulla sopravvivenza
-                if (gameFrames % 15 === 0) {
-                    score += 1;
-                }
-
-                // Incremento contatore pressione input
-                if (isPressing) {
-                    pressDuration++;
-                    if (pressDuration === 9) {
-                        // Suona l'effetto del dash al momento dell'attivazione
-                        Sound.playDash();
+                    // Decays style points very slowly over time
+                    if (gameFrames % 10 === 0) {
+                        comboPoints = Math.max(0, comboPoints - 1);
+                        updateComboRank();
                     }
-                }
 
-                // 2. Gestione Logica ed Entità
-                player.update();
-                updateObstacleSpawning();
-                updateDashEnergy();
+                    // Base survival score points tick
+                    if (gameFrames % 15 === 0) {
+                        score += Math.round(1 * getComboMultiplier());
+                    }
+
+                    // Dash duration increment
+                    if (isPressing) {
+                        pressDuration++;
+                        if (pressDuration === 9) {
+                            Sound.playDash();
+                        }
+                    }
+
+                    // Ticks down magnet buff duration
+                    if (magnetTimer > 0) {
+                        magnetTimer--;
+                    }
+
+                    // Entity logic ticks
+                    player.update();
+                    updateObstacleSpawning();
+                    updateDashEnergy();
+                }
             }
 
-            // Aggiorna elementi, particelle e popup in qualsiasi stato (permettere animazioni residue al Game Over)
-            updateAndDrawGameObjects();
-            updateAndDrawParticles();
-            updateAndDrawPopups();
+            // Draw speeds warp lines overlay when player performs a dash scatto
+            let isDashing = isPressing && pressDuration > 8;
+            if (gameState === STATE_PLAYING && isDashing) {
+                drawSpeedWarpLines();
+            }
 
-            // 3. Rendering Elementi Primari
+            // Update obstacles, particles and text popups (processed independent of hitstop to allow smooth animations)
+            if (hitstopFrames === 0) {
+                updateAndDrawGameObjects();
+                updateAndDrawParticles();
+                updateAndDrawPopups();
+            } else {
+                // Keep drawing objects static during hitstop freeze frame
+                for (let obj of gameObjects) {
+                    ctx.save();
+                    if (obj.type === 'spike') {
+                        let spikeGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
+                        ctx.shadowBlur = 18;
+                        ctx.shadowColor = spikeGlow;
+                        ctx.fillStyle = '#0f0515';
+                        ctx.strokeStyle = spikeGlow;
+                        ctx.lineWidth = 3.5;
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x, obj.y + obj.h);
+                        let numSpikes = Math.max(2, Math.floor(obj.w / 20));
+                        let spikeW = obj.w / numSpikes;
+                        for (let j = 0; j < numSpikes; j++) {
+                            let sx = obj.x + j * spikeW;
+                            ctx.lineTo(sx + spikeW / 2, obj.y);
+                            ctx.lineTo(sx + spikeW, obj.y + obj.h);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (obj.type === 'shield') {
+                        let shieldGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
+                        ctx.shadowBlur = 18;
+                        ctx.shadowColor = shieldGlow;
+                        ctx.fillStyle = '#0a0314';
+                        ctx.strokeStyle = shieldGlow;
+                        ctx.lineWidth = 3.5;
+                        ctx.beginPath();
+                        ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 6);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1;
+                        for (let sy = obj.y + 15; sy < obj.y + obj.h; sy += 25) {
+                            ctx.beginPath();
+                            ctx.moveTo(obj.x + 5, sy);
+                            ctx.lineTo(obj.x + obj.w - 5, sy);
+                            ctx.stroke();
+                        }
+                    } else if (obj.type === 'drone') {
+                        let droneGlow = currentPhase === 3 ? '#ffaa00' : '#00ffff';
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = droneGlow;
+                        ctx.fillStyle = '#06161a';
+                        ctx.strokeStyle = droneGlow;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                        ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                        ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                        ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (obj.type === 'chip') {
+                        ctx.shadowBlur = 12;
+                        ctx.shadowColor = '#ffaa00';
+                        ctx.fillStyle = '#221500';
+                        ctx.strokeStyle = '#ffaa00';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                        ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                        ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                        ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+                updateAndDrawParticles();
+                updateAndDrawPopups();
+            }
+
+            // Draw player and scrollable grids
             player.draw();
             drawFloorGrid();
             
-            // Ripristina la matrice del canvas raddrizzando lo screen shake prima di disegnare l'interfaccia statica
+            // Restore matrix transformations from shake offsets
             ctx.restore();
 
-            // 4. Rendering HUD ed Interfacce Esterne allo Shake
+            // HUD draws outside screen shake
             if (gameState === STATE_PLAYING) {
                 drawHUD();
                 
-                // Tutorial invisibile con dissolvenza graduale (fade-out)
+                // Fade out invisible tutorial overlay
                 if (tutorialDismissed && tutorialAlpha > 0) {
                     tutorialAlpha -= 0.04;
                 }
@@ -1557,15 +1890,13 @@
             } else if (gameState === STATE_START) {
                 drawStartScreen();
             } else if (gameState === STATE_GAMEOVER) {
-                drawHUD(); // Mostra comunque l'HUD congelato in background
+                drawHUD();
                 drawGameOverScreen();
             }
 
-            // Ciclo loop continuo standard di HTML5
             requestAnimationFrame(gameLoop);
         }
 
-        // Avvio iniziale del ciclo
         requestAnimationFrame(gameLoop);
 
     </script>
