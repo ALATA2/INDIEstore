@@ -25,10 +25,10 @@ class Game {
     }
 
     initEngine() {
-        // Create Scene with a beautiful cerulean sky background
+        // Create Scene with a beautiful milky sky background (matches sky dome horizon)
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xa3cef1); // Ghibli azure/cerulean sky
-        this.scene.fog = new THREE.FogExp2(0xa3cef1, 0.015); // Light fog for depth
+        this.scene.background = new THREE.Color(0xe0f2fe); 
+        this.scene.fog = new THREE.FogExp2(0xe0f2fe, 0.0035); // Thinned fog for expanded 8x open map
 
         // Create Perspective Camera
         this.camera = new THREE.PerspectiveCamera(

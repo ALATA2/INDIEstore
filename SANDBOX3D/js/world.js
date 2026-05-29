@@ -20,10 +20,12 @@ export class World {
         this.chests = [];
         this.clouds = [];
         
-        // 1. Create cel-shading gradient map
+        // 1. Create cel-shading gradient maps
         this.toonGradient = this.createToonGradientTexture();
+        this.cloudToonGradient = this.createCloudToonGradientTexture();
 
         // 2. Create elements
+        this.createSkyDome();
         this.createSteppedTerrain();
         this.createWater();
         this.createHomePlot();
@@ -49,6 +51,65 @@ export class World {
         texture.magFilter = THREE.NearestFilter;
         texture.generateMipmaps = false;
         return texture;
+    }
+
+    // Creates a custom Ghibli toon gradient specifically for clouds with lavender shadows
+    createCloudToonGradientTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 4;
+        canvas.height = 1;
+        const ctx = canvas.getContext('2d');
+        
+        // Dusty lavender / soft violet-blue shadow (#b3b7db)
+        ctx.fillStyle = '#b3b7db'; 
+        ctx.fillRect(0, 0, 2, 1);
+        
+        // Light warm lavender midtone (#f1f2f9)
+        ctx.fillStyle = '#f1f2f9'; 
+        ctx.fillRect(2, 0, 1, 1);
+        
+        // Pure white highlight (#ffffff)
+        ctx.fillStyle = '#ffffff'; 
+        ctx.fillRect(3, 0, 1, 1);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.NearestFilter;
+        texture.magFilter = THREE.NearestFilter;
+        texture.generateMipmaps = false;
+        return texture;
+    }
+
+    // Generates a 2D canvas vertical gradient for the 3D sky dome
+    createSkyGradientTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        
+        const grad = ctx.createLinearGradient(0, 0, 0, 256);
+        grad.addColorStop(0, '#0096c7');    // Vibrant saturated azure top
+        grad.addColorStop(0.45, '#4cc9f0'); // Saturated Ghibli light blue mid
+        grad.addColorStop(0.8, '#e0f2fe');  // Milky sky-blue lower
+        grad.addColorStop(1.0, '#f0f9ff');  // Pale milky white-blue horizon
+        
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1, 256);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        return texture;
+    }
+
+    createSkyDome() {
+        // Sphere surrounding the 800x800 map
+        const skyGeo = new THREE.SphereGeometry(450, 32, 15);
+        const skyTexture = this.createSkyGradientTexture();
+        const skyMat = new THREE.MeshBasicMaterial({
+            map: skyTexture,
+            side: THREE.BackSide // Render on the inside
+        });
+        
+        const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+        this.scene.add(skyMesh);
     }
 
     createSteppedTerrain() {
@@ -283,7 +344,7 @@ export class World {
     createClouds() {
         const cloudMat = new THREE.MeshToonMaterial({
             color: 0xffffff,
-            gradientMap: this.toonGradient
+            gradientMap: this.cloudToonGradient // Apply custom lavender shadow gradient
         });
 
         // Create 18 cloud groups scattered in the larger sky
