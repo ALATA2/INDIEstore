@@ -106,7 +106,8 @@ export class World {
         const skyTexture = this.createSkyGradientTexture();
         const skyMat = new THREE.MeshBasicMaterial({
             map: skyTexture,
-            side: THREE.BackSide // Render on the inside
+            side: THREE.BackSide, // Render on the inside
+            fog: false            // Disable fog so the sky dome gradient remains visible
         });
         
         const skyMesh = new THREE.Mesh(skyGeo, skyMat);
