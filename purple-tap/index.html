@@ -1672,10 +1672,30 @@
 
         function onRelease() {
             if (gameState === STATE_PLAYING) {
+                // Variable Jump Height: if released early (before entering dash) while moving upwards, cut vertical speed
+                if (!player.isGrounded && player.vy < -3 && pressDuration <= 8) {
+                    player.vy *= 0.45;
+                }
                 isPressing = false;
                 pressDuration = 0;
             }
         }
+
+        // Spacebar keyboard event bindings
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); // Prevents browser window scrolling down
+                if (e.repeat) return; // Ignores keydown repeating triggers
+                onPress();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                onRelease();
+            }
+        });
 
         // Touch event bindings for mobile, mousedown/up for desktop
         canvas.addEventListener('touchstart', (e) => {
