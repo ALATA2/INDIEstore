@@ -1672,9 +1672,9 @@
 
         function onRelease() {
             if (gameState === STATE_PLAYING) {
-                // Variable Jump Height: if released early (before entering dash) while moving upwards, cut vertical speed
-                if (!player.isGrounded && player.vy < -3 && pressDuration <= 8) {
-                    player.vy *= 0.45;
+                // Variable Jump Height: if released early while moving upwards, clamp upward velocity to ensure a responsive short jump
+                if (!player.isGrounded && player.vy < -7.5) {
+                    player.vy = -7.5;
                 }
                 isPressing = false;
                 pressDuration = 0;
@@ -1683,7 +1683,7 @@
 
         // Spacebar keyboard event bindings
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault(); // Prevents browser window scrolling down
                 if (e.repeat) return; // Ignores keydown repeating triggers
                 onPress();
@@ -1691,7 +1691,7 @@
         });
 
         window.addEventListener('keyup', (e) => {
-            if (e.code === 'Space') {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault();
                 onRelease();
             }
