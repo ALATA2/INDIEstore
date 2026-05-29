@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANDBOX 3D - Ghibli Summer RPG</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Dummy favicon to prevent console 404 error -->
+    <link rel="icon" href="data:,">
+    <!-- Google Fonts for Ghibli aesthetic typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Platypi:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    
+    <!-- Three.js CDN Import Map -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- UI Overlay (HUD) -->
+    <div id="game-hud" class="hud-container">
+        <!-- Top Left: Player Status -->
+        <div class="hud-card player-stats">
+            <div class="avatar-container">
+                <div class="avatar-face">🧑‍🌾</div>
+            </div>
+            <div class="stats-bars">
+                <div class="player-name">Indie Maker</div>
+                <div class="bar hp-bar">
+                    <div class="bar-fill" style="width: 100%;"></div>
+                    <span class="bar-text">HP 100/100</span>
+                </div>
+                <div class="bar stamina-bar">
+                    <div class="bar-fill" style="width: 85%;"></div>
+                    <span class="bar-text">STAMINA 85/100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Right: Location & Time -->
+        <div class="hud-card location-info">
+            <div class="location-title">☀️ Radura d'Estate</div>
+            <div class="location-coords">Plot: #042</div>
+        </div>
+
+        <!-- Bottom Center: Game Controls Instructions -->
+        <div class="hud-card controls-card">
+            <div class="controls-title">CONTROLLI</div>
+            <div class="controls-list">
+                <div class="control-item"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> Muoviti</div>
+                <div class="control-item"><span class="key">Mouse</span> Ruota Inquadratura</div>
+                <div class="control-item"><span class="key">Click SX</span> Interagisci (Vicino al Baule)</div>
+            </div>
+        </div>
+        
+        <!-- Interactive Prompt (e.g. Press E or Click to open) -->
+        <div id="interaction-prompt" class="interaction-prompt hidden">
+            Premi <span class="key">E</span> o Clicca per aprire il Baule
+        </div>
+        
+        <!-- Mobile Touch Controls (Joystick and Action button) -->
+        <div id="mobile-controls" class="mobile-controls-container hidden-mobile">
+            <!-- Joystick Base -->
+            <div id="joystick-base" class="joystick-base">
+                <div id="joystick-knob" class="joystick-knob"></div>
+            </div>
+            
+            <!-- Quick Action Button -->
+            <button id="mobile-action-btn" class="mobile-action-btn">📦 APRÌ</button>
+        </div>
+    </div>
+
+    <!-- Inventory DOM Overlay (Hidden by default) -->
+    <div id="inventory-overlay" class="inventory-overlay hidden">
+        <div class="inventory-box">
+            <div class="inventory-header">
+                <h2>📦 Deposito del Plot</h2>
+                <button id="close-inventory-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="inventory-grid" id="inventory-grid">
+                <!-- Items will be generated dynamically -->
+            </div>
+            <div class="inventory-footer">
+                <p>Seleziona un oggetto per equipaggiarlo o depositarlo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Entry Script -->
+    <script type="module" src="js/game.js"></script>
+</body>
+</html>
