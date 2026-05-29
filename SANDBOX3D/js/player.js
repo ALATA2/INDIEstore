@@ -206,6 +206,7 @@ export class Player {
         this.domElement.addEventListener('mousedown', (e) => {
             if (e.target === this.domElement) {
                 this.isMouseDown = true;
+                this.mouseButtonActive = e.button; // Record which mouse button was pressed (0 = left, 1 = middle wheel)
                 this.previousMousePosition = { x: e.clientX, y: e.clientY };
             }
         });
@@ -216,7 +217,13 @@ export class Player {
             const deltaX = e.clientX - this.previousMousePosition.x;
             const deltaY = e.clientY - this.previousMousePosition.y;
 
-            this.cameraTheta += deltaX * 0.007;
+            if (this.mouseButtonActive === 1) {
+                // Inverted horizontal rotation when using middle wheel click (button 1)
+                this.cameraTheta -= deltaX * 0.007;
+            } else {
+                // Standard horizontal rotation for other buttons (like left-click)
+                this.cameraTheta += deltaX * 0.007;
+            }
             this.cameraPhi -= deltaY * 0.007;
             this.cameraPhi = Math.max(this.minPhi, Math.min(this.maxPhi, this.cameraPhi));
 
