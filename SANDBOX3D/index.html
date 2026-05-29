@@ -28,43 +28,46 @@
 
     <!-- UI Overlay (HUD) -->
     <div id="game-hud" class="hud-container">
-        <!-- Top Left: Player Status -->
-        <div class="hud-card player-stats">
-            <div class="avatar-container">
-                <div class="avatar-face">🧑‍🌾</div>
-            </div>
-            <div class="stats-bars">
-                <div class="player-name">Indie Maker</div>
-                <div class="bar hp-bar">
-                    <div class="bar-fill" style="width: 100%;"></div>
-                    <span class="bar-text">HP 100/100</span>
+        <!-- Top Row: Player Stats and Location Info -->
+        <div class="hud-header-row">
+            <!-- Top Left: Player Status -->
+            <div class="hud-card player-stats">
+                <div class="avatar-container">
+                    <div class="avatar-face">🧑‍🌾</div>
                 </div>
-                <div class="bar stamina-bar">
-                    <div class="bar-fill" style="width: 85%;"></div>
-                    <span class="bar-text">STAMINA 85/100</span>
+                <div class="stats-bars">
+                    <div class="player-name">Indie Maker</div>
+                    <div class="bar hp-bar">
+                        <div class="bar-fill" style="width: 100%;"></div>
+                        <span class="bar-text">HP 100/100</span>
+                    </div>
+                    <div class="bar stamina-bar">
+                        <div class="bar-fill" style="width: 85%;"></div>
+                        <span class="bar-text">STAMINA 85/100</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Top Right: Location & Time -->
-        <div class="hud-card location-info">
-            <div class="location-title">☀️ Radura d'Estate</div>
-            <div class="location-coords">Plot: #042</div>
+            <!-- Top Right: Location & Time -->
+            <div class="hud-card location-info">
+                <div class="location-title">☀️ Summer Glade</div>
+                <div class="location-coords">Plot: #042</div>
+            </div>
         </div>
 
         <!-- Bottom Center: Game Controls Instructions -->
         <div class="hud-card controls-card">
-            <div class="controls-title">CONTROLLI</div>
+            <div class="controls-title">CONTROLS</div>
             <div class="controls-list">
-                <div class="control-item"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> Muoviti</div>
-                <div class="control-item"><span class="key">Mouse</span> Ruota Inquadratura</div>
-                <div class="control-item"><span class="key">Click SX</span> Interagisci (Vicino al Baule)</div>
+                <div class="control-item"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> Move</div>
+                <div class="control-item"><span class="key">Mouse</span> Rotate Camera</div>
+                <div class="control-item"><span class="key">Left Click</span> Interact (Near Chest)</div>
             </div>
         </div>
         
         <!-- Interactive Prompt (e.g. Press E or Click to open) -->
         <div id="interaction-prompt" class="interaction-prompt hidden">
-            Premi <span class="key">E</span> o Clicca per aprire il Baule
+            Press <span class="key">E</span> or Click to open the Chest
         </div>
         
         <!-- Mobile Touch Controls (Joystick and Action button) -->
@@ -75,7 +78,7 @@
             </div>
             
             <!-- Quick Action Button -->
-            <button id="mobile-action-btn" class="mobile-action-btn">📦 APRÌ</button>
+            <button id="mobile-action-btn" class="mobile-action-btn">📦 OPEN</button>
         </div>
     </div>
 
@@ -83,14 +86,14 @@
     <div id="inventory-overlay" class="inventory-overlay hidden">
         <div class="inventory-box">
             <div class="inventory-header">
-                <h2>📦 Deposito del Plot</h2>
+                <h2>📦 Plot Chest</h2>
                 <button id="close-inventory-btn" class="close-btn">&times;</button>
             </div>
             <div class="inventory-grid" id="inventory-grid">
                 <!-- Items will be generated dynamically -->
             </div>
             <div class="inventory-footer">
-                <p>Seleziona un oggetto per equipaggiarlo o depositarlo.</p>
+                <p>Select an item to equip or deposit it.</p>
             </div>
         </div>
     </div>

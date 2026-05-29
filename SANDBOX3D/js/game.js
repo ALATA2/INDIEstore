@@ -161,7 +161,7 @@ class Game {
             if (distance <= 3.0) {
                 this.inventory.open();
             } else {
-                this.showToast("Sei troppo lontano dal baule per aprirlo!");
+                this.showToast("You are too far from the chest to open it!");
             }
         }
     }
@@ -174,7 +174,7 @@ class Game {
         if (distance <= 3.0) {
             this.inventory.open();
         } else {
-            this.showToast("Sei troppo lontano dal baule! Avvicinati.");
+            this.showToast("You are too far from the chest! Come closer.");
         }
     }
 

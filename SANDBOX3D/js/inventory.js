@@ -8,14 +8,14 @@ export class Inventory {
 
         // Mock items in storage chest
         this.items = [
-            { id: 'wood', name: 'Legno di Quercia', count: 12, icon: '🪵' },
-            { id: 'stone', name: 'Pietra Levigata', count: 8, icon: '🪨' },
-            { id: 'flower', name: 'Fiore Giallo', count: 4, icon: '🌼' },
-            { id: 'apple', name: 'Mela Matura', count: 5, icon: '🍎' },
-            { id: 'seed', name: 'Semi di Grano', count: 20, icon: '🌾' },
-            { id: 'fish', name: 'Pesce Dorato', count: 2, icon: '🐟' },
-            { id: 'empty', name: 'Vuoto', count: 0, icon: '' },
-            { id: 'empty', name: 'Vuoto', count: 0, icon: '' }
+            { id: 'wood', name: 'Oak Wood', count: 12, icon: '🪵' },
+            { id: 'stone', name: 'Polished Stone', count: 8, icon: '🪨' },
+            { id: 'flower', name: 'Yellow Flower', count: 4, icon: '🌼' },
+            { id: 'apple', name: 'Ripe Apple', count: 5, icon: '🍎' },
+            { id: 'seed', name: 'Wheat Seeds', count: 20, icon: '🌾' },
+            { id: 'fish', name: 'Goldfish', count: 2, icon: '🐟' },
+            { id: 'empty', name: 'Empty', count: 0, icon: '' },
+            { id: 'empty', name: 'Empty', count: 0, icon: '' }
         ];
 
         this.setupEvents();
@@ -85,7 +85,7 @@ export class Inventory {
                     // Simple interaction
                     item.count--;
                     if (item.count <= 0) {
-                        this.items[index] = { id: 'empty', name: 'Vuoto', count: 0, icon: '' };
+                        this.items[index] = { id: 'empty', name: 'Empty', count: 0, icon: '' };
                     }
                     this.render();
                 });
