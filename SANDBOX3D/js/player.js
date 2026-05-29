@@ -436,44 +436,54 @@ export class Player {
                 // --- 2. Wooden Fence Collision Check (Home Plot size 8x8 at z = 0, top is Y = 2.8) ---
                 const fenceMinX = -4.0;
                 const fenceMaxX = 4.0;
-                const fenceMinZ = -4.0; // Corrected from -6.0 to match world.js
-                const fenceMaxZ = 4.0;  // Corrected from 2.0 to match world.js
+                const fenceMinZ = -4.0; 
+                const fenceMaxZ = 4.0;  
                 const fenceTopY = 2.8;
                 const playerRadius = 0.28;
 
                 // Only block player horizontally if their Y is below the top of the fence
                 if (currentY < fenceTopY) {
-                    // Check Left wall
-                    if (this.position.x > fenceMinX && nextX - playerRadius < fenceMinX) {
-                        nextX = fenceMinX + playerRadius;
-                    } else if (this.position.x < fenceMinX && nextX + playerRadius > fenceMinX) {
-                        nextX = fenceMinX - playerRadius;
+                    // Check if player is within the Z-range of the Left/Right walls
+                    const isWithinFenceZ = this.position.z >= fenceMinZ - playerRadius && this.position.z <= fenceMaxZ + playerRadius;
+
+                    if (isWithinFenceZ) {
+                        // Check Left wall (x = -4)
+                        if (this.position.x > fenceMinX && nextX - playerRadius < fenceMinX) {
+                            nextX = fenceMinX + playerRadius;
+                        } else if (this.position.x < fenceMinX && nextX + playerRadius > fenceMinX) {
+                            nextX = fenceMinX - playerRadius;
+                        }
+
+                        // Check Right wall (x = 4)
+                        if (this.position.x < fenceMaxX && nextX + playerRadius > fenceMaxX) {
+                            nextX = fenceMaxX - playerRadius;
+                        } else if (this.position.x > fenceMaxX && nextX - playerRadius < fenceMaxX) {
+                            nextX = fenceMaxX + playerRadius;
+                        }
                     }
 
-                    // Check Right wall
-                    if (this.position.x < fenceMaxX && nextX + playerRadius > fenceMaxX) {
-                        nextX = fenceMaxX - playerRadius;
-                    } else if (this.position.x > fenceMaxX && nextX - playerRadius < fenceMaxX) {
-                        nextX = fenceMaxX + playerRadius;
-                    }
+                    // Check if player is within the X-range of the Back/Front walls
+                    const isWithinFenceX = this.position.x >= fenceMinX - playerRadius && this.position.x <= fenceMaxX + playerRadius;
 
-                    // Check Back wall
-                    if (this.position.z > fenceMinZ && nextZ - playerRadius < fenceMinZ) {
-                        nextZ = fenceMinZ + playerRadius;
-                    } else if (this.position.z < fenceMinZ && nextZ + playerRadius > fenceMinZ) {
-                        nextZ = fenceMinZ - playerRadius;
-                    }
+                    if (isWithinFenceX) {
+                        // Check Back wall (z = -4)
+                        if (this.position.z > fenceMinZ && nextZ - playerRadius < fenceMinZ) {
+                            nextZ = fenceMinZ + playerRadius;
+                        } else if (this.position.z < fenceMinZ && nextZ + playerRadius > fenceMinZ) {
+                            nextZ = fenceMinZ - playerRadius;
+                        }
 
-                    // Check Front wall (has a gate between X = -2.3 and 2.3)
-                    const isCrossingFront = (this.position.z < fenceMaxZ && nextZ + playerRadius > fenceMaxZ) || 
-                                            (this.position.z > fenceMaxZ && nextZ - playerRadius < fenceMaxZ);
-                    if (isCrossingFront) {
-                        const inGateRange = Math.abs(nextX) < 2.3 && Math.abs(this.position.x) < 2.3; // Corrected from 1.3 to match gate width
-                        if (!inGateRange) {
-                            if (this.position.z < fenceMaxZ) {
-                                nextZ = fenceMaxZ - playerRadius;
-                            } else {
-                                nextZ = fenceMaxZ + playerRadius;
+                        // Check Front wall (has a gate between X = -2.3 and 2.3)
+                        const isCrossingFront = (this.position.z < fenceMaxZ && nextZ + playerRadius > fenceMaxZ) || 
+                                                (this.position.z > fenceMaxZ && nextZ - playerRadius < fenceMaxZ);
+                        if (isCrossingFront) {
+                            const inGateRange = Math.abs(nextX) < 2.3 && Math.abs(this.position.x) < 2.3;
+                            if (!inGateRange) {
+                                if (this.position.z < fenceMaxZ) {
+                                    nextZ = fenceMaxZ - playerRadius;
+                                } else {
+                                    nextZ = fenceMaxZ + playerRadius;
+                                }
                             }
                         }
                     }
