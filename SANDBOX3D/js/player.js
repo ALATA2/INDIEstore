@@ -18,8 +18,8 @@ export class Player {
 
         // Gravity and Jump physics
         this.vy = 0;
-        this.gravity = 0.012;
-        this.jumpStrength = 0.24;
+        this.gravity = 0.007;        // Reduced from 0.012 for a floatier, slower jump
+        this.jumpStrength = 0.18;     // Reduced from 0.24 for a softer, slower jump
         this.isGrounded = true;
         
         // Input states
@@ -687,8 +687,8 @@ export class Player {
 
     cancelJump() {
         // Variable jump height limit on early release
-        if (this.vy > 0.07) {
-            this.vy = 0.07;
+        if (this.vy > 0.05) {
+            this.vy = 0.05;
         }
     }
 }
