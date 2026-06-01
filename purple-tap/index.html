@@ -560,17 +560,53 @@
                 let osc = this.ctx.createOscillator();
                 let gain = this.ctx.createGain();
                 
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1100, this.ctx.currentTime);
-                osc.frequency.setValueAtTime(1650, this.ctx.currentTime + 0.05);
+                const pentatonic = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51, 1567.98, 1760.00, 2093.00];
+                let index = Math.min(consecutiveChips, pentatonic.length - 1);
+                let baseFreq = pentatonic[index];
                 
-                gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(baseFreq * 1.5, this.ctx.currentTime + 0.05);
+                
+                // Volume envelope slightly louder for high combos
+                let vol = 0.06 + Math.min(0.04, consecutiveChips * 0.005);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.15);
+                osc.stop(this.ctx.currentTime + 0.18);
+            },
+            playStyleUp(rank) {
+                this.init();
+                if (!this.ctx) return;
+                
+                const ranks = ['D', 'C', 'B', 'A', 'S', 'SS', 'SSS'];
+                let rankIndex = ranks.indexOf(rank);
+                if (rankIndex < 1) rankIndex = 1;
+                
+                let roots = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 523.25];
+                let root = roots[rankIndex];
+                let chord = [root, root * 1.25, root * 1.5, root * 2.0];
+                
+                chord.forEach((freq, idx) => {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.06);
+                    
+                    gain.gain.setValueAtTime(0.0, this.ctx.currentTime + idx * 0.06);
+                    gain.gain.linearRampToValueAtTime(0.06, this.ctx.currentTime + idx * 0.06 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.06 + 0.25);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(this.ctx.currentTime + idx * 0.06);
+                    osc.stop(this.ctx.currentTime + idx * 0.06 + 0.25);
+                });
             },
             playNearMiss() {
                 this.init();
@@ -710,9 +746,16 @@
                 
                 // Classic filter envelope
                 filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(250, time);
-                filter.frequency.exponentialRampToValueAtTime(1100, time + 0.04);
-                filter.frequency.exponentialRampToValueAtTime(80, time + 0.18);
+                if (timeScale < 0.5) {
+                    // Underwater muffled filter: frequency stays very low
+                    filter.frequency.setValueAtTime(180, time);
+                    filter.frequency.exponentialRampToValueAtTime(300, time + 0.04);
+                    filter.frequency.exponentialRampToValueAtTime(120, time + 0.18);
+                } else {
+                    filter.frequency.setValueAtTime(250, time);
+                    filter.frequency.exponentialRampToValueAtTime(1100, time + 0.04);
+                    filter.frequency.exponentialRampToValueAtTime(80, time + 0.18);
+                }
                 
                 // Volume envelope
                 gain.gain.setValueAtTime(0.0, time);
@@ -795,6 +838,10 @@
         // Screen Shake Timer & Amplitude
         let shakeTime = 0;
         let shakeIntensity = 0;
+
+        // Consecutive Chips arpeggio combos
+        let consecutiveChips = 0;
+        let consecutiveChipsTimer = 0;
 
         // Input Tracking States
         let isPressing = false;
@@ -930,6 +977,10 @@
                     if (selectedSkin === 'platinum' && Math.random() < 0.15) {
                         spawnPlatinumSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
                     }
+                    // SSS Fever rainbow sparks
+                    if (comboRank === 'SSS' && Math.random() < 0.3) {
+                        spawnRainbowSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
                 }
 
                 // Calculate Squash & Stretch parameters
@@ -968,6 +1019,10 @@
                     // Platinum skin extra sparks
                     if (selectedSkin === 'platinum' && Math.random() < 0.3) {
                         spawnPlatinumSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
+                    // SSS Fever rainbow sparks in air/dash
+                    if (comboRank === 'SSS' && Math.random() < 0.4) {
+                        spawnRainbowSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
                     }
                 } else {
                     if (this.trail.length > 0) {
@@ -1449,6 +1504,9 @@
                 if (isColliding) {
                     if (obj.type === 'chip') {
                         // Gather Chip
+                        consecutiveChips++;
+                        consecutiveChipsTimer = 120; // 2 seconds combo window
+                        
                         let chipVal = Math.round(20 * getComboMultiplier());
                         score += chipVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 15);
@@ -1457,8 +1515,15 @@
                         localStorage.setItem('ninja_total_chips', totalChips);
                         Sound.playChip();
                         addComboPoints(5);
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `+${chipVal}`);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `+${chipVal}`, 'chip');
                         spawnChipCollectParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                        
+                        // Screen kick on high combos
+                        if (consecutiveChips > 3) {
+                            shakeTime = Math.min(8, shakeTime + 3);
+                            shakeIntensity = Math.min(4, shakeIntensity + 1);
+                        }
+                        
                         checkMissions();
                         gameObjects.splice(i, 1);
                         continue;
@@ -1468,7 +1533,7 @@
                         magnetTimer = 360; // 6 seconds at 60fps
                         Sound.playPowerup();
                         addComboPoints(10);
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "MAGNET");
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "MAGNET", 'powerup');
                         gameObjects.splice(i, 1);
                         continue;
 
@@ -1477,7 +1542,7 @@
                         hasShield = true;
                         Sound.playPowerup();
                         addComboPoints(10);
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "SHIELD ACTIVE");
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "SHIELD ACTIVE", 'powerup');
                         gameObjects.splice(i, 1);
                         continue;
 
@@ -1489,7 +1554,7 @@
                         runDronesDestroyed++;
                         Sound.playKill();
                         addComboPoints(20);
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, `KILL +${killVal}`);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, `KILL +${killVal}`, 'kill');
                         spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
                         
                         // Hitstop: Freeze frames on impact
@@ -1524,7 +1589,7 @@
                             hitstopFrames = 40; // Freeze frame impact
                             shakeTime = 20;
                             shakeIntensity = 12;
-                            spawnScorePopup(player.x + player.width / 2, player.y - 30, "GOLDEN REVIVE!");
+                            spawnScorePopup(player.x + player.width / 2, player.y - 30, "GOLDEN REVIVE!", 'revive');
                             spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
                             gameObjects.splice(i, 1);
                             continue;
@@ -1587,7 +1652,12 @@
                                 score += nearMissVal;
                                 Sound.playNearMiss();
                                 addComboPoints(15);
-                                spawnScorePopup(player.x + player.width / 2, player.y - 45, `NEAR MISS +${nearMissVal}`);
+                                spawnScorePopup(player.x + player.width / 2, player.y - 45, `NEAR MISS +${nearMissVal}`, 'near_miss');
+                                
+                                // Tactile screen shake and hitstop for near miss
+                                shakeTime = 6;
+                                shakeIntensity = 4;
+                                hitstopFrames = 3;
                             }
                         }
                     }
@@ -1650,6 +1720,13 @@
             styleAnnouncementText = `${actionWord} [${rank}]`;
             screenFlashColor = `rgba(${hexToRgb(styleAnnouncementColor)}, 0.15)`;
             screenFlashTimer = 10;
+
+            Sound.playStyleUp(rank);
+            if (['A', 'S', 'SS', 'SSS'].includes(rank)) {
+                hitstopFrames = 3;
+                shakeTime = 8;
+                shakeIntensity = 4;
+            }
         }
 
         function getComboRankColorFor(rank) {
@@ -1694,13 +1771,48 @@
         // --- SCORE POPUPS ---
         let popups = [];
 
-        function spawnScorePopup(x, y, text) {
+        function spawnScorePopup(x, y, text, type = 'default') {
+            let color = '#00ffff';
+            let glow = '#00ffff';
+            let scale = 2.0;
+            let angle = (Math.random() - 0.5) * 0.4;
+            let angleSpeed = (Math.random() - 0.5) * 0.04;
+            
+            if (type === 'chip') {
+                color = '#ffaa00';
+                glow = '#ff5500';
+                scale = 1.8 + Math.min(1.2, consecutiveChips * 0.12);
+            } else if (type === 'near_miss') {
+                color = '#ff6400';
+                glow = '#ffaa00';
+                scale = 2.2;
+            } else if (type === 'kill') {
+                color = '#ff0055';
+                glow = '#bd00ff';
+                scale = 2.4;
+            } else if (type === 'achievement' || type === 'revive') {
+                color = '#ffd700';
+                glow = '#ffaa00';
+                scale = 2.6;
+            } else if (type === 'powerup') {
+                color = '#00ffff';
+                glow = '#bd00ff';
+                scale = 2.2;
+            }
+            
             popups.push({
                 x: x,
                 y: y,
-                vy: -2.5,
+                vy: -3.5,
+                vx: (Math.random() - 0.5) * 2,
                 alpha: 1.0,
-                text: text
+                text: text,
+                type: type,
+                color: color,
+                glow: glow,
+                scale: scale,
+                angle: angle,
+                angleSpeed: angleSpeed
             });
         }
 
@@ -1708,7 +1820,11 @@
             for (let i = popups.length - 1; i >= 0; i--) {
                 let p = popups[i];
                 p.y += p.vy * timeScale;
-                p.alpha -= 0.04 * timeScale;
+                p.x += p.vx * timeScale;
+                p.vy *= 0.95;
+                p.alpha -= 0.03 * timeScale;
+                p.scale = Math.max(1.0, p.scale - 0.06 * timeScale);
+                p.angle += p.angleSpeed * timeScale;
 
                 if (p.alpha <= 0) {
                     popups.splice(i, 1);
@@ -1716,12 +1832,28 @@
                 }
 
                 ctx.save();
-                ctx.font = 'bold 22px "Orbitron", sans-serif';
-                ctx.fillStyle = `rgba(0, 255, 255, ${p.alpha})`;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = '#00ffff';
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.scale(p.scale, p.scale);
+                
+                let fontSize = '20px';
+                if (p.type === 'kill' || p.type === 'achievement' || p.type === 'revive') {
+                    fontSize = '24px';
+                }
+                ctx.font = `900 ${fontSize} "Orbitron", sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.fillText(p.text, p.x, p.y);
+                
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = p.glow;
+                
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 4.5;
+                ctx.strokeText(p.text, 0, 0);
+                
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fillText(p.text, 0, 0);
+                
                 ctx.restore();
             }
         }
@@ -1785,6 +1917,15 @@
             let size = Math.random() * 3 + 1.5;
             let decay = Math.random() * 0.04 + 0.02;
             spawnParticle(x, y, vx, vy, size, '#e5e8e8', decay);
+        }
+
+        function spawnRainbowSpark(x, y) {
+            let vx = (Math.random() - 0.5) * 4 - 2;
+            let vy = (Math.random() - 0.5) * 4 - 2;
+            let size = Math.random() * 3 + 1.5;
+            let decay = Math.random() * 0.04 + 0.02;
+            let hue = Math.floor(Math.random() * 360);
+            spawnParticle(x, y, vx, vy, size, `hsla(${hue}, 100%, 50%, 0.9)`, decay);
         }
 
         function spawnChipCollectParticles(x, y) {
@@ -1943,11 +2084,13 @@
         }
 
         function drawFloorGrid() {
+            let rhythmPulse = 0.7 + Math.abs(Math.sin((gameFrames / 15) * Math.PI)) * 0.35;
+
             ctx.save();
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 15 * rhythmPulse;
             ctx.shadowColor = primaryColor;
             ctx.strokeStyle = primaryColor;
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3.5 * rhythmPulse;
             ctx.beginPath();
             ctx.moveTo(0, FLOOR_Y);
             ctx.lineTo(LOGICAL_WIDTH, FLOOR_Y);
@@ -1955,7 +2098,8 @@
             ctx.restore();
 
             ctx.save();
-            ctx.strokeStyle = `rgba(${hexToRgb(primaryColor)}, 0.12)`;
+            let gridAlpha = 0.12 * rhythmPulse;
+            ctx.strokeStyle = `rgba(${hexToRgb(primaryColor)}, ${gridAlpha})`;
             ctx.lineWidth = 1.5;
 
             for (let y = FLOOR_Y; y <= LOGICAL_HEIGHT; y += 22) {
@@ -1974,6 +2118,32 @@
                 ctx.lineTo(x - currentOffset - 120, LOGICAL_HEIGHT);
                 ctx.stroke();
             }
+            ctx.restore();
+        }
+
+        function drawSSSFeverBorder() {
+            if (comboRank !== 'SSS') return;
+            
+            ctx.save();
+            let time = Date.now() * 0.003;
+            let grad = ctx.createLinearGradient(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+            grad.addColorStop(0, `hsla(${(time * 50) % 360}, 100%, 50%, 0.4)`);
+            grad.addColorStop(0.5, `hsla(${(time * 50 + 120) % 360}, 100%, 50%, 0.4)`);
+            grad.addColorStop(1, `hsla(${(time * 50 + 240) % 360}, 100%, 50%, 0.4)`);
+            
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 12 + Math.sin(Date.now() * 0.01) * 4;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = `hsla(${(time * 50) % 360}, 100%, 50%, 0.6)`;
+            
+            ctx.strokeRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+            
+            ctx.font = '900 12px "Orbitron", sans-serif';
+            ctx.fillStyle = `hsla(${(time * 50) % 360}, 100%, 50%, 0.8)`;
+            ctx.shadowBlur = 0;
+            ctx.textAlign = 'center';
+            ctx.fillText("FEVER MODE (x6 MULTIPLIER!)", LOGICAL_WIDTH / 2, 70);
+            
             ctx.restore();
         }
 
@@ -2112,7 +2282,7 @@
                     totalChips += m.reward;
                     localStorage.setItem('ninja_total_chips', totalChips);
                     
-                    spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, `ACHIEVEMENT: +${m.reward} CHIPS!`);
+                    spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, `ACHIEVEMENT: +${m.reward} CHIPS!`, 'achievement');
                     Sound.playPowerup();
                     updated = true;
                 }
@@ -2343,6 +2513,9 @@
             Sound.playDeath();
             BGM.stop();
             
+            consecutiveChips = 0;
+            consecutiveChipsTimer = 0;
+            
             shakeTime = 25;
             shakeIntensity = 20;
 
@@ -2397,6 +2570,9 @@
             runDronesDestroyed = 0;
             runUsedDash = false;
             goldReviveUsed = false;
+            
+            consecutiveChips = 0;
+            consecutiveChipsTimer = 0;
             
             player.reset();
             gameState = STATE_PLAYING;
@@ -2784,6 +2960,14 @@
                         magnetTimer--;
                     }
 
+                    // Decay consecutive chips timer
+                    if (consecutiveChipsTimer > 0) {
+                        consecutiveChipsTimer -= 1 * timeScale;
+                        if (consecutiveChipsTimer <= 0) {
+                            consecutiveChips = 0;
+                        }
+                    }
+
                     // Entity logic ticks
                     player.update();
                     updateObstacleSpawning();
@@ -2935,6 +3119,7 @@
             // HUD draws outside screen shake
             if (gameState === STATE_PLAYING) {
                 drawHUD();
+                drawSSSFeverBorder();
                 
                 // Fade out invisible tutorial overlay
                 if (tutorialDismissed && tutorialAlpha > 0) {
