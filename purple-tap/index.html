@@ -2018,8 +2018,11 @@
             const listDiv = document.getElementById('leaderboard-list');
             listDiv.innerHTML = '<div class="leaderboard-loading">Loading scores...</div>';
             
-            // Dreamlo JSON endpoint
-            fetch(`https://www.dreamlo.com/lb/${dreamloPublicCode}/json`)
+            // Load via HTTPS/CORS proxy to avoid SSL/Mixed Content issues
+            const targetUrl = `http://dreamlo.com/lb/${dreamloPublicCode}/json`;
+            const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
+            
+            fetch(proxyUrl)
                 .then(res => res.json())
                 .then(data => {
                     renderLeaderboard(data);
@@ -2098,7 +2101,11 @@
             submitBtn.disabled = true;
             submitBtn.innerText = 'SUBMITTING...';
             
-            fetch(`https://www.dreamlo.com/lb/${dreamloPrivateCode}/add-pipe/${name}/${score}`)
+            // Submit via HTTPS/CORS proxy to avoid SSL/Mixed Content issues
+            const targetUrl = `http://dreamlo.com/lb/${dreamloPrivateCode}/add-pipe/${name}/${score}`;
+            const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
+            
+            fetch(proxyUrl)
                 .then(() => {
                     submitBtn.innerText = 'SUBMIT';
                     submitBtn.disabled = false;
