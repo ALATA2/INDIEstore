@@ -225,6 +225,119 @@
         .hud-action-btn.hidden {
             display: none;
         }
+
+        /* Shop Overlay Styles */
+        .shop-box {
+            width: 90%;
+            max-width: 480px;
+            background: rgba(21, 8, 45, 0.95);
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 90%;
+        }
+        .shop-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #bd00ff;
+            text-shadow: 0 0 10px rgba(186, 85, 211, 0.6);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .shop-currency {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+            margin-bottom: 16px;
+        }
+        .shop-items-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 4px;
+            flex-grow: 1;
+        }
+        .shop-item-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            border-radius: 8px;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .shop-item-card.selected {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.08);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.15);
+        }
+        .shop-item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+        .shop-item-preview {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .shop-item-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .shop-item-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .shop-item-desc {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+        }
+        .shop-item-btn {
+            background: #00ffff;
+            border: none;
+            border-radius: 4px;
+            color: #100624;
+            padding: 6px 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 80px;
+        }
+        .shop-item-btn:hover:not(:disabled) {
+            background: #ffffff;
+            box-shadow: 0 0 8px #ffffff;
+        }
+        .shop-item-btn:disabled {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: default;
+        }
+        .shop-item-btn.equipped {
+            background: #bd00ff;
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(186, 85, 211, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -253,8 +366,21 @@
             </div>
         </div>
 
-        <!-- Leaderboard Trigger Button -->
+        <!-- HTML Shop Overlay -->
+        <div id="shop-overlay" class="hud-overlay">
+            <div class="shop-box">
+                <h2 class="shop-title">🛒 NINJA GEAR SHOP</h2>
+                <div class="shop-currency">YOUR CHIPS: <span id="shop-chips-count">0</span> 🪙</div>
+                <div id="shop-items-list" class="shop-items-grid">
+                    <!-- Cards will be generated dynamically -->
+                </div>
+                <button id="close-shop-btn">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Start Screen Action Buttons -->
         <button id="show-leaderboard-start" class="hud-action-btn" style="bottom: 25px; left: 30px;">🏆 LEADERBOARD</button>
+        <button id="show-shop-start" class="hud-action-btn" style="bottom: 25px; right: 30px;">🛒 SHOP</button>
     </div>
 
     <script>
@@ -637,6 +763,18 @@
             });
         }
 
+        // --- COSMETIC SHOP VARIABLES ---
+        let totalChips = parseInt(localStorage.getItem('ninja_total_chips')) || 0;
+        let selectedSkin = localStorage.getItem('ninja_selected_skin') || 'classic';
+        let ownedSkins = JSON.parse(localStorage.getItem('ninja_owned_skins')) || ['classic'];
+
+        const SHOP_SKINS = [
+            { id: 'classic', name: 'Classic Purple', desc: 'Standard cyber ninja suit (No Buffs)', price: 0, color: '#bd00ff', trailColor: '#00ffff' },
+            { id: 'holo', name: 'Holo Cyan', desc: 'Hologram suit (+50% Magnet Range)', price: 150, color: '#00ffff', trailColor: '#00c3ff' },
+            { id: 'gold', name: 'Gold Overlord', desc: 'Legendary gold suit (1x Revive per run)', price: 300, color: '#ffd700', trailColor: '#ffaa00' },
+            { id: 'platinum', name: 'Platinum Lord', desc: 'Divine platinum armor (Double Jump ability)', price: 9999, color: '#e5e8e8', trailColor: '#95a5a6' }
+        ];
+
         // Magnet Power-Up Timer
         let magnetTimer = 0;
 
@@ -663,6 +801,32 @@
         let pressDuration = 0;
         let touchActive = false; // Guard to avoid duplicate touch/mouse triggers
 
+        // --- LEVEL SECTOR VARIABLES ---
+        let currentSector = 1;
+        let transitionQueued = false;
+        let sectorAnnouncementTimer = 0;
+        let sectorAnnouncementText = '';
+
+        // --- STYLE ANNOUNCER VARIABLES ---
+        let styleAnnouncementTimer = 0;
+        let styleAnnouncementText = '';
+        let styleAnnouncementColor = '';
+        let screenFlashTimer = 0;
+        let screenFlashColor = '';
+
+        // --- MISSION / ACHIEVEMENT VARIABLES ---
+        let completedMissions = JSON.parse(localStorage.getItem('ninja_completed_missions')) || [];
+        const missions = [
+            { id: 'chips', text: 'Collect 15 Chips in a single run', target: 15, reward: 5 },
+            { id: 'drones', text: 'Destroy 3 Drones in a single run', target: 3, reward: 8 },
+            { id: 'nodash', text: 'Reach Sector 2 without using Dash', target: 1, reward: 10 }
+        ];
+
+        let runChipsCollected = 0;
+        let runDronesDestroyed = 0;
+        let runUsedDash = false;
+        let goldReviveUsed = false;
+
         // --- PLAYER (Ninja) ---
         const player = {
             x: 200,
@@ -673,6 +837,7 @@
             gravity: 1.1,
             jumpStrength: 19,
             isGrounded: true,
+            doubleJumpAvailable: false,
             
             // Squash and Stretch parameters for movement juice
             scaleX: 1,
@@ -694,6 +859,7 @@
                 this.landSquash = 0;
                 this.runCycle = 0;
                 this.trail = [];
+                this.doubleJumpAvailable = false;
             },
 
             jump() {
@@ -706,6 +872,13 @@
                     addComboPoints(1);
                     // Spawn jump puff particles
                     spawnJumpParticles(this.x + this.width / 2, FLOOR_Y);
+                    this.doubleJumpAvailable = selectedSkin === 'platinum';
+                } else if (selectedSkin === 'platinum' && this.doubleJumpAvailable) {
+                    this.vy = -this.jumpStrength * 0.95; // Strong mid-air double jump
+                    this.doubleJumpAvailable = false;
+                    Sound.playJump();
+                    addComboPoints(2);
+                    spawnPlatinumSpark(this.x + this.width / 2, this.y + this.height / 2);
                 }
             },
 
@@ -713,6 +886,7 @@
                 let isDashing = isPressing && pressDuration > 8;
 
                 if (isDashing) {
+                    runUsedDash = true;
                     // Time scale transitions down to 0.2
                     timeScale = Math.max(0.2, timeScale - 0.15);
                     // Floatiness: vertical velocity damped to slide horizontally
@@ -748,6 +922,14 @@
                     if (gameFrames % 6 === 0 && Math.abs(this.x - 200) < 50) {
                         spawnRunParticles(this.x, FLOOR_Y);
                     }
+                    // Gold skin extra sparks
+                    if (selectedSkin === 'gold' && Math.random() < 0.15) {
+                        spawnGoldSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
+                    // Platinum skin extra sparks
+                    if (selectedSkin === 'platinum' && Math.random() < 0.15) {
+                        spawnPlatinumSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
                 }
 
                 // Calculate Squash & Stretch parameters
@@ -779,6 +961,14 @@
                     if (isDashing && Math.random() < 0.6) {
                         spawnDashSpark(this.x, this.y + Math.random() * this.height);
                     }
+                    // Gold skin extra sparks
+                    if (selectedSkin === 'gold' && Math.random() < 0.3) {
+                        spawnGoldSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
+                    // Platinum skin extra sparks
+                    if (selectedSkin === 'platinum' && Math.random() < 0.3) {
+                        spawnPlatinumSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
                 } else {
                     if (this.trail.length > 0) {
                         this.trail.shift();
@@ -787,6 +977,12 @@
             },
 
             draw() {
+                // Get active skin
+                let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
+                let bodyColor = selectedSkin === 'classic' ? primaryColor : activeSkinObj.color;
+                let glowColor = bodyColor;
+                let trailColorHex = selectedSkin === 'classic' ? primaryColor : activeSkinObj.trailColor;
+
                 // Draw trails
                 for (let i = 0; i < this.trail.length; i++) {
                     let pt = this.trail[i];
@@ -794,7 +990,7 @@
                     ctx.save();
                     ctx.translate(pt.x + this.width / 2, pt.y + this.height / 2);
                     ctx.scale(pt.scaleX, pt.scaleY);
-                    ctx.fillStyle = `rgba(${hexToRgb(primaryColor)}, ${alpha})`;
+                    ctx.fillStyle = `rgba(${hexToRgb(trailColorHex)}, ${alpha})`;
                     ctx.beginPath();
                     ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 8);
                     ctx.fill();
@@ -806,17 +1002,29 @@
                 ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
                 ctx.scale(this.scaleX, this.scaleY);
 
+                if (selectedSkin === 'holo') {
+                    ctx.globalAlpha = 0.75;
+                }
+
                 // Neon glow outline
                 ctx.shadowBlur = 22;
-                ctx.shadowColor = primaryColor;
-                ctx.fillStyle = primaryColor === '#bd00ff' ? '#f5c6ff' : '#ffccd5';
+                ctx.shadowColor = glowColor;
+                ctx.fillStyle = bodyColor;
                 ctx.beginPath();
                 ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 8);
                 ctx.fill();
 
                 // Bright inner core
                 ctx.shadowBlur = 0;
-                ctx.fillStyle = '#ffffff';
+                if (selectedSkin === 'holo') {
+                    ctx.fillStyle = 'rgba(0, 255, 255, 0.4)';
+                } else if (selectedSkin === 'gold') {
+                    ctx.fillStyle = '#fffae0';
+                } else if (selectedSkin === 'platinum') {
+                    ctx.fillStyle = '#f0f3f4';
+                } else {
+                    ctx.fillStyle = '#ffffff';
+                }
                 ctx.beginPath();
                 ctx.roundRect(-this.width / 2 + 8, -this.height / 2 + 8, this.width - 16, this.height - 16, 4);
                 ctx.fill();
@@ -888,23 +1096,28 @@
                 return;
             }
 
-            // Determine difficulty curves based on elapsed playtime
-            if (gameTime < 10.0) {
+            // Determine difficulty curves based on currentSector
+            if (currentSector === 1) {
                 currentPhase = 1;
                 baseObstacleSpeed = 6.0;
                 minSpawnDelay = 160;
                 maxSpawnDelay = 220;
-            } else if (gameTime < 30.0) {
+            } else if (currentSector === 2) {
                 currentPhase = 2;
                 baseObstacleSpeed = 9.0;
                 minSpawnDelay = 100;
                 maxSpawnDelay = 140;
             } else {
-                // Phase 3 (Overdrive difficulty - triggers crimson red/gold visual overdrive shift)
                 currentPhase = 3;
                 baseObstacleSpeed = 12.0;
                 minSpawnDelay = 65;
                 maxSpawnDelay = 85;
+            }
+
+            // If a portal gateway is currently scrolling on screen, pause obstacle spawns
+            let hasPortalActive = gameObjects.some(obj => obj.type === 'portal');
+            if (hasPortalActive) {
+                return;
             }
 
             // Main spawn counter ticks down
@@ -1040,7 +1253,8 @@
                     let dx = (player.x + player.width / 2) - (obj.x + obj.w / 2);
                     let dy = (player.y + player.height / 2) - (obj.y + obj.h / 2);
                     let dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 380) {
+                    let magnetRadius = selectedSkin === 'holo' ? 570 : 380;
+                    if (dist < magnetRadius) {
                         obj.x += (dx / dist) * 14 * timeScale;
                         obj.y += (dy / dist) * 14 * timeScale;
                         obj.baseY = obj.y; // Damp normal oscillation during attraction
@@ -1063,7 +1277,35 @@
                 // DRAW GAME OBJECTS
                 ctx.save();
                 
-                if (obj.type === 'spike') {
+                if (obj.type === 'portal') {
+                    let portalColor = obj.sectorTarget === 2 ? '#ff8c00' : '#ff0055';
+                    ctx.save();
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = portalColor;
+                    ctx.strokeStyle = portalColor;
+                    ctx.lineWidth = 6;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x, FLOOR_Y);
+                    ctx.lineTo(obj.x, 100);
+                    ctx.lineTo(obj.x + obj.w, 100);
+                    ctx.lineTo(obj.x + obj.w, FLOOR_Y);
+                    ctx.stroke();
+
+                    ctx.fillStyle = `rgba(${hexToRgb(portalColor)}, 0.15)`;
+                    ctx.fillRect(obj.x, 100, obj.w, FLOOR_Y - 100);
+                    
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
+                    ctx.lineWidth = 2;
+                    for (let py = 120; py < FLOOR_Y; py += 30) {
+                        let shift = Math.sin(gameFrames * 0.1 + py) * 10;
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x + shift, py);
+                        ctx.lineTo(obj.x + obj.w - shift, py);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                } else if (obj.type === 'spike') {
                     // --- NEON GROUND SPIKES ---
                     let spikeGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
                     ctx.shadowBlur = 18;
@@ -1199,7 +1441,10 @@
                 ctx.restore();
 
                 // COLLISION AND SCORE CHECKS
-                let isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu');
+                let isColliding = false;
+                if (obj.type !== 'portal') {
+                    isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu');
+                }
 
                 if (isColliding) {
                     if (obj.type === 'chip') {
@@ -1207,10 +1452,14 @@
                         let chipVal = Math.round(20 * getComboMultiplier());
                         score += chipVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 15);
+                        totalChips++;
+                        runChipsCollected++;
+                        localStorage.setItem('ninja_total_chips', totalChips);
                         Sound.playChip();
                         addComboPoints(5);
                         spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `+${chipVal}`);
                         spawnChipCollectParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                        checkMissions();
                         gameObjects.splice(i, 1);
                         continue;
 
@@ -1237,6 +1486,7 @@
                         let killVal = Math.round(50 * getComboMultiplier());
                         score += killVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 25);
+                        runDronesDestroyed++;
                         Sound.playKill();
                         addComboPoints(20);
                         spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, `KILL +${killVal}`);
@@ -1249,6 +1499,7 @@
                         shakeTime = 12;
                         shakeIntensity = 8;
                         
+                        checkMissions();
                         gameObjects.splice(i, 1);
                         continue;
 
@@ -1265,11 +1516,42 @@
                             // Splice the barrier object so it doesn't double-trigger
                             gameObjects.splice(i, 1);
                             continue;
+                        } else if (selectedSkin === 'gold' && !goldReviveUsed) {
+                            // Gold Overlord revive ability
+                            goldReviveUsed = true;
+                            hasShield = true;
+                            Sound.playPowerup();
+                            hitstopFrames = 40; // Freeze frame impact
+                            shakeTime = 20;
+                            shakeIntensity = 12;
+                            spawnScorePopup(player.x + player.width / 2, player.y - 30, "GOLDEN REVIVE!");
+                            spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                            gameObjects.splice(i, 1);
+                            continue;
                         } else {
-                            // Fatal crash without shield protection
+                            // Fatal crash without shield protection or revive
                             triggerGameOver();
                         }
                     }
+                }
+
+                // Portal crossing event
+                if (obj.type === 'portal' && !obj.passed && obj.x < player.x) {
+                    obj.passed = true;
+                    currentSector = obj.sectorTarget;
+                    transitionQueued = false;
+                    
+                    // Flash screen
+                    screenFlashColor = 'rgba(255, 255, 255, 0.8)';
+                    screenFlashTimer = 15;
+                    
+                    // Play sound
+                    Sound.playPowerup();
+                    
+                    // Shake screen
+                    shakeTime = 20;
+                    shakeIntensity = 10;
+                    checkMissions();
                 }
 
                 // PRECISION NEAR-MISS CALCULATION
@@ -1324,22 +1606,62 @@
             updateComboRank();
         }
 
+        const RANK_ORDER = ['D', 'C', 'B', 'A', 'S', 'SS', 'SSS'];
+
         function updateComboRank() {
-            // Decay points slowly during loop
+            let nextRank = 'D';
             if (comboPoints < 10) {
-                comboRank = 'D';
+                nextRank = 'D';
             } else if (comboPoints < 30) {
-                comboRank = 'C';
+                nextRank = 'C';
             } else if (comboPoints < 60) {
-                comboRank = 'B';
+                nextRank = 'B';
             } else if (comboPoints < 100) {
-                comboRank = 'A';
+                nextRank = 'A';
             } else if (comboPoints < 150) {
-                comboRank = 'S';
+                nextRank = 'S';
             } else if (comboPoints < 220) {
-                comboRank = 'SS';
+                nextRank = 'SS';
             } else {
-                comboRank = 'SSS';
+                nextRank = 'SSS';
+            }
+
+            if (nextRank !== comboRank) {
+                let currentIdx = RANK_ORDER.indexOf(comboRank);
+                let nextIdx = RANK_ORDER.indexOf(nextRank);
+                
+                if (nextIdx > currentIdx) {
+                    triggerStyleRankUp(nextRank);
+                }
+                comboRank = nextRank;
+            }
+        }
+
+        function triggerStyleRankUp(rank) {
+            styleAnnouncementTimer = 90; // 1.5s
+            styleAnnouncementColor = getComboRankColorFor(rank);
+            
+            let actionWord = "STYLE UP!";
+            if (rank === 'A') actionWord = "AWESOME!";
+            else if (rank === 'S') actionWord = "SENSATIONAL!";
+            else if (rank === 'SS') actionWord = "SUPER SEXY!";
+            else if (rank === 'SSS') actionWord = "SMOKIN' SEXY STYLE!!";
+            
+            styleAnnouncementText = `${actionWord} [${rank}]`;
+            screenFlashColor = `rgba(${hexToRgb(styleAnnouncementColor)}, 0.15)`;
+            screenFlashTimer = 10;
+        }
+
+        function getComboRankColorFor(rank) {
+            switch (rank) {
+                case 'D': return '#7f8c8d';
+                case 'C': return '#2ecc71';
+                case 'B': return '#3498db';
+                case 'A': return '#9b59b6';
+                case 'S': return '#f1c40f';
+                case 'SS': return '#e67e22';
+                case 'SSS': return '#ff0055';
+                default: return '#ffffff';
             }
         }
 
@@ -1444,7 +1766,25 @@
             let vy = (Math.random() - 0.5) * 4;
             let size = Math.random() * 4 + 2;
             let decay = Math.random() * 0.06 + 0.04;
-            spawnParticle(x, y, vx, vy, size, secondaryColor, decay);
+            let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
+            let pColor = selectedSkin === 'classic' ? secondaryColor : activeSkinObj.trailColor;
+            spawnParticle(x, y, vx, vy, size, pColor, decay);
+        }
+
+        function spawnGoldSpark(x, y) {
+            let vx = (Math.random() - 0.5) * 4 - 2;
+            let vy = (Math.random() - 0.5) * 4 - 2;
+            let size = Math.random() * 3 + 1.5;
+            let decay = Math.random() * 0.04 + 0.02;
+            spawnParticle(x, y, vx, vy, size, '#ffd700', decay);
+        }
+
+        function spawnPlatinumSpark(x, y) {
+            let vx = (Math.random() - 0.5) * 4 - 2;
+            let vy = (Math.random() - 0.5) * 4 - 2;
+            let size = Math.random() * 3 + 1.5;
+            let decay = Math.random() * 0.04 + 0.02;
+            spawnParticle(x, y, vx, vy, size, '#e5e8e8', decay);
         }
 
         function spawnChipCollectParticles(x, y) {
@@ -1530,11 +1870,26 @@
 
         // --- ENVIRONMENT BACKGROUND DRAW ROUTINES (Parallax & perspective Floor) ---
         function drawBackground() {
+            let skyCenterColor = '#190a2c';
+            let mountainColor1 = '#15062a';
+            let mountainColor2 = '#20083c';
+            
+            if (currentSector === 3) {
+                skyCenterColor = '#2a071c';
+                mountainColor1 = '#230310';
+                mountainColor2 = '#3c1d05'; // Sector 3 mountain 2 override
+                mountainColor2 = '#3c0316';
+            } else if (currentSector === 2) {
+                skyCenterColor = '#2e1805';
+                mountainColor1 = '#2a1403';
+                mountainColor2 = '#3c1d05';
+            }
+
             let skyGrad = ctx.createRadialGradient(
                 LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, 50,
                 LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, LOGICAL_WIDTH
             );
-            skyGrad.addColorStop(0, currentPhase === 3 ? '#2a071c' : '#190a2c');
+            skyGrad.addColorStop(0, skyCenterColor);
             skyGrad.addColorStop(0.6, '#090312');
             skyGrad.addColorStop(1, '#020006');
             ctx.fillStyle = skyGrad;
@@ -1566,8 +1921,8 @@
             ctx.stroke();
             ctx.restore();
 
-            drawMountains(0.12, currentPhase === 3 ? '#230310' : '#15062a', 250, 120);
-            drawMountains(0.35, currentPhase === 3 ? '#3c0316' : '#20083c', 160, 60);
+            drawMountains(0.12, mountainColor1, 250, 120);
+            drawMountains(0.35, mountainColor2, 160, 60);
         }
 
         function drawMountains(speedMultiplier, color, baseHeight, amplitude) {
@@ -1734,6 +2089,133 @@
             }
         }
 
+        // --- MISSION MANAGEMENT LOGIC ---
+        function checkMissions() {
+            let updated = false;
+            
+            missions.forEach(m => {
+                if (completedMissions.includes(m.id)) {
+                    return;
+                }
+                
+                let completed = false;
+                if (m.id === 'chips' && runChipsCollected >= m.target) {
+                    completed = true;
+                } else if (m.id === 'drones' && runDronesDestroyed >= m.target) {
+                    completed = true;
+                } else if (m.id === 'nodash' && currentSector >= 2 && !runUsedDash) {
+                    completed = true;
+                }
+
+                if (completed) {
+                    completedMissions.push(m.id);
+                    totalChips += m.reward;
+                    localStorage.setItem('ninja_total_chips', totalChips);
+                    
+                    spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, `ACHIEVEMENT: +${m.reward} CHIPS!`);
+                    Sound.playPowerup();
+                    updated = true;
+                }
+            });
+
+            if (updated) {
+                localStorage.setItem('ninja_completed_missions', JSON.stringify(completedMissions));
+                
+                if (completedMissions.length === missions.length) {
+                    setTimeout(() => {
+                        completedMissions = [];
+                        localStorage.setItem('ninja_completed_missions', JSON.stringify([]));
+                        Sound.playPowerup();
+                    }, 3000);
+                }
+            }
+        }
+
+        function drawMissions(x, yStart) {
+            ctx.save();
+            ctx.textAlign = 'left';
+            ctx.font = '900 16px "Orbitron", sans-serif';
+            ctx.fillStyle = secondaryColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = secondaryColor;
+            ctx.fillText("🎯 ACTIVE ACHIEVEMENTS", x, yStart);
+            ctx.shadowBlur = 0;
+
+            let y = yStart + 28;
+            missions.forEach(m => {
+                ctx.font = '600 13px "Outfit", sans-serif';
+                let isDone = completedMissions.includes(m.id);
+                let progressStr = '';
+                if (isDone) {
+                    progressStr = '[COMPLETED 🟢]';
+                    ctx.fillStyle = '#2ecc71';
+                } else {
+                    if (m.id === 'chips') {
+                        progressStr = `(${runChipsCollected}/${m.target})`;
+                    } else if (m.id === 'drones') {
+                        progressStr = `(${runDronesDestroyed}/${m.target})`;
+                    } else if (m.id === 'nodash') {
+                        progressStr = runUsedDash ? '[FAILED 🔴]' : '[ACTIVE 🔵]';
+                    }
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                }
+                
+                if (m.id === 'nodash' && runUsedDash && !isDone) {
+                    ctx.fillStyle = 'rgba(255, 100, 100, 0.45)';
+                }
+
+                ctx.fillText(`• ${m.text}`, x, y);
+                ctx.textAlign = 'right';
+                ctx.fillText(`${progressStr}  +${m.reward} 🪙`, x + 340, y);
+                ctx.textAlign = 'left';
+                y += 24;
+            });
+            ctx.restore();
+        }
+
+        function drawEquippedSkinInfo(x, yStart) {
+            ctx.save();
+            ctx.textAlign = 'left';
+            ctx.font = '900 16px "Orbitron", sans-serif';
+            ctx.fillStyle = primaryColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = primaryColor;
+            ctx.fillText("🛡️ ACTIVE NINJA GEAR", x, yStart);
+            ctx.shadowBlur = 0;
+
+            let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
+            
+            ctx.font = '900 20px "Orbitron", sans-serif';
+            ctx.fillStyle = activeSkinObj.color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = activeSkinObj.color;
+            ctx.fillText(activeSkinObj.name.toUpperCase(), x, yStart + 35);
+            ctx.shadowBlur = 0;
+
+            let abilityText = "Ability: None (Pure Skill)";
+            let flavorText = "The classic suit favored by seasoned ninjas.";
+            if (selectedSkin === 'holo') {
+                abilityText = "Ability: +50% Magnet Range 🧲";
+                flavorText = "Holographic fields pull chips from further away.";
+            } else if (selectedSkin === 'gold') {
+                abilityText = "Ability: Golden Heart (1x Revive) 💛";
+                flavorText = "Cheats death once per run with a shield.";
+            } else if (selectedSkin === 'platinum') {
+                abilityText = "Ability: Chrono Double Jump 🌀";
+                flavorText = "Allows a second jump in mid-air to cheat hazards.";
+            }
+            
+            ctx.font = '600 14px "Outfit", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(abilityText, x, yStart + 60);
+
+            ctx.font = 'italic 12px "Outfit", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillText(flavorText, x, yStart + 80);
+
+            ctx.restore();
+        }
+
         // --- TITLE AND GAMEOVER HUD ---
         function drawStartScreen() {
             ctx.fillStyle = 'rgba(8, 3, 18, 0.35)';
@@ -1788,6 +2270,10 @@
             ctx.textAlign = 'right';
             ctx.fillText("Summer Glade - Plot 042", LOGICAL_WIDTH - 30, 45);
             ctx.restore();
+
+            // Draw active missions and equipped skin info
+            drawMissions(60, 280);
+            drawEquippedSkinInfo(880, 280);
         }
 
         function drawGameOverScreen() {
@@ -1845,6 +2331,10 @@
             ctx.textAlign = 'right';
             ctx.fillText("Summer Glade - Plot 042", LOGICAL_WIDTH - 30, 45);
             ctx.restore();
+
+            // Draw active missions and equipped skin info
+            drawMissions(60, 280);
+            drawEquippedSkinInfo(880, 280);
         }
 
         // --- CONTROL LOOPS AND GAME RESET ---
@@ -1898,6 +2388,16 @@
             obstacleTimer = 100;
             doubleObstacleQueued = false;
             
+            currentSector = 1;
+            transitionQueued = false;
+            sectorAnnouncementTimer = 0;
+            styleAnnouncementTimer = 0;
+            
+            runChipsCollected = 0;
+            runDronesDestroyed = 0;
+            runUsedDash = false;
+            goldReviveUsed = false;
+            
             player.reset();
             gameState = STATE_PLAYING;
             Sound.playScore();
@@ -1905,12 +2405,16 @@
 
             // Hide leaderboard and overlay buttons during active play
             hideLeaderboard();
+            hideShop();
             updateHTMLButtons();
         }
 
         function onPress() {
-            // Guard if leaderboard is active to prevent starting game on clicks inside box
+            // Guard if overlays are active to prevent actions
             if (document.getElementById('leaderboard-overlay').classList.contains('active')) {
+                return;
+            }
+            if (document.getElementById('shop-overlay').classList.contains('active')) {
                 return;
             }
             if (gameState === STATE_START) {
@@ -1942,8 +2446,12 @@
 
         // Spacebar keyboard event bindings
         window.addEventListener('keydown', (e) => {
-            // Avoid triggering jump if they are typing nickname
+            // Avoid triggering jump if nickname input or overlays are active
             if (document.activeElement === document.getElementById('player-name-input')) {
+                return;
+            }
+            if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
+                document.getElementById('shop-overlay').classList.contains('active')) {
                 return;
             }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
@@ -1954,8 +2462,12 @@
         });
 
         window.addEventListener('keyup', (e) => {
-            // Avoid triggering jump if they are typing nickname
+            // Avoid triggering jump if nickname input or overlays are active
             if (document.activeElement === document.getElementById('player-name-input')) {
+                return;
+            }
+            if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
+                document.getElementById('shop-overlay').classList.contains('active')) {
                 return;
             }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
@@ -1994,12 +2506,83 @@
         const dreamloPublicCode = '6a1dfd878f40bb17b0410195';
         const dreamloPrivateCode = 'vWN1M2rcEEayTu1HkN2Vzg_TQKy52IVkOBjGmsCsWvRQ';
 
+        // --- COSMETIC SHOP LOGIC ---
+        function showShop() {
+            document.getElementById('shop-overlay').classList.add('active');
+            renderShop();
+        }
+
+        function hideShop() {
+            document.getElementById('shop-overlay').classList.remove('active');
+        }
+
+        function renderShop() {
+            document.getElementById('shop-chips-count').innerText = totalChips;
+            const listDiv = document.getElementById('shop-items-list');
+            listDiv.innerHTML = '';
+
+            SHOP_SKINS.forEach(skin => {
+                const card = document.createElement('div');
+                card.className = 'shop-item-card';
+                if (selectedSkin === skin.id) {
+                    card.classList.add('selected');
+                }
+
+                const isOwned = ownedSkins.includes(skin.id);
+                let btnHtml = '';
+
+                if (selectedSkin === skin.id) {
+                    btnHtml = `<button class="shop-item-btn equipped" disabled>EQUIPPED</button>`;
+                } else if (isOwned) {
+                    btnHtml = `<button class="shop-item-btn" onclick="equipSkin('${skin.id}')">EQUIP</button>`;
+                } else {
+                    const canAfford = totalChips >= skin.price;
+                    btnHtml = `<button class="shop-item-btn" ${canAfford ? '' : 'disabled'} onclick="buySkin('${skin.id}', ${skin.price})">BUY 🪙 ${skin.price}</button>`;
+                }
+
+                card.innerHTML = `
+                    <div class="shop-item-info">
+                        <div class="shop-item-preview" style="background-color: ${skin.color}; box-shadow: 0 0 8px ${skin.color}; color: ${skin.color}; border-color: ${skin.trailColor};"></div>
+                        <div class="shop-item-details">
+                            <span class="shop-item-name">${skin.name}</span>
+                            <span class="shop-item-desc">${skin.desc}</span>
+                        </div>
+                    </div>
+                    ${btnHtml}
+                `;
+                listDiv.appendChild(card);
+            });
+        }
+
+        window.buySkin = function(id, price) {
+            if (totalChips >= price) {
+                totalChips -= price;
+                ownedSkins.push(id);
+                localStorage.setItem('ninja_total_chips', totalChips);
+                localStorage.setItem('ninja_owned_skins', JSON.stringify(ownedSkins));
+                Sound.playPowerup();
+                renderShop();
+            }
+        };
+
+        window.equipSkin = function(id) {
+            if (ownedSkins.includes(id)) {
+                selectedSkin = id;
+                localStorage.setItem('ninja_selected_skin', selectedSkin);
+                Sound.playChip();
+                renderShop();
+            }
+        };
+
         function updateHTMLButtons() {
             const btnStart = document.getElementById('show-leaderboard-start');
+            const btnShop = document.getElementById('show-shop-start');
             if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
                 btnStart.classList.remove('hidden');
+                btnShop.classList.remove('hidden');
             } else {
                 btnStart.classList.add('hidden');
+                btnShop.classList.add('hidden');
             }
         }
 
@@ -2125,6 +2708,9 @@
         document.getElementById('close-leaderboard-btn').addEventListener('click', hideLeaderboard);
         document.getElementById('submit-score-btn').addEventListener('click', submitScore);
         
+        document.getElementById('show-shop-start').addEventListener('click', showShop);
+        document.getElementById('close-shop-btn').addEventListener('click', hideShop);
+
         // Setup name submission keyboard shortcut (Enter key)
         document.getElementById('player-name-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -2137,6 +2723,9 @@
 
         // --- MAIN CORE GAME LOOP ---
         function gameLoop() {
+            // Apply canvas slow-motion CSS filter dynamically
+            updateCanvasFilter();
+
             ctx.save();
 
             // Apply Screen Shake if active
@@ -2147,10 +2736,13 @@
                 shakeTime--;
             }
 
-            // Phase Color Shift overrides
-            if (currentPhase === 3) {
+            // Sector Color Shift overrides
+            if (currentSector === 3) {
                 primaryColor = '#ff0055'; // Neon Crimson
                 secondaryColor = '#ffaa00'; // Neon Gold
+            } else if (currentSector === 2) {
+                primaryColor = '#ff8c00'; // Neon Orange
+                secondaryColor = '#ffd700'; // Neon Yellow
             } else {
                 primaryColor = '#bd00ff'; // Neon Purple
                 secondaryColor = '#00ffff'; // Neon Cyan
@@ -2196,6 +2788,13 @@
                     player.update();
                     updateObstacleSpawning();
                     updateDashEnergy();
+
+                    // Check sector transitions
+                    if (score >= 400 && score < 1000 && currentSector === 1 && !transitionQueued) {
+                        triggerSectorTransition(2);
+                    } else if (score >= 1000 && currentSector === 2 && !transitionQueued) {
+                        triggerSectorTransition(3);
+                    }
                 }
             }
 
@@ -2215,7 +2814,7 @@
                 for (let obj of gameObjects) {
                     ctx.save();
                     if (obj.type === 'spike') {
-                        let spikeGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
+                        let spikeGlow = currentSector === 3 ? '#ff3300' : (currentSector === 2 ? '#ff8c00' : '#ff0055');
                         ctx.shadowBlur = 18;
                         ctx.shadowColor = spikeGlow;
                         ctx.fillStyle = '#0f0515';
@@ -2234,7 +2833,7 @@
                         ctx.fill();
                         ctx.stroke();
                     } else if (obj.type === 'shield') {
-                        let shieldGlow = currentPhase === 3 ? '#ff3300' : '#ff0055';
+                        let shieldGlow = currentSector === 3 ? '#ff3300' : (currentSector === 2 ? '#ff8c00' : '#ff0055');
                         ctx.shadowBlur = 18;
                         ctx.shadowColor = shieldGlow;
                         ctx.fillStyle = '#0a0314';
@@ -2253,7 +2852,7 @@
                             ctx.stroke();
                         }
                     } else if (obj.type === 'drone') {
-                        let droneGlow = currentPhase === 3 ? '#ffaa00' : '#00ffff';
+                        let droneGlow = currentSector === 3 ? '#ffaa00' : '#00ffff';
                         ctx.shadowBlur = 15;
                         ctx.shadowColor = droneGlow;
                         ctx.fillStyle = '#06161a';
@@ -2283,6 +2882,40 @@
                         ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
                         ctx.lineTo(obj.x, obj.y + obj.h / 2);
                         ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (obj.type === 'portal') {
+                        let portalColor = obj.sectorTarget === 2 ? '#ff8c00' : '#ff0055';
+                        ctx.shadowBlur = 30;
+                        ctx.shadowColor = portalColor;
+                        ctx.strokeStyle = portalColor;
+                        ctx.lineWidth = 6;
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x, FLOOR_Y);
+                        ctx.lineTo(obj.x, 100);
+                        ctx.lineTo(obj.x + obj.w, 100);
+                        ctx.lineTo(obj.x + obj.w, FLOOR_Y);
+                        ctx.stroke();
+                        ctx.fillStyle = `rgba(${hexToRgb(portalColor)}, 0.15)`;
+                        ctx.fillRect(obj.x, 100, obj.w, FLOOR_Y - 100);
+                    } else if (obj.type === 'magnet') {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#e67e22';
+                        ctx.fillStyle = '#110500';
+                        ctx.strokeStyle = '#e67e22';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (obj.type === 'shield_pu') {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#00ffff';
+                        ctx.fillStyle = '#001a1a';
+                        ctx.strokeStyle = '#00ffff';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.stroke();
                     }
@@ -2319,6 +2952,51 @@
                     ctx.fillText("HOLD TO DASH", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 35);
                     ctx.restore();
                 }
+
+                // Draw Sector Transition Announcements center overlay
+                if (sectorAnnouncementTimer > 0) {
+                    sectorAnnouncementTimer--;
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.font = '900 48px "Orbitron", sans-serif';
+                    let scaleVal = 1.0 + Math.sin(sectorAnnouncementTimer * 0.05) * 0.05;
+                    ctx.translate(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 100);
+                    ctx.scale(scaleVal, scaleVal);
+                    
+                    let textColor = currentSector === 1 ? '#ff8c00' : '#ff0055';
+                    if (sectorAnnouncementText.includes("SECTOR 3")) textColor = '#ff0055';
+                    
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = textColor;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(sectorAnnouncementText, 0, 0);
+                    
+                    ctx.font = 'bold 20px "Orbitron", sans-serif';
+                    ctx.fillStyle = textColor;
+                    ctx.fillText("PREPARE FOR WARP...", 0, 40);
+                    ctx.restore();
+                }
+
+                // Draw Style Announcement floating alert
+                if (styleAnnouncementTimer > 0) {
+                    styleAnnouncementTimer--;
+                    ctx.save();
+                    ctx.font = '900 28px "Orbitron", sans-serif';
+                    ctx.textAlign = 'center';
+                    let yOffset = (90 - styleAnnouncementTimer) * 0.4;
+                    let alpha = Math.min(1.0, styleAnnouncementTimer / 15);
+                    
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.strokeStyle = `rgba(${hexToRgb(styleAnnouncementColor)}, ${alpha})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = styleAnnouncementColor;
+                    
+                    ctx.fillText(styleAnnouncementText, LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 150 - yOffset);
+                    ctx.strokeText(styleAnnouncementText, LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 150 - yOffset);
+                    ctx.restore();
+                }
+
             } else if (gameState === STATE_START) {
                 drawStartScreen();
             } else if (gameState === STATE_GAMEOVER) {
@@ -2326,7 +3004,55 @@
                 drawGameOverScreen();
             }
 
+            // Draw Screen Flash overlay
+            if (screenFlashTimer > 0) {
+                screenFlashTimer--;
+                ctx.save();
+                ctx.fillStyle = screenFlashColor;
+                ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+                ctx.restore();
+            }
+
             requestAnimationFrame(gameLoop);
+        }
+
+        // Helper function for slow-motion CSS filter transitions
+        function updateCanvasFilter() {
+            if (gameState === STATE_PLAYING) {
+                let isDashing = isPressing && pressDuration > 8;
+                if (isDashing) {
+                    let t = (1.0 - timeScale) / 0.8; // 0 to 1
+                    let contrastVal = 1.0 + t * 0.25;
+                    let saturateVal = 1.0 + t * 0.4;
+                    let hueRotateVal = -t * 15;
+                    canvas.style.filter = `contrast(${contrastVal}) saturate(${saturateVal}) hue-rotate(${hueRotateVal}deg)`;
+                } else {
+                    canvas.style.filter = 'none';
+                }
+            } else {
+                canvas.style.filter = 'none';
+            }
+        }
+
+        // Helper function to trigger sector transitions
+        function triggerSectorTransition(targetSector) {
+            transitionQueued = true;
+            sectorAnnouncementTimer = 180;
+            sectorAnnouncementText = targetSector === 2 ? "SECTOR 2: NEON GRID" : "SECTOR 3: OVERDRIVE CORE";
+            
+            setTimeout(() => {
+                if (gameState === STATE_PLAYING) {
+                    gameObjects.push({
+                        type: 'portal',
+                        x: LOGICAL_WIDTH + 100,
+                        y: 0,
+                        w: 80,
+                        h: FLOOR_Y,
+                        passed: false,
+                        sectorTarget: targetSector
+                    });
+                }
+            }, 500);
         }
 
         requestAnimationFrame(gameLoop);
