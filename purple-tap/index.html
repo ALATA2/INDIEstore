@@ -49,12 +49,212 @@
             height: 100%;
             display: block;
         }
+
+        /* HTML Leaderboard Overlay Styles */
+        .hud-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 3, 18, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            font-family: 'Outfit', sans-serif;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .hud-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .leaderboard-box {
+            width: 90%;
+            max-width: 460px;
+            background: rgba(21, 8, 45, 0.95);
+            border: 2px solid #bd00ff;
+            box-shadow: 0 0 30px rgba(186, 85, 211, 0.4);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 90%;
+        }
+        .leaderboard-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+        .leaderboard-list {
+            width: 100%;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(186, 85, 211, 0.2);
+            padding: 8px;
+            flex-grow: 1;
+            min-height: 150px;
+        }
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .leaderboard-item.top-rank {
+            color: #ffaa00;
+        }
+        .leaderboard-item.current-player {
+            background: rgba(186, 85, 211, 0.2);
+            border: 1px solid #bd00ff;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+        .leaderboard-loading {
+            text-align: center;
+            padding: 30px 0;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
+        .submit-container {
+            width: 100%;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px dashed rgba(0, 255, 255, 0.3);
+            border-radius: 6px;
+            text-align: center;
+        }
+        .submit-prompt {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        .submit-prompt span {
+            color: #00ffff;
+            font-weight: 800;
+        }
+        .submit-form-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        #player-name-input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(186, 85, 211, 0.5);
+            border-radius: 4px;
+            color: #ffffff;
+            padding: 6px 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            width: 150px;
+        }
+        #player-name-input:focus {
+            border-color: #00ffff;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+        }
+        #submit-score-btn {
+            background: #bd00ff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 6px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #submit-score-btn:hover {
+            background: #d333ff;
+        }
+        #close-leaderboard-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #close-leaderboard-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffffff;
+        }
+
+        /* Leaderboard Button on Game Screens */
+        .hud-action-btn {
+            position: absolute;
+            background: rgba(21, 8, 45, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 6px;
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            pointer-events: auto;
+            z-index: 80;
+        }
+        .hud-action-btn:hover {
+            background: #00ffff;
+            color: #100624;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+        }
+        .hud-action-btn.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
+        
+        <!-- HTML Leaderboard Overlay -->
+        <div id="leaderboard-overlay" class="hud-overlay">
+            <div class="leaderboard-box">
+                <h2 class="leaderboard-title">🏆 GLOBAL LEADERBOARD</h2>
+                <div id="leaderboard-list" class="leaderboard-list">
+                    <div class="leaderboard-loading">Loading scores...</div>
+                </div>
+                
+                <!-- Name Submission Form -->
+                <div id="score-submit-container" class="submit-container hidden">
+                    <p class="submit-prompt">You scored <span id="submit-score-val">0</span>! Submit your nickname:</p>
+                    <div class="submit-form-row">
+                        <input type="text" id="player-name-input" maxlength="10" placeholder="NICKNAME" />
+                        <button id="submit-score-btn">SUBMIT</button>
+                    </div>
+                </div>
+                
+                <button id="close-leaderboard-btn">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Leaderboard Trigger Button -->
+        <button id="show-leaderboard-start" class="hud-action-btn" style="bottom: 25px; left: 30px;">🏆 LEADERBOARD</button>
     </div>
 
     <script>
@@ -1662,6 +1862,23 @@
                 bestScore = score;
                 localStorage.setItem('ninja_best_score', bestScore);
             }
+
+            // Update HTML overlay buttons visibility
+            updateHTMLButtons();
+
+            // Prepare score submission if they scored points
+            if (score > 0) {
+                document.getElementById('submit-score-val').innerText = score;
+                document.getElementById('score-submit-container').classList.remove('hidden');
+                // Retrieve player's last nickname from localStorage
+                const lastNick = localStorage.getItem('ninja_nickname') || '';
+                document.getElementById('player-name-input').value = lastNick;
+            } else {
+                document.getElementById('score-submit-container').classList.add('hidden');
+            }
+
+            // Automatically load and display leaderboard
+            showLeaderboard();
         }
 
         function restartGame() {
@@ -1685,15 +1902,24 @@
             gameState = STATE_PLAYING;
             Sound.playScore();
             BGM.start();
+
+            // Hide leaderboard and overlay buttons during active play
+            hideLeaderboard();
+            updateHTMLButtons();
         }
 
         function onPress() {
+            // Guard if leaderboard is active to prevent starting game on clicks inside box
+            if (document.getElementById('leaderboard-overlay').classList.contains('active')) {
+                return;
+            }
             if (gameState === STATE_START) {
                 Sound.playScore();
                 gameState = STATE_PLAYING;
                 tutorialDismissed = true;
                 obstacleTimer = 180;
                 BGM.start();
+                updateHTMLButtons();
             } else if (gameState === STATE_GAMEOVER) {
                 restartGame();
             } else if (gameState === STATE_PLAYING) {
@@ -1716,6 +1942,10 @@
 
         // Spacebar keyboard event bindings
         window.addEventListener('keydown', (e) => {
+            // Avoid triggering jump if they are typing nickname
+            if (document.activeElement === document.getElementById('player-name-input')) {
+                return;
+            }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault(); // Prevents browser window scrolling down
                 if (e.repeat) return; // Ignores keydown repeating triggers
@@ -1724,6 +1954,10 @@
         });
 
         window.addEventListener('keyup', (e) => {
+            // Avoid triggering jump if they are typing nickname
+            if (document.activeElement === document.getElementById('player-name-input')) {
+                return;
+            }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault();
                 onRelease();
@@ -1755,6 +1989,144 @@
         window.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
+
+        // --- GLOBAL LEADERBOARD INTEGRATION (DREAMLO) ---
+        const dreamloPublicCode = '6a1dfd878f40bb17b0410195';
+        const dreamloPrivateCode = 'vWN1M2rcEEayTu1HkN2Vzg_TQKy52IVkOBjGmsCsWvRQ';
+
+        function updateHTMLButtons() {
+            const btnStart = document.getElementById('show-leaderboard-start');
+            if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
+                btnStart.classList.remove('hidden');
+            } else {
+                btnStart.classList.add('hidden');
+            }
+        }
+
+        function showLeaderboard() {
+            const overlay = document.getElementById('leaderboard-overlay');
+            overlay.classList.add('active');
+            fetchScores();
+        }
+
+        function hideLeaderboard() {
+            const overlay = document.getElementById('leaderboard-overlay');
+            overlay.classList.remove('active');
+        }
+
+        function fetchScores() {
+            const listDiv = document.getElementById('leaderboard-list');
+            listDiv.innerHTML = '<div class="leaderboard-loading">Loading scores...</div>';
+            
+            // Dreamlo JSON endpoint
+            fetch(`https://www.dreamlo.com/lb/${dreamloPublicCode}/json`)
+                .then(res => res.json())
+                .then(data => {
+                    renderLeaderboard(data);
+                })
+                .catch(err => {
+                    listDiv.innerHTML = '<div class="leaderboard-loading" style="color:#ff0055;">Failed to load scores.</div>';
+                    console.error('Error fetching scores:', err);
+                });
+        }
+
+        function renderLeaderboard(data) {
+            const listDiv = document.getElementById('leaderboard-list');
+            listDiv.innerHTML = '';
+            
+            let scores = [];
+            if (data && data.dreamlo && data.dreamlo.leaderboard && data.dreamlo.leaderboard.entry) {
+                let entry = data.dreamlo.leaderboard.entry;
+                if (Array.isArray(entry)) {
+                    scores = entry;
+                } else {
+                    scores = [entry];
+                }
+            }
+            
+            if (scores.length === 0) {
+                listDiv.innerHTML = '<div class="leaderboard-loading">No scores recorded yet. Be the first!</div>';
+                return;
+            }
+            
+            // Sort scores descending
+            scores.sort((a, b) => parseInt(b.score) - parseInt(a.score));
+            
+            // Limit to top 10
+            scores = scores.slice(0, 10);
+            
+            scores.forEach((entry, idx) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                if (idx < 3) {
+                    item.classList.add('top-rank');
+                }
+                
+                // Highlight current player nickname
+                const currentSubmitNick = localStorage.getItem('ninja_nickname');
+                if (entry.name === currentSubmitNick) {
+                    item.classList.add('current-player');
+                }
+                
+                let rankEmoji = '';
+                if (idx === 0) rankEmoji = '🥇 ';
+                else if (idx === 1) rankEmoji = '🥈 ';
+                else if (idx === 2) rankEmoji = '🥉 ';
+                else rankEmoji = `#${idx + 1} `;
+                
+                const cleanName = entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                item.innerHTML = `
+                    <span>${rankEmoji}${cleanName}</span>
+                    <span>${parseInt(entry.score).toLocaleString()} pts</span>
+                `;
+                listDiv.appendChild(item);
+            });
+        }
+
+        function submitScore() {
+            const nameInput = document.getElementById('player-name-input');
+            let name = nameInput.value.trim().replace(/[^a-zA-Z0-9]/g, ''); // alphanumeric only
+            if (!name) {
+                alert('Please enter a valid nickname!');
+                return;
+            }
+            
+            localStorage.setItem('ninja_nickname', name);
+            
+            const submitBtn = document.getElementById('submit-score-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'SUBMITTING...';
+            
+            fetch(`https://www.dreamlo.com/lb/${dreamloPrivateCode}/add-pipe/${name}/${score}`)
+                .then(() => {
+                    submitBtn.innerText = 'SUBMIT';
+                    submitBtn.disabled = false;
+                    document.getElementById('score-submit-container').classList.add('hidden');
+                    fetchScores();
+                })
+                .catch(err => {
+                    alert('Submission failed, please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'SUBMIT';
+                    console.error('Error submitting score:', err);
+                });
+        }
+
+        // Initialize HUD elements and events
+        document.getElementById('show-leaderboard-start').addEventListener('click', showLeaderboard);
+        document.getElementById('close-leaderboard-btn').addEventListener('click', hideLeaderboard);
+        document.getElementById('submit-score-btn').addEventListener('click', submitScore);
+        
+        // Setup name submission keyboard shortcut (Enter key)
+        document.getElementById('player-name-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitScore();
+            }
+        });
+
+        // Initialize buttons visibility
+        updateHTMLButtons();
 
         // --- MAIN CORE GAME LOOP ---
         function gameLoop() {
