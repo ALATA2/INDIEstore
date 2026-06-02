@@ -456,6 +456,608 @@
                 min-width: 60px;
             }
         }
+
+        /* General utility */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Shop Tabs */
+        .shop-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+        .shop-tab-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .shop-tab-btn.active {
+            background: rgba(186, 85, 211, 0.2);
+            border-color: #bd00ff;
+            color: #00ffff;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Daily Rewards Overlay Styles */
+        .daily-box {
+            width: 95%;
+            max-width: 580px;
+            background: rgba(21, 8, 45, 0.95);
+            border: 2px solid #ff0055;
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 95%;
+        }
+        .daily-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #ff0055;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .daily-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .daily-day {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(186, 85, 211, 0.25);
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            position: relative;
+            min-height: 110px;
+        }
+        .daily-day.active {
+            border-color: #00ffff;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+            background: rgba(0, 255, 255, 0.08);
+        }
+        .daily-day.claimed {
+            opacity: 0.65;
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.08);
+        }
+        .daily-day.claimed::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            color: #2ecc71;
+            font-weight: 900;
+            font-size: 14px;
+        }
+        .daily-day-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .daily-day.active .daily-day-num {
+            color: #00ffff;
+        }
+        .daily-day.claimed .daily-day-num {
+            color: #2ecc71;
+        }
+        .daily-reward-icon {
+            font-size: 22px;
+            margin: 6px 0;
+            filter: drop-shadow(0 0 4px currentColor);
+        }
+        .daily-reward-amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffd700;
+        }
+        .claim-btn {
+            background: #ff0055;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 4px 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 4px;
+            width: 100%;
+            text-align: center;
+        }
+        .claim-btn:hover:not(:disabled) {
+            background: #ff3377;
+            box-shadow: 0 0 6px #ff0055;
+        }
+        .claim-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: default;
+        }
+        .daily-rewards-btn {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(21, 8, 45, 0.85);
+            border: 1px solid #ff0055;
+            border-radius: 6px;
+            color: #ff0055;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 80;
+        }
+        .daily-rewards-btn:hover {
+            background: #ff0055;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+        }
+
+        /* Rewarded Ad Overlay */
+        #ad-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 1500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #ad-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .ad-player-box {
+            text-align: center;
+            color: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .ad-video-mock {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #090312 0%, #17072a 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-logo-pulse {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 22px;
+            color: #00ffff;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+            animation: adPulse 1.2s infinite alternate ease-in-out;
+        }
+        @keyframes adPulse {
+            0% { transform: scale(0.96); opacity: 0.7; }
+            100% { transform: scale(1.04); opacity: 1; }
+        }
+        .ad-progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .ad-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #ff0055;
+        }
+        .ad-status {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .ad-skip-warning {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 6px;
+        }
+
+        /* Simulated Checkout Overlay */
+        #checkout-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 3, 18, 0.9);
+            z-index: 1200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #checkout-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .checkout-box {
+            width: 92%;
+            max-width: 420px;
+            background: rgba(21, 8, 45, 0.98);
+            border: 2px solid #2ecc71;
+            box-shadow: 0 0 35px rgba(46, 204, 113, 0.45);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            max-height: 95%;
+        }
+        .checkout-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            color: #2ecc71;
+            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .checkout-summary {
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            border-left: 3px solid #2ecc71;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .checkout-card-preview {
+            background: linear-gradient(135deg, #1b0736 0%, #080212 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+        .card-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            color: #ffffff;
+            opacity: 0.8;
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .card-chip-icon {
+            width: 28px;
+            height: 20px;
+            background: #ffd700;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+        .card-input-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .card-input-row.inline {
+            flex-direction: row;
+            gap: 8px;
+        }
+        .card-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .card-field {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(186, 85, 211, 0.3);
+            border-radius: 4px;
+            color: #ffffff;
+            padding: 5px 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            outline: none;
+            width: 100%;
+        }
+        .card-field:focus {
+            border-color: #2ecc71;
+            box-shadow: 0 0 6px rgba(46, 204, 113, 0.3);
+        }
+        .checkout-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .checkout-btn {
+            flex: 1;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checkout-btn.pay {
+            background: #2ecc71;
+            color: #0d041a;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+        }
+        .checkout-btn.pay:hover {
+            background: #39e37f;
+        }
+        .checkout-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .checkout-btn.cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .checkout-spinner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 10px;
+            text-align: center;
+        }
+        .checkout-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border-left-color: #2ecc71;
+            animation: checkoutSpin 0.9s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes checkoutSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .checkout-success-icon {
+            font-size: 44px;
+            color: #2ecc71;
+            margin-bottom: 16px;
+        }
+
+        /* Revive Countdown Overlay */
+        #revive-countdown-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 4, 20, 0.92);
+            z-index: 950;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #revive-countdown-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .revive-box {
+            width: 90%;
+            max-width: 360px;
+            background: rgba(21, 8, 45, 0.95);
+            border: 2px solid #ff0055;
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .revive-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 900;
+            color: #ff0055;
+            text-shadow: 0 0 8px rgba(255, 0, 85, 0.5);
+            margin-bottom: 8px;
+        }
+        .revive-timer {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 44px;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 12px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+        }
+        .revive-btn-ad {
+            background: #2ecc71;
+            border: none;
+            border-radius: 6px;
+            color: #0d041a;
+            padding: 8px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+        }
+        .revive-btn-ad:hover {
+            background: #39e37f;
+        }
+        .revive-btn-skip {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #ffffff;
+            padding: 6px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .revive-btn-skip:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Mobile landscape adaptations for overlays */
+        @media (max-height: 480px) {
+            .daily-box {
+                padding: 10px;
+                border-radius: 8px;
+            }
+            .daily-title {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            .daily-grid {
+                gap: 4px;
+                margin-bottom: 8px;
+            }
+            .daily-day {
+                min-height: 80px;
+                padding: 4px 2px;
+                border-radius: 6px;
+            }
+            .daily-day-num {
+                font-size: 9px;
+            }
+            .daily-reward-icon {
+                font-size: 16px;
+                margin: 4px 0;
+            }
+            .daily-reward-amount {
+                font-size: 9px;
+            }
+            .claim-btn {
+                font-size: 8px;
+                padding: 2px 4px;
+                margin-top: 2px;
+            }
+            .daily-rewards-btn {
+                padding: 6px 12px;
+                font-size: 11px;
+                bottom: 20px;
+            }
+            .checkout-box {
+                padding: 12px;
+                border-radius: 8px;
+            }
+            .checkout-title {
+                font-size: 15px;
+                margin-bottom: 6px;
+            }
+            .checkout-summary {
+                font-size: 11px;
+                padding: 6px 10px;
+                margin-bottom: 8px;
+            }
+            .checkout-card-preview {
+                padding: 8px 10px;
+                margin-bottom: 8px;
+            }
+            .card-logo {
+                font-size: 10px;
+                margin-bottom: 6px;
+            }
+            .card-chip-icon {
+                width: 24px;
+                height: 16px;
+                margin-bottom: 6px;
+            }
+            .card-input-row {
+                margin-bottom: 4px;
+            }
+            .card-field {
+                padding: 4px 6px;
+                font-size: 9px;
+            }
+            .checkout-actions {
+                margin-top: 2px;
+            }
+            .checkout-btn {
+                padding: 6px;
+                font-size: 10px;
+            }
+            .revive-box {
+                padding: 12px;
+                border-radius: 8px;
+            }
+            .revive-title {
+                font-size: 16px;
+            }
+            .revive-timer {
+                font-size: 32px;
+                margin: 6px 0;
+            }
+            .revive-btn-ad {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            .revive-btn-skip {
+                padding: 4px 12px;
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -498,16 +1100,78 @@
             <div class="shop-box">
                 <h2 class="shop-title">🛒 NINJA GEAR SHOP</h2>
                 <div class="shop-currency">YOUR CHIPS: <span id="shop-chips-count">0</span> 🪙</div>
+                
+                <!-- Shop Tabs -->
+                <div class="shop-tabs">
+                    <button id="tab-skins-btn" class="shop-tab-btn active">🛡️ GEAR</button>
+                    <button id="tab-iap-btn" class="shop-tab-btn">🪙 BUY CHIPS</button>
+                </div>
+                
                 <div id="shop-items-list" class="shop-items-grid">
                     <!-- Cards will be generated dynamically -->
                 </div>
+                
+                <div id="shop-iap-list" class="shop-items-grid hidden">
+                    <!-- Pack Cards will be generated dynamically -->
+                </div>
+                
                 <button id="close-shop-btn">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Daily Rewards Overlay -->
+        <div id="daily-overlay" class="hud-overlay">
+            <div class="daily-box">
+                <h2 class="daily-title">📅 DAILY CALENDAR</h2>
+                <div class="daily-grid" id="daily-days-grid">
+                    <!-- Calendar days will be generated dynamically -->
+                </div>
+                <button id="close-daily-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; padding: 8px 24px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Simulated Ad Overlay -->
+        <div id="ad-overlay">
+            <div class="ad-player-box">
+                <div class="ad-video-mock">
+                    <div class="ad-logo-pulse">PURPLE ADVERT</div>
+                </div>
+                <div class="ad-progress-container">
+                    <div id="ad-progress-bar" class="ad-progress-bar"></div>
+                </div>
+                <div id="ad-status-text" class="ad-status">Loading Sponsor...</div>
+                <div class="ad-skip-warning">Do not close the game to claim your reward</div>
+            </div>
+        </div>
+
+        <!-- Simulated Checkout Overlay -->
+        <div id="checkout-overlay">
+            <div class="checkout-box" id="checkout-box-content">
+                <!-- Filled dynamically with forms / spinner / success -->
+            </div>
+        </div>
+
+        <!-- Revive Countdown Overlay -->
+        <div id="revive-countdown-overlay">
+            <div class="revive-box">
+                <h2 class="revive-title">REVIVE NINJA?</h2>
+                <p style="color: rgba(255,255,255,0.75); font-size: 13px; font-family: 'Outfit', sans-serif; margin-bottom: 8px;">Watch an ad to continue your run!</p>
+                <div class="revive-timer" id="revive-timer-val">5</div>
+                <button id="revive-ad-btn" class="revive-btn-ad">🎬 WATCH AD TO REVIVE</button>
+                <button id="revive-skip-btn" class="revive-btn-skip">NO THANKS</button>
             </div>
         </div>
 
         <!-- Start Screen Action Buttons -->
         <button id="show-leaderboard-start" class="hud-action-btn" style="bottom: 25px; left: 30px;">🏆 LEADERBOARD</button>
         <button id="show-shop-start" class="hud-action-btn" style="bottom: 25px; right: 30px;">🛒 SHOP</button>
+        <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
+        
+        <!-- Hourglass Activating Button (Gameplay overlay HUD) -->
+        <button id="activate-slowmo-btn" class="hud-action-btn hidden" style="bottom: 25px; left: 50%; transform: translateX(-50%); border-color: #00ffff; color: #00ffff; font-size: 14px; font-weight: 800; background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; z-index: 85;">⏳<span id="slowmo-charge-badge" style="position: absolute; top: -5px; right: -5px; background: #ff0055; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 1.5px solid white;">0</span></button>
+
+        <!-- Double Chips Button (Game Over overlay HUD) -->
+        <button id="double-chips-btn" class="hud-action-btn hidden" style="bottom: 95px; left: 50%; transform: translateX(-50%); border-color: #ffd700; color: #ffd700; font-size: 14px; font-weight: 800; background: rgba(30, 20, 0, 0.85); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); z-index: 80;">🎬 DOUBLE CHIPS (WATCH AD)</button>
     </div>
 
     <script>
@@ -931,7 +1595,29 @@
         const STATE_START = 'START';
         const STATE_PLAYING = 'PLAYING';
         const STATE_GAMEOVER = 'GAMEOVER';
+        const STATE_BONUS_ROOM = 'BONUS_ROOM';
         let gameState = STATE_START;
+        let preBonusRoomState = STATE_PLAYING;
+        let bonusRoomTimer = 0;
+
+        // --- LEVEL PROGRESSION & RETENTION ---
+        let playerLevel = parseInt(localStorage.getItem('ninja_level')) || 1;
+        let playerXP = parseInt(localStorage.getItem('ninja_xp')) || 0;
+        let dailyStreak = parseInt(localStorage.getItem('ninja_daily_streak')) || 0;
+        let lastDailyClaimTime = parseInt(localStorage.getItem('ninja_last_claim_time')) || 0;
+        
+        // Cumulative Challenges (Long-Term)
+        let totalChipsCollectedAllTime = parseInt(localStorage.getItem('ninja_total_chips_collected_all_time')) || 0;
+        let totalDronesDestroyedAllTime = parseInt(localStorage.getItem('ninja_total_drones_destroyed_all_time')) || 0;
+        let totalRunsPlayed = parseInt(localStorage.getItem('ninja_total_runs_played')) || 0;
+        let highestSectorReachedAllTime = parseInt(localStorage.getItem('ninja_highest_sector_all_time')) || 1;
+
+        // --- NEW STATS & TIMERS ---
+        let hourglassCharges = 0;
+        let hourglassActiveTimer = 0;
+        let activeMultiplier = 1.0;
+        let multiplierTimer = 0;
+        let adRevivesUsed = 0; // max 1 per run
 
         // --- GAMEPLAY VARIABLES ---
         const FLOOR_Y = 580; // Y coordinate representing the solid ground
@@ -966,7 +1652,8 @@
             { id: 'classic', name: 'Classic Purple', desc: 'Standard cyber ninja suit (No Buffs)', price: 0, color: '#bd00ff', trailColor: '#00ffff' },
             { id: 'holo', name: 'Holo Cyan', desc: 'Hologram suit (+50% Magnet Range)', price: 150, color: '#00ffff', trailColor: '#00c3ff' },
             { id: 'gold', name: 'Gold Overlord', desc: 'Legendary gold suit (1x Revive per run)', price: 300, color: '#ffd700', trailColor: '#ffaa00' },
-            { id: 'platinum', name: 'Platinum Lord', desc: 'Divine platinum armor (Double Jump ability)', price: 9999, color: '#e5e8e8', trailColor: '#95a5a6' }
+            { id: 'platinum', name: 'Platinum Lord', desc: 'Divine platinum armor (Double Jump ability)', price: 9999, color: '#e5e8e8', trailColor: '#95a5a6' },
+            { id: 'chronomaster', name: 'Chrono Master', desc: 'Day 7 Reward: 50% slow-mo cost & 2x powerup time', price: -1, color: '#ff00aa', trailColor: '#ff0055' }
         ];
 
         // Magnet Power-Up Timer
@@ -1350,11 +2037,32 @@
         }
 
         function spawnRandomElement() {
+            // No obstacles spawned during Bonus Room except chips and multipliers
+            if (gameState === STATE_BONUS_ROOM) {
+                // Spawn a chip or a multiplier star
+                if (Math.random() < 0.85) {
+                    spawnChip(LOGICAL_WIDTH + 50, FLOOR_Y - 80 - Math.random() * 250);
+                } else {
+                    spawnPowerup('multiplier_star');
+                }
+                return;
+            }
+
             let rand = Math.random();
             
-            // Check extremely rare powerups spawn chance (5% Magnet, 5% Shield PU)
-            if (Math.random() < 0.07) {
-                spawnPowerup(Math.random() < 0.5 ? 'magnet' : 'shield_pu');
+            // Check powerups spawn chance (12%)
+            if (Math.random() < 0.12) {
+                let r = Math.random();
+                if (r < 0.25) spawnPowerup('magnet');
+                else if (r < 0.5) spawnPowerup('shield_pu');
+                else if (r < 0.75) spawnPowerup('hourglass');
+                else spawnPowerup('multiplier_star');
+                return;
+            }
+
+            // Check Bonus Room Portal spawn chance (2%)
+            if (gameState !== STATE_BONUS_ROOM && Math.random() < 0.02) {
+                spawnBonusPortal();
                 return;
             }
 
@@ -1363,15 +2071,17 @@
                 if (rand < 0.7) spawnObstacle('spike');
                 else spawnObstacle('shield');
             } else if (currentPhase === 2) {
-                // Phase 2: Introduces Flying Drones (20% chance)
-                if (rand < 0.5) spawnObstacle('spike');
-                else if (rand < 0.75) spawnObstacle('shield');
-                else spawnDrone();
-            } else {
-                // Phase 3: Fast, consecutive sequences
+                // Phase 2: Spike, Shield, Drone, and Laser Barrier
                 if (rand < 0.4) spawnObstacle('spike');
-                else if (rand < 0.7) spawnObstacle('shield');
-                else spawnDrone();
+                else if (rand < 0.65) spawnObstacle('shield');
+                else if (rand < 0.85) spawnDrone();
+                else spawnLaserBarrier();
+            } else {
+                // Phase 3: Higher chance of laser barriers and drones
+                if (rand < 0.3) spawnObstacle('spike');
+                else if (rand < 0.55) spawnObstacle('shield');
+                else if (rand < 0.75) spawnDrone();
+                else spawnLaserBarrier();
             }
         }
 
@@ -1421,6 +2131,30 @@
             });
         }
 
+        function spawnLaserBarrier() {
+            let heightType = Math.random() < 0.5 ? 'low' : 'high';
+            gameObjects.push({
+                type: 'laser_barrier',
+                x: LOGICAL_WIDTH + 50,
+                w: 24,
+                h: LOGICAL_HEIGHT,
+                heightType: heightType,
+                warningTimer: 50, // 0.8 seconds warning
+                passed: false
+            });
+        }
+
+        function spawnBonusPortal() {
+            gameObjects.push({
+                type: 'bonus_portal',
+                x: LOGICAL_WIDTH + 50,
+                y: FLOOR_Y - 200,
+                w: 90,
+                h: 200,
+                passed: false
+            });
+        }
+
         function spawnChip(x, y) {
             gameObjects.push({
                 type: 'chip',
@@ -1436,13 +2170,16 @@
 
         function spawnPowerup(type) {
             let size = 30;
-            let y = FLOOR_Y - 80;
+            let y = FLOOR_Y - 80 - Math.random() * 100;
+            let val = Math.random() < 0.75 ? 2 : 3;
             gameObjects.push({
                 type: type,
                 x: LOGICAL_WIDTH + 50,
                 y: y,
+                baseY: y,
                 w: size,
                 h: size,
+                value: val,
                 phaseOffset: Math.random() * Math.PI * 2,
                 passed: false
             });
@@ -1642,14 +2379,146 @@
                     ctx.textAlign = 'center';
                     ctx.shadowBlur = 0;
                     ctx.fillText("S", obj.x + obj.w / 2, obj.y + obj.h / 2 + 5);
+
+                } else if (obj.type === 'hourglass') {
+                    // --- HOURGLASS POWER-UP ITEM ---
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#bd00ff';
+                    ctx.fillStyle = '#10001a';
+                    ctx.strokeStyle = '#bd00ff';
+                    ctx.lineWidth = 3;
+
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.font = '16px "Orbitron", sans-serif';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.shadowBlur = 0;
+                    ctx.fillText("⏳", obj.x + obj.w / 2, obj.y + obj.h / 2 + 5);
+
+                } else if (obj.type === 'multiplier_star') {
+                    // --- MULTIPLIER STAR POWER-UP ITEM ---
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ffd700';
+                    ctx.fillStyle = '#1a1a00';
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 3;
+
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.font = 'bold 11px "Orbitron", sans-serif';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.textAlign = 'center';
+                    ctx.shadowBlur = 0;
+                    ctx.fillText(`${obj.value}x`, obj.x + obj.w / 2, obj.y + obj.h / 2 + 4);
+
+                } else if (obj.type === 'bonus_portal') {
+                    // --- BONUS DIMENSION PORTAL ---
+                    ctx.save();
+                    ctx.shadowBlur = 25;
+                    let hue = (gameFrames * 3) % 360;
+                    let pColor = `hsla(${hue}, 100%, 50%, 1)`;
+                    ctx.shadowColor = pColor;
+                    ctx.strokeStyle = pColor;
+                    ctx.lineWidth = 5;
+
+                    ctx.beginPath();
+                    ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, obj.h / 2, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.fillStyle = `rgba(0, 255, 255, 0.08)`;
+                    ctx.beginPath();
+                    ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 5, obj.h / 2 - 5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctx.lineWidth = 1.5;
+                    for (let r = 10; r < obj.h / 2; r += 20) {
+                        ctx.beginPath();
+                        ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, (obj.w / obj.h) * r, r, gameFrames * 0.05 + r, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+
+                } else if (obj.type === 'laser_barrier') {
+                    // --- LASER BARRIER HAZARD ---
+                    if (obj.warningTimer > 0) {
+                        obj.warningTimer -= 1 * timeScale;
+                        
+                        if (Math.floor(gameFrames / 6) % 2 === 0) {
+                            ctx.save();
+                            ctx.strokeStyle = '#ff0000';
+                            ctx.lineWidth = 2.5;
+                            ctx.setLineDash([8, 8]);
+                            ctx.shadowBlur = 8;
+                            ctx.shadowColor = '#ff0000';
+                            
+                            ctx.beginPath();
+                            if (obj.heightType === 'low') {
+                                ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
+                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                            } else {
+                                ctx.moveTo(obj.x + obj.w / 2, 0);
+                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
+                            }
+                            ctx.stroke();
+                            
+                            ctx.font = 'bold 10px "Orbitron", sans-serif';
+                            ctx.fillStyle = '#ff0000';
+                            ctx.textAlign = 'center';
+                            let signY = obj.heightType === 'low' ? FLOOR_Y - 150 : FLOOR_Y - 100;
+                            ctx.fillText("⚠️ LASER", obj.x + obj.w / 2, signY);
+                            ctx.restore();
+                        }
+                    } else {
+                        ctx.save();
+                        let laserColor = '#ff0055';
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = laserColor;
+                        ctx.strokeStyle = laserColor;
+                        ctx.lineWidth = 8 + Math.sin(gameFrames * 0.4) * 2;
+                        
+                        ctx.beginPath();
+                        if (obj.heightType === 'low') {
+                            ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
+                            ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                        } else {
+                            ctx.moveTo(obj.x + obj.w / 2, 0);
+                            ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
+                        }
+                        ctx.stroke();
+                        
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+                        ctx.restore();
+                    }
                 }
 
                 ctx.restore();
 
                 // COLLISION AND SCORE CHECKS
                 let isColliding = false;
-                if (obj.type !== 'portal') {
-                    isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu');
+                if (obj.type === 'laser_barrier') {
+                    if (obj.warningTimer <= 0) {
+                        let playerRight = player.x + player.width;
+                        let laserRight = obj.x + obj.w;
+                        if (playerRight > obj.x && player.x < laserRight) {
+                            if (obj.heightType === 'low') {
+                                isColliding = (player.y + player.height > FLOOR_Y - 140);
+                            } else {
+                                isColliding = (player.y < FLOOR_Y - 120);
+                            }
+                        }
+                    }
+                } else if (obj.type !== 'portal') {
+                    isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal');
                 }
 
                 if (isColliding) {
@@ -1658,14 +2527,17 @@
                         consecutiveChips++;
                         consecutiveChipsTimer = 120; // 2 seconds combo window
                         
-                        let chipVal = Math.round(20 * getComboMultiplier());
+                        let chipVal = Math.round(20 * getComboMultiplier() * activeMultiplier);
                         score += chipVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 15);
                         totalChips++;
                         runChipsCollected++;
+                        totalChipsCollectedAllTime++;
                         localStorage.setItem('ninja_total_chips', totalChips);
+                        localStorage.setItem('ninja_total_chips_collected_all_time', totalChipsCollectedAllTime);
                         Sound.playChip();
                         addComboPoints(5);
+                        addXP(5);
                         spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `+${chipVal}`, 'chip');
                         spawnChipCollectParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
                         
@@ -1681,9 +2553,10 @@
 
                     } else if (obj.type === 'magnet') {
                         // Magnet Powerup Active
-                        magnetTimer = 360; // 6 seconds at 60fps
+                        magnetTimer = selectedSkin === 'chronomaster' ? 720 : 360; // 12 or 6 seconds
                         Sound.playPowerup();
                         addComboPoints(10);
+                        addXP(10);
                         spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "MAGNET", 'powerup');
                         gameObjects.splice(i, 1);
                         continue;
@@ -1693,18 +2566,61 @@
                         hasShield = true;
                         Sound.playPowerup();
                         addComboPoints(10);
+                        addXP(10);
                         spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "SHIELD ACTIVE", 'powerup');
+                        gameObjects.splice(i, 1);
+                        continue;
+
+                    } else if (obj.type === 'hourglass') {
+                        // Chrono Hourglass Powerup Active (gives activatable slow-mo charge)
+                        hourglassCharges = Math.min(3, hourglassCharges + 1);
+                        document.getElementById('slowmo-charge-badge').innerText = hourglassCharges;
+                        Sound.playPowerup();
+                        addComboPoints(10);
+                        addXP(10);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "⏳ SLOWMO CHARGE", 'powerup');
+                        gameObjects.splice(i, 1);
+                        continue;
+
+                    } else if (obj.type === 'multiplier_star') {
+                        // Score Multiplier Powerup Active
+                        multiplierTimer = selectedSkin === 'chronomaster' ? 720 : 360; // 12 or 6 seconds
+                        activeMultiplier = obj.value;
+                        Sound.playPowerup();
+                        addComboPoints(10);
+                        addXP(10);
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `${obj.value}X MULTIPLIER`, 'powerup');
+                        gameObjects.splice(i, 1);
+                        continue;
+
+                    } else if (obj.type === 'bonus_portal') {
+                        // Enter Bonus portal
+                        preBonusRoomState = gameState;
+                        gameState = STATE_BONUS_ROOM;
+                        bonusRoomTimer = selectedSkin === 'chronomaster' ? 720 : 360; // 12 or 6 seconds
+                        screenFlashColor = 'rgba(0, 255, 255, 0.8)';
+                        screenFlashTimer = 15;
+                        Sound.playPowerup();
+                        addComboPoints(25);
+                        addXP(25);
+                        spawnScorePopup(player.x + player.width / 2, player.y - 30, "BONUS DIMENSION!", 'revive');
+                        gameObjects = []; // Clear other hazards
+                        shakeTime = 15;
+                        shakeIntensity = 6;
                         gameObjects.splice(i, 1);
                         continue;
 
                     } else if (obj.type === 'drone' && isDashing) {
                         // --- DASH ATTACK (Destroys Flying Drones) ---
-                        let killVal = Math.round(50 * getComboMultiplier());
+                        let killVal = Math.round(50 * getComboMultiplier() * activeMultiplier);
                         score += killVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 25);
                         runDronesDestroyed++;
+                        totalDronesDestroyedAllTime++;
+                        localStorage.setItem('ninja_total_drones_destroyed_all_time', totalDronesDestroyedAllTime);
                         Sound.playKill();
                         addComboPoints(20);
+                        addXP(10);
                         spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, `KILL +${killVal}`, 'kill');
                         spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
                         
@@ -2538,6 +3454,49 @@
         }
 
         // --- TITLE AND GAMEOVER HUD ---
+        function drawPlayerXPBar(x, y, width) {
+            let height = 14;
+            let xpNeeded = playerLevel * 200;
+            let ratio = Math.min(1.0, playerXP / xpNeeded);
+            
+            ctx.save();
+            ctx.font = '900 16px "Orbitron", sans-serif';
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00ffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(`PLAYER LEVEL ${playerLevel}`, x + width / 2, y - 8);
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = 'rgba(16, 6, 36, 0.7)';
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(x, y, width, height, 4);
+            ctx.fill();
+            ctx.stroke();
+            
+            if (ratio > 0) {
+                let fillW = width * ratio;
+                let grad = ctx.createLinearGradient(x, 0, x + width, 0);
+                grad.addColorStop(0, '#2ecc71');
+                grad.addColorStop(1, '#00ffff');
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#2ecc71';
+                ctx.beginPath();
+                ctx.roundRect(x, y, fillW, height, 4);
+                ctx.fill();
+            }
+            
+            ctx.font = '900 9px "Orbitron", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 0;
+            ctx.fillText(`XP: ${playerXP} / ${xpNeeded}`, x + width / 2, y + 10);
+            ctx.restore();
+        }
+
         function drawStartScreen() {
             ctx.fillStyle = 'rgba(8, 3, 18, 0.35)';
             ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
@@ -2595,6 +3554,9 @@
             // Draw active missions and equipped skin info
             drawMissions(60, 280);
             drawEquippedSkinInfo(880, 280);
+            
+            // Draw player XP bar
+            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 500, 360);
         }
 
         function drawGameOverScreen() {
@@ -2656,10 +3618,24 @@
             // Draw active missions and equipped skin info
             drawMissions(60, 280);
             drawEquippedSkinInfo(880, 280);
+
+            // Draw player XP bar
+            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 500, 360);
         }
 
         // --- CONTROL LOOPS AND GAME RESET ---
         function triggerGameOver() {
+            if (adRevivesUsed === 0) {
+                // First crash: show ad revive screen countdown overlay
+                Sound.playDeath();
+                BGM.stop();
+                shakeTime = 25;
+                shakeIntensity = 20;
+                spawnDeathExplosion(player.x + player.width / 2, player.y + player.height / 2);
+                triggerAdReviveScreen();
+                return;
+            }
+
             gameState = STATE_GAMEOVER;
             Sound.playDeath();
             BGM.stop();
@@ -2671,6 +3647,17 @@
             shakeIntensity = 20;
 
             spawnDeathExplosion(player.x + player.width / 2, player.y + player.height / 2);
+
+            // Increment run stats
+            totalRunsPlayed++;
+            highestSectorReachedAllTime = Math.max(highestSectorReachedAllTime, currentSector);
+            localStorage.setItem('ninja_total_runs_played', totalRunsPlayed);
+            localStorage.setItem('ninja_highest_sector_all_time', highestSectorReachedAllTime);
+
+            // Award End-Of-Run XP: Survival + Collectibles
+            let survivalXP = Math.floor(score * 0.15); // 15% of score as XP
+            let runXP = survivalXP + (runChipsCollected * 5) + (runDronesDestroyed * 10);
+            addXP(runXP);
 
             if (score > bestScore) {
                 bestScore = score;
@@ -2684,7 +3671,6 @@
             if (score > 0) {
                 document.getElementById('submit-score-val').innerText = score;
                 document.getElementById('score-submit-container').classList.remove('hidden');
-                // Retrieve player's last nickname from localStorage
                 const lastNick = localStorage.getItem('ninja_nickname') || '';
                 document.getElementById('player-name-input').value = lastNick;
             } else {
@@ -2724,6 +3710,13 @@
             
             consecutiveChips = 0;
             consecutiveChipsTimer = 0;
+
+            hourglassCharges = 0;
+            hourglassActiveTimer = 0;
+            activeMultiplier = 1.0;
+            multiplierTimer = 0;
+            adRevivesUsed = 0;
+            document.getElementById('slowmo-charge-badge').innerText = '0';
             
             player.reset();
             gameState = STATE_PLAYING;
@@ -2778,13 +3771,20 @@
                 return;
             }
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
-                document.getElementById('shop-overlay').classList.contains('active')) {
+                document.getElementById('shop-overlay').classList.contains('active') ||
+                document.getElementById('daily-overlay').classList.contains('active') ||
+                document.getElementById('checkout-overlay').classList.contains('active') ||
+                document.getElementById('revive-countdown-overlay').classList.contains('active')) {
                 return;
             }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault(); // Prevents browser window scrolling down
                 if (e.repeat) return; // Ignores keydown repeating triggers
                 onPress();
+            }
+            if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.key === 'c' || e.key === 'C') {
+                e.preventDefault();
+                activateSlowMo();
             }
         });
 
@@ -2828,6 +3828,428 @@
         window.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
+
+        // --- PLAYER XP & LEVEL UP SYSTEM ---
+        function addXP(amount) {
+            playerXP += amount;
+            let xpNeeded = playerLevel * 200;
+            let leveledUp = false;
+            while (playerXP >= xpNeeded) {
+                playerXP -= xpNeeded;
+                playerLevel++;
+                xpNeeded = playerLevel * 200;
+                leveledUp = true;
+                let levelReward = playerLevel * 50;
+                totalChips += levelReward;
+                localStorage.setItem('ninja_total_chips', totalChips);
+                spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 80, `LEVEL UP! +${levelReward} 🪙`, 'achievement');
+            }
+            localStorage.setItem('ninja_level', playerLevel);
+            localStorage.setItem('ninja_xp', playerXP);
+            if (leveledUp) {
+                Sound.playPowerup();
+            }
+        }
+
+        // --- DAILY REWARDS CALENDAR SYSTEM ---
+        const DAILY_REWARDS_DATA = [
+            { day: 1, amount: 15, type: 'chips', icon: '🪙' },
+            { day: 2, amount: 30, type: 'chips', icon: '🪙' },
+            { day: 3, amount: 45, type: 'chips', icon: '🪙' },
+            { day: 4, amount: 60, type: 'chips', icon: '🪙' },
+            { day: 5, amount: 80, type: 'chips', icon: '🪙' },
+            { day: 6, amount: 100, type: 'chips', icon: '🪙' },
+            { day: 7, amount: 1, type: 'skin', icon: '⏳' } // Chrono Master
+        ];
+
+        function showDailyRewards() {
+            document.getElementById('daily-overlay').classList.add('active');
+            renderDailyCalendar();
+        }
+
+        function hideDailyRewards() {
+            document.getElementById('daily-overlay').classList.remove('active');
+        }
+
+        function renderDailyCalendar() {
+            const grid = document.getElementById('daily-days-grid');
+            grid.innerHTML = '';
+
+            let timePassed = Date.now() - lastDailyClaimTime;
+            let oneDay = 24 * 60 * 60 * 1000;
+            
+            // Streak resets if they missed more than 48 hours
+            if (lastDailyClaimTime > 0 && timePassed >= 2 * oneDay) {
+                dailyStreak = 0;
+                localStorage.setItem('ninja_daily_streak', dailyStreak);
+            }
+
+            let canClaimToday = lastDailyClaimTime === 0 || timePassed >= oneDay;
+
+            DAILY_REWARDS_DATA.forEach((reward, idx) => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'daily-day';
+                
+                let isClaimed = idx < dailyStreak;
+                let isActive = idx === dailyStreak && canClaimToday;
+
+                if (isClaimed) dayDiv.classList.add('claimed');
+                if (isActive) dayDiv.classList.add('active');
+
+                let btnHtml = '';
+                if (isActive) {
+                    btnHtml = `<button class="claim-btn" onclick="claimDaily(${idx})">CLAIM</button>`;
+                } else if (idx === dailyStreak && !canClaimToday) {
+                    let remainingMs = oneDay - timePassed;
+                    let hours = Math.floor(remainingMs / (60 * 60 * 1000));
+                    let mins = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+                    btnHtml = `<button class="claim-btn" style="font-size: 8px;" disabled>${hours}h ${mins}m</button>`;
+                } else {
+                    btnHtml = `<button class="claim-btn" disabled>${isClaimed ? 'CLAIMED' : 'LOCK'}</button>`;
+                }
+
+                let displayAmount = reward.type === 'chips' ? `+${reward.amount} 🪙` : 'SKIN';
+
+                dayDiv.innerHTML = `
+                    <span class="daily-day-num">DAY ${reward.day}</span>
+                    <span class="daily-reward-icon">${reward.icon}</span>
+                    <span class="daily-reward-amount">${displayAmount}</span>
+                    ${btnHtml}
+                `;
+                grid.appendChild(dayDiv);
+            });
+
+            // Developer cheat fast-forward button to make testing claims easy
+            const devRow = document.createElement('div');
+            devRow.style.gridColumn = 'span 7';
+            devRow.style.textAlign = 'center';
+            devRow.style.marginTop = '10px';
+            devRow.innerHTML = `<button class="claim-btn" style="background:#8e44ad; max-width:200px; display:inline-block; font-size:10px; padding:6px 12px;" onclick="devFastForwardDaily()">🛠️ DEV: Fast-Forward 24 Hours</button>`;
+            grid.appendChild(devRow);
+        }
+
+        window.devFastForwardDaily = function() {
+            // Subtract 24 hours from last claim time so we can claim again
+            lastDailyClaimTime = Math.max(0, lastDailyClaimTime - 24 * 60 * 60 * 1000);
+            localStorage.setItem('ninja_last_claim_time', lastDailyClaimTime);
+            Sound.playPowerup();
+            renderDailyCalendar();
+        };
+
+        window.claimDaily = function(dayIndex) {
+            let reward = DAILY_REWARDS_DATA[dayIndex];
+            
+            if (reward.type === 'chips') {
+                totalChips += reward.amount;
+                localStorage.setItem('ninja_total_chips', totalChips);
+                spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, `CLAIMED: +${reward.amount} 🪙`, 'achievement');
+            } else if (reward.type === 'skin') {
+                if (!ownedSkins.includes('chronomaster')) {
+                    ownedSkins.push('chronomaster');
+                    localStorage.setItem('ninja_owned_skins', JSON.stringify(ownedSkins));
+                }
+                selectedSkin = 'chronomaster';
+                localStorage.setItem('ninja_selected_skin', selectedSkin);
+                spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, `CLAIMED: CHRONO MASTER SKIN!`, 'achievement');
+            }
+
+            dailyStreak = (dailyStreak + 1) % 7;
+            lastDailyClaimTime = Date.now();
+            
+            localStorage.setItem('ninja_daily_streak', dailyStreak);
+            localStorage.setItem('ninja_last_claim_time', lastDailyClaimTime);
+
+            Sound.playPowerup();
+            renderDailyCalendar();
+            
+            document.getElementById('shop-chips-count').innerText = totalChips;
+        };
+
+        // --- SIMULATED REWARDED VIDEO ADS ---
+        let currentAdCallback = null;
+
+        function playSimulatedAd(adPurpose, callback) {
+            currentAdCallback = callback;
+            const overlay = document.getElementById('ad-overlay');
+            const progressBar = document.getElementById('ad-progress-bar');
+            const statusText = document.getElementById('ad-status-text');
+            
+            overlay.classList.add('active');
+            progressBar.style.width = '0%';
+            statusText.innerText = 'Connecting Sponsor Server...';
+            
+            let steps = [
+                { time: 600, text: 'Streaming Ad Video (3s)...' },
+                { time: 1500, text: 'Interactive Sponsor Demo (2s)...' },
+                { time: 2400, text: 'Validating Reward Token (1s)...' },
+                { time: 3000, text: 'Reward Approved!' }
+            ];
+            
+            let startTime = Date.now();
+            let adDuration = 3000; // 3 seconds total
+            
+            // Muffle/Stop music during ad
+            BGM.stop();
+            
+            let adInterval = setInterval(() => {
+                let elapsed = Date.now() - startTime;
+                let percent = Math.min(100, (elapsed / adDuration) * 100);
+                progressBar.style.width = percent + '%';
+                
+                let step = steps.find(s => elapsed < s.time);
+                if (step) {
+                    statusText.innerText = step.text;
+                } else {
+                    statusText.innerText = 'Reward Approved!';
+                }
+                
+                if (elapsed >= adDuration) {
+                    clearInterval(adInterval);
+                    setTimeout(() => {
+                        overlay.classList.remove('active');
+                        Sound.playPowerup();
+                        if (currentAdCallback) {
+                            currentAdCallback();
+                            currentAdCallback = null;
+                        }
+                    }, 300);
+                }
+            }, 50);
+        }
+
+        let reviveTimerInterval = null;
+        let reviveTimerCount = 5;
+
+        function triggerAdReviveScreen() {
+            // Only allow ad revive once per run
+            if (adRevivesUsed > 0) {
+                showLeaderboard();
+                return;
+            }
+
+            const overlay = document.getElementById('revive-countdown-overlay');
+            const timerVal = document.getElementById('revive-timer-val');
+            overlay.classList.add('active');
+            
+            reviveTimerCount = 5;
+            timerVal.innerText = reviveTimerCount;
+            
+            isPressing = false;
+            pressDuration = 0;
+            
+            reviveTimerInterval = setInterval(() => {
+                reviveTimerCount--;
+                timerVal.innerText = reviveTimerCount;
+                
+                if (reviveTimerCount <= 0) {
+                    clearInterval(reviveTimerInterval);
+                    overlay.classList.remove('active');
+                    showLeaderboard();
+                }
+            }, 1000);
+        }
+
+        window.watchAdRevive = function() {
+            clearInterval(reviveTimerInterval);
+            document.getElementById('revive-countdown-overlay').classList.remove('active');
+            
+            playSimulatedAd('revive', () => {
+                adRevivesUsed++;
+                hasShield = true;
+                player.vy = 0;
+                player.y = FLOOR_Y - player.height;
+                player.isGrounded = true;
+                gameState = STATE_PLAYING;
+                BGM.start();
+                
+                // Clear immediate hazards to avoid spawn kill
+                gameObjects = gameObjects.filter(obj => obj.x < player.x - 100 || obj.x > player.x + 300);
+                
+                spawnScorePopup(player.x + player.width / 2, player.y - 30, "REVIVED!", 'revive');
+            });
+        };
+
+        window.skipAdRevive = function() {
+            clearInterval(reviveTimerInterval);
+            document.getElementById('revive-countdown-overlay').classList.remove('active');
+            showLeaderboard();
+        };
+
+        window.watchAdDouble = function() {
+            playSimulatedAd('double', () => {
+                let chipsEarned = runChipsCollected;
+                totalChips += chipsEarned;
+                localStorage.setItem('ninja_total_chips', totalChips);
+                document.getElementById('double-chips-btn').classList.add('hidden');
+                
+                spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, `DOUBLED: +${chipsEarned} CHIPS!`, 'achievement');
+                document.getElementById('shop-chips-count').innerText = totalChips;
+            });
+        };
+
+        // --- SIMULATED IN-APP PURCHASES ---
+        const IAP_PACKS_DATA = [
+            { id: 'starter_pack', name: 'Starter Pack', desc: '200 Gold Chips', price: 0.99, chips: 200 },
+            { id: 'pro_pack', name: 'Pro Pack', desc: '750 Gold Chips', price: 2.99, chips: 750 },
+            { id: 'whale_pack', name: 'Whale Pack', desc: '3000 Gold Chips', price: 9.99, chips: 3000 }
+        ];
+
+        window.buyCoinsPack = function(packId) {
+            let pack = IAP_PACKS_DATA.find(p => p.id === packId);
+            if (!pack) return;
+            
+            document.getElementById('checkout-overlay').classList.add('active');
+            renderCheckoutForm(pack);
+        };
+
+        function renderCheckoutForm(pack) {
+            const box = document.getElementById('checkout-box-content');
+            box.innerHTML = `
+                <h2 class="checkout-title">🔒 SECURE CHECKOUT</h2>
+                <div class="checkout-summary">
+                    <span>ORDER: <strong>${pack.name}</strong></span>
+                    <span style="color:#2ecc71;">$${pack.price}</span>
+                </div>
+                
+                <div class="checkout-card-preview">
+                    <div class="card-logo">NINJA BANK</div>
+                    <div class="card-chip-icon"></div>
+                    
+                    <div class="card-input-row">
+                        <span class="card-label">CARD NUMBER</span>
+                        <input type="text" class="card-field" id="pay-card-num" value="4000 1234 5678 9010" />
+                    </div>
+                    
+                    <div class="card-input-row inline">
+                        <div style="flex:2;" class="card-input-row">
+                            <span class="card-label">EXPIRY</span>
+                            <input type="text" class="card-field" id="pay-card-expiry" value="12/28" />
+                        </div>
+                        <div style="flex:1;" class="card-input-row">
+                            <span class="card-label">CVV</span>
+                            <input type="text" class="card-field" id="pay-card-cvv" value="123" />
+                        </div>
+                    </div>
+                    
+                    <div class="card-input-row" style="margin-bottom:0;">
+                        <span class="card-label">CARDHOLDER NAME</span>
+                        <input type="text" class="card-field" id="pay-card-name" value="CYBER NINJA" />
+                    </div>
+                </div>
+                
+                <div class="checkout-actions">
+                    <button class="checkout-btn cancel" onclick="cancelCheckout()">CANCEL</button>
+                    <button class="checkout-btn pay" onclick="confirmPayment('${pack.id}')">PAY $${pack.price}</button>
+                </div>
+            `;
+        }
+
+        window.cancelCheckout = function() {
+            document.getElementById('checkout-overlay').classList.remove('active');
+        };
+
+        window.confirmPayment = function(packId) {
+            let pack = IAP_PACKS_DATA.find(p => p.id === packId);
+            if (!pack) return;
+
+            const box = document.getElementById('checkout-box-content');
+            
+            box.innerHTML = `
+                <div class="checkout-spinner-container">
+                    <div class="checkout-spinner"></div>
+                    <p style="font-family:'Orbitron',sans-serif; color:#ffffff; font-size:14px; font-weight:700;">Securing transaction...</p>
+                    <p style="color:rgba(255,255,255,0.4); font-size:11px; margin-top:8px;">Validating card credentials</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                box.innerHTML = `
+                    <div class="checkout-spinner-container">
+                        <div class="checkout-success-icon">✓</div>
+                        <p style="font-family:'Orbitron',sans-serif; color:#2ecc71; font-size:18px; font-weight:900; text-shadow:0 0 10px rgba(46,204,113,0.4);">PAYMENT SUCCESS!</p>
+                        <p style="color:#ffffff; font-size:13px; margin-top:8px;">Granted +${pack.chips} Gold Chips!</p>
+                    </div>
+                `;
+                
+                Sound.playPowerup();
+                
+                totalChips += pack.chips;
+                localStorage.setItem('ninja_total_chips', totalChips);
+                document.getElementById('shop-chips-count').innerText = totalChips;
+                
+                setTimeout(() => {
+                    document.getElementById('checkout-overlay').classList.remove('active');
+                    renderShop();
+                }, 1500);
+                
+            }, 1500);
+        };
+
+        window.switchShopTab = function(tabName) {
+            const tabSkins = document.getElementById('tab-skins-btn');
+            const tabIap = document.getElementById('tab-iap-btn');
+            const skinsList = document.getElementById('shop-items-list');
+            const iapList = document.getElementById('shop-iap-list');
+            
+            if (tabName === 'skins') {
+                tabSkins.classList.add('active');
+                tabIap.classList.remove('active');
+                skinsList.classList.remove('hidden');
+                iapList.classList.add('hidden');
+                renderShop();
+            } else {
+                tabSkins.classList.remove('active');
+                tabIap.classList.add('active');
+                skinsList.classList.add('hidden');
+                iapList.classList.remove('hidden');
+                renderIAPShop();
+            }
+            Sound.playChip();
+        };
+
+        function renderIAPShop() {
+            const listDiv = document.getElementById('shop-iap-list');
+            listDiv.innerHTML = '';
+            
+            IAP_PACKS_DATA.forEach(pack => {
+                const card = document.createElement('div');
+                card.className = 'shop-item-card';
+                
+                card.innerHTML = `
+                    <div class="shop-item-info">
+                        <div class="shop-item-preview" style="background-color: #2ecc71; box-shadow: 0 0 8px #2ecc71; color: #2ecc71; border-color: #ffd700; display:flex; align-items:center; justify-content:center; font-size:16px;">🪙</div>
+                        <div class="shop-item-details">
+                            <span class="shop-item-name">${pack.name}</span>
+                            <span class="shop-item-desc">${pack.desc}</span>
+                        </div>
+                    </div>
+                    <button class="shop-item-btn" style="background:#2ecc71; color:#0d041a;" onclick="buyCoinsPack('${pack.id}')">BUY $${pack.price}</button>
+                `;
+                listDiv.appendChild(card);
+            });
+        }
+
+        // --- ACTIVATABLE TIME-SLOW HOURGLASS ---
+        function activateSlowMo() {
+            if (hourglassCharges > 0 && hourglassActiveTimer <= 0 && (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM)) {
+                hourglassCharges--;
+                document.getElementById('slowmo-charge-badge').innerText = hourglassCharges;
+                
+                // Chrono Master skin doubles timer!
+                let duration = selectedSkin === 'chronomaster' ? 480 : 240; // 8s vs 4s
+                hourglassActiveTimer = duration;
+                
+                // Flash screen cyan
+                screenFlashColor = 'rgba(0, 255, 255, 0.35)';
+                screenFlashTimer = 15;
+                
+                Sound.playPowerup();
+                spawnScorePopup(player.x + player.width / 2, player.y - 30, "CHRONO SHIFT!", 'powerup');
+                
+                // Add combo points
+                addComboPoints(5);
+            }
+        }
 
         // --- GLOBAL LEADERBOARD INTEGRATION (DREAMLO) ---
         const dreamloPublicCode = '6a1dfd878f40bb17b0410195';
@@ -2904,12 +4326,31 @@
         function updateHTMLButtons() {
             const btnStart = document.getElementById('show-leaderboard-start');
             const btnShop = document.getElementById('show-shop-start');
+            const btnDaily = document.getElementById('show-daily-btn');
+            const btnSlowMo = document.getElementById('activate-slowmo-btn');
+            const btnDoubleChips = document.getElementById('double-chips-btn');
+
             if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
                 btnStart.classList.remove('hidden');
                 btnShop.classList.remove('hidden');
+                btnDaily.classList.remove('hidden');
             } else {
                 btnStart.classList.add('hidden');
                 btnShop.classList.add('hidden');
+                btnDaily.classList.add('hidden');
+            }
+
+            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
+                btnSlowMo.classList.remove('hidden');
+                document.getElementById('slowmo-charge-badge').innerText = hourglassCharges;
+            } else {
+                btnSlowMo.classList.add('hidden');
+            }
+
+            if (gameState === STATE_GAMEOVER && runChipsCollected > 0) {
+                btnDoubleChips.classList.remove('hidden');
+            } else {
+                btnDoubleChips.classList.add('hidden');
             }
         }
 
@@ -3038,6 +4479,24 @@
         document.getElementById('show-shop-start').addEventListener('click', showShop);
         document.getElementById('close-shop-btn').addEventListener('click', hideShop);
 
+        // Initialize Daily Rewards click listeners
+        document.getElementById('show-daily-btn').addEventListener('click', showDailyRewards);
+        document.getElementById('close-daily-btn').addEventListener('click', hideDailyRewards);
+
+        // Initialize Shop Tabs click listeners
+        document.getElementById('tab-skins-btn').addEventListener('click', () => switchShopTab('skins'));
+        document.getElementById('tab-iap-btn').addEventListener('click', () => switchShopTab('iap'));
+
+        // Initialize Ad Revive Overlay click listeners
+        document.getElementById('revive-ad-btn').addEventListener('click', watchAdRevive);
+        document.getElementById('revive-skip-btn').addEventListener('click', skipAdRevive);
+
+        // Initialize Double Chips click listener
+        document.getElementById('double-chips-btn').addEventListener('click', watchAdDouble);
+
+        // Initialize Hourglass Activator click listener
+        document.getElementById('activate-slowmo-btn').addEventListener('click', activateSlowMo);
+
         // Setup name submission keyboard shortcut (Enter key)
         document.getElementById('player-name-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -3082,10 +4541,10 @@
             if (hitstopFrames > 0) {
                 hitstopFrames--;
             } else {
-                if (gameState === STATE_PLAYING) {
+                if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
                     gameFrames++;
                     gameTime += (1 / 60) * timeScale;
-                    scrollX += 7 * timeScale;
+                    scrollX += (gameState === STATE_BONUS_ROOM ? 14 : 7) * timeScale;
 
                     // Decays style points very slowly over time
                     if (gameFrames % 10 === 0) {
@@ -3095,7 +4554,7 @@
 
                     // Base survival score points tick
                     if (gameFrames % 15 === 0) {
-                        score += Math.round(1 * getComboMultiplier());
+                        score += Math.round(1 * getComboMultiplier() * activeMultiplier);
                     }
 
                     // Dash duration increment
@@ -3111,6 +4570,34 @@
                         magnetTimer--;
                     }
 
+                    // Ticks down multiplier star duration
+                    if (multiplierTimer > 0) {
+                        multiplierTimer--;
+                        if (multiplierTimer <= 0) {
+                            activeMultiplier = 1.0;
+                        }
+                    }
+
+                    // Ticks down active slow-mo hourglass duration
+                    if (hourglassActiveTimer > 0) {
+                        hourglassActiveTimer--;
+                    }
+
+                    // Ticks down bonus room duration
+                    if (gameState === STATE_BONUS_ROOM) {
+                        if (bonusRoomTimer > 0) {
+                            bonusRoomTimer--;
+                            if (bonusRoomTimer <= 0) {
+                                gameState = preBonusRoomState;
+                                screenFlashColor = 'rgba(0, 255, 255, 0.8)';
+                                screenFlashTimer = 15;
+                                Sound.playPowerup();
+                                spawnScorePopup(player.x + player.width / 2, player.y - 30, "WARPING BACK...", 'revive');
+                                gameObjects = [];
+                            }
+                        }
+                    }
+
                     // Decay consecutive chips timer
                     if (consecutiveChipsTimer > 0) {
                         consecutiveChipsTimer -= 1 * timeScale;
@@ -3124,18 +4611,20 @@
                     updateObstacleSpawning();
                     updateDashEnergy();
 
-                    // Check sector transitions
-                    if (score >= 400 && score < 1000 && currentSector === 1 && !transitionQueued) {
-                        triggerSectorTransition(2);
-                    } else if (score >= 1000 && currentSector === 2 && !transitionQueued) {
-                        triggerSectorTransition(3);
+                    // Check sector transitions (only in normal playing state)
+                    if (gameState === STATE_PLAYING) {
+                        if (score >= 400 && score < 1000 && currentSector === 1 && !transitionQueued) {
+                            triggerSectorTransition(2);
+                        } else if (score >= 1000 && currentSector === 2 && !transitionQueued) {
+                            triggerSectorTransition(3);
+                        }
                     }
                 }
             }
 
             // Draw speeds warp lines overlay when player performs a dash scatto
             let isDashing = isPressing && pressDuration > 8;
-            if (gameState === STATE_PLAYING && isDashing) {
+            if ((gameState === STATE_PLAYING && isDashing) || gameState === STATE_BONUS_ROOM) {
                 drawSpeedWarpLines();
             }
 
@@ -3253,6 +4742,81 @@
                         ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.stroke();
+                    } else if (obj.type === 'hourglass') {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#bd00ff';
+                        ctx.fillStyle = '#10001a';
+                        ctx.strokeStyle = '#bd00ff';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (obj.type === 'multiplier_star') {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#ffd700';
+                        ctx.fillStyle = '#1a1a00';
+                        ctx.strokeStyle = '#ffd700';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (obj.type === 'bonus_portal') {
+                        ctx.save();
+                        ctx.shadowBlur = 25;
+                        let hue = (gameFrames * 3) % 360;
+                        let pColor = `hsla(${hue}, 100%, 50%, 1)`;
+                        ctx.shadowColor = pColor;
+                        ctx.strokeStyle = pColor;
+                        ctx.lineWidth = 5;
+                        ctx.beginPath();
+                        ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, obj.h / 2, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.fillStyle = `rgba(0, 255, 255, 0.08)`;
+                        ctx.beginPath();
+                        ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 5, obj.h / 2 - 5, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    } else if (obj.type === 'laser_barrier') {
+                        ctx.save();
+                        if (obj.warningTimer > 0) {
+                            if (Math.floor(gameFrames / 6) % 2 === 0) {
+                                ctx.strokeStyle = '#ff0000';
+                                ctx.lineWidth = 2.5;
+                                ctx.setLineDash([8, 8]);
+                                ctx.shadowBlur = 8;
+                                ctx.shadowColor = '#ff0000';
+                                ctx.beginPath();
+                                if (obj.heightType === 'low') {
+                                    ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
+                                    ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                                } else {
+                                    ctx.moveTo(obj.x + obj.w / 2, 0);
+                                    ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
+                                }
+                                ctx.stroke();
+                            }
+                        } else {
+                            let laserColor = '#ff0055';
+                            ctx.shadowBlur = 20;
+                            ctx.shadowColor = laserColor;
+                            ctx.strokeStyle = laserColor;
+                            ctx.lineWidth = 8 + Math.sin(gameFrames * 0.4) * 2;
+                            ctx.beginPath();
+                            if (obj.heightType === 'low') {
+                                ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
+                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                            } else {
+                                ctx.moveTo(obj.x + obj.w / 2, 0);
+                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
+                            }
+                            ctx.stroke();
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 2.5;
+                            ctx.stroke();
+                        }
+                        ctx.restore();
                     }
                     ctx.restore();
                 }
