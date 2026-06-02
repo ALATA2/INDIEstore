@@ -33,10 +33,6 @@
         /* Responsive container forcing 16:9 aspect ratio */
         #game-container {
             position: relative;
-            width: 100vw;
-            height: 56.25vw; /* 16:9 */
-            max-width: 177.78vh; /* 16:9 */
-            max-height: 100vh;
             box-shadow: 0 0 50px rgba(186, 85, 211, 0.35);
             border: 2px solid rgba(186, 85, 211, 0.4);
             border-radius: 12px;
@@ -184,7 +180,7 @@
         #submit-score-btn:hover {
             background: #d333ff;
         }
-        #close-leaderboard-btn {
+        #close-leaderboard-btn, #close-shop-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: #ffffff;
@@ -196,7 +192,7 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        #close-leaderboard-btn:hover {
+        #close-leaderboard-btn:hover, #close-shop-btn:hover {
             background: rgba(255, 255, 255, 0.2);
             border-color: #ffffff;
         }
@@ -338,9 +334,140 @@
             color: #ffffff;
             box-shadow: 0 0 8px rgba(186, 85, 211, 0.4);
         }
+
+        /* Orientation warning overlay styles */
+        #orientation-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, #100624 0%, #030107 100%);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+            padding: 24px;
+        }
+        @media (orientation: portrait) {
+            #orientation-warning {
+                display: flex;
+            }
+        }
+        .warning-content {
+            max-width: 400px;
+        }
+        .phone-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: rotatePhone 2.2s infinite ease-in-out;
+            color: #00ffff;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+        }
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            40% { transform: rotate(-90deg); }
+            80% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .warning-content h2 {
+            font-size: 22px;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .warning-content p {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        /* Optimize HUD Overlays for small/mobile landscape screens */
+        @media (max-height: 480px) {
+            .leaderboard-box, .shop-box {
+                padding: 12px 18px;
+                border-radius: 8px;
+                max-height: 96%;
+            }
+            .leaderboard-title, .shop-title {
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+            .shop-currency {
+                font-size: 11px;
+                margin-bottom: 8px;
+            }
+            .leaderboard-list {
+                min-height: 80px;
+                margin-bottom: 8px;
+                padding: 4px;
+            }
+            .leaderboard-item {
+                padding: 5px 8px;
+                font-size: 12px;
+            }
+            .submit-container {
+                margin-bottom: 8px;
+                padding: 6px 10px;
+            }
+            .submit-prompt {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            #player-name-input {
+                font-size: 11px;
+                padding: 4px 8px;
+                width: 120px;
+            }
+            #submit-score-btn {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+            #close-leaderboard-btn, #close-shop-btn {
+                font-size: 11px;
+                padding: 6px 18px;
+            }
+            .shop-items-grid {
+                gap: 6px;
+                margin-bottom: 8px;
+            }
+            .shop-item-card {
+                padding: 6px 10px;
+            }
+            .shop-item-preview {
+                width: 24px;
+                height: 24px;
+            }
+            .shop-item-name {
+                font-size: 11px;
+            }
+            .shop-item-desc {
+                font-size: 9px;
+            }
+            .shop-item-btn {
+                padding: 4px 8px;
+                font-size: 9px;
+                min-width: 60px;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Orientation warning overlay for mobile portrait viewports -->
+    <div id="orientation-warning">
+        <div class="warning-content">
+            <div class="phone-icon">🔄</div>
+            <h2>ROTATE YOUR DEVICE</h2>
+            <p>Please rotate your screen to Landscape to play Purple Tap!</p>
+        </div>
+    </div>
 
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
@@ -384,6 +511,30 @@
     </div>
 
     <script>
+        // --- VIEWPORT SCALING & DYNAMIC RESIZING ---
+        function resizeGame() {
+            const container = document.getElementById('game-container');
+            if (!container) return;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const targetRatio = 16 / 9;
+            const currentRatio = w / h;
+            
+            if (currentRatio > targetRatio) {
+                // Viewport is wider than 16:9
+                container.style.height = h + 'px';
+                container.style.width = (h * targetRatio) + 'px';
+            } else {
+                // Viewport is taller than 16:9
+                container.style.width = w + 'px';
+                container.style.height = (w / targetRatio) + 'px';
+            }
+        }
+        window.addEventListener('resize', resizeGame);
+        window.addEventListener('load', resizeGame);
+        // Execute immediately to avoid jumpy layouts
+        resizeGame();
+
         // --- CONFIGURATION AND INITIALIZATION ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
