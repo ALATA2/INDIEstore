@@ -3433,19 +3433,42 @@
             }
         }
 
+        function drawMountains(speedMultiplier, color, baseHeight, amplitude) {
+            let offset = (scrollX * speedMultiplier) % LOGICAL_WIDTH;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(0, FLOOR_Y);
+
+            for (let x = 0; x <= LOGICAL_WIDTH + 100; x += 10) {
+                let worldX = x + offset;
+                let y = FLOOR_Y - baseHeight - Math.sin(worldX * 0.005) * amplitude - Math.cos(worldX * 0.012) * (amplitude * 0.4);
+                ctx.lineTo(x, y);
+            }
+
+            ctx.lineTo(LOGICAL_WIDTH, FLOOR_Y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
         function drawBackground() {
             let skyCenterColor = '#190a2c';
+            let mountainColor1 = '#15062a';
+            let mountainColor2 = '#20083c';
             let cityFarColor = 'rgba(21, 6, 45, 0.5)';
             let cityMidColor = 'rgba(15, 4, 32, 0.75)';
             let cityNearColor = 'rgba(8, 2, 18, 0.95)';
             
             if (currentSector === 3) {
                 skyCenterColor = '#2a071c';
+                mountainColor1 = '#230310';
+                mountainColor2 = '#3c0316';
                 cityFarColor = 'rgba(45, 6, 21, 0.5)';
                 cityMidColor = 'rgba(32, 4, 15, 0.75)';
                 cityNearColor = 'rgba(18, 2, 8, 0.95)';
             } else if (currentSector === 2) {
                 skyCenterColor = '#2e1805';
+                mountainColor1 = '#2a1403';
+                mountainColor2 = '#3c1d05';
                 cityFarColor = 'rgba(45, 20, 6, 0.5)';
                 cityMidColor = 'rgba(32, 12, 4, 0.75)';
                 cityNearColor = 'rgba(18, 5, 2, 0.95)';
@@ -3487,9 +3510,14 @@
             ctx.stroke();
             ctx.restore();
 
-            drawCityscape(0.08, cityFarColor, 0.5);
-            drawCityscape(0.2, cityMidColor, 0.85);
-            drawCityscape(0.4, cityNearColor, 1.25);
+            // Draw far mountains
+            drawMountains(0.04, mountainColor1, 220, 100);
+            drawMountains(0.08, mountainColor2, 140, 50);
+
+            // Draw cyberpunk cityscape layers in front of the mountains
+            drawCityscape(0.15, cityFarColor, 0.5);
+            drawCityscape(0.3, cityMidColor, 0.85);
+            drawCityscape(0.5, cityNearColor, 1.25);
         }
 
         function drawFloorGrid() {
