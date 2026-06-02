@@ -1062,6 +1062,122 @@
                 font-size: 10px;
             }
         }
+
+        /* QoL Sound Toggle Button styles */
+        .sound-toggle-btn {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            background: rgba(21, 8, 45, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00ffff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 90;
+        }
+        .sound-toggle-btn:hover {
+            background: #00ffff;
+            color: #100624;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+        }
+
+        /* Help/Info Overlay Styles */
+        .help-box {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(21, 8, 45, 0.98);
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            max-height: 90%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .help-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 19px;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+        .help-section {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+        .help-section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #bd00ff;
+            border-bottom: 1px solid rgba(189, 0, 255, 0.3);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+        .help-grid {
+            display: grid;
+            grid-template-columns: 85px 1fr;
+            gap: 6px 10px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .help-key {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-align: center;
+            color: #00ffff;
+            display: inline-block;
+        }
+
+        /* Mobile height adjustments for sound toggle and help overlay */
+        @media (max-height: 480px) {
+            .sound-toggle-btn {
+                top: 15px;
+                right: 30px;
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            .help-box {
+                padding: 12px 18px;
+                max-height: 96%;
+            }
+            .help-title {
+                font-size: 15px;
+                margin-bottom: 8px;
+            }
+            .help-section {
+                margin-bottom: 8px;
+            }
+            .help-section-title {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            .help-grid {
+                font-size: 11px;
+                gap: 4px 6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1134,6 +1250,47 @@
             </div>
         </div>
 
+        <!-- Help Overlay -->
+        <div id="help-overlay" class="hud-overlay">
+            <div class="help-box">
+                <h2 class="help-title">❓ HOW TO PLAY & CONTROLS</h2>
+                
+                <div class="help-section">
+                    <h3 class="help-section-title">🕹️ Desktop Controls</h3>
+                    <div class="help-grid">
+                        <div><span class="help-key">LEFT CLICK</span></div>
+                        <div>Tap or hold left mouse button anywhere to jump. Release early to jump lower, or hold to jump higher.</div>
+                        
+                        <div><span class="help-key">SPACEBAR</span></div>
+                        <div>Jump / hold to jump higher.</div>
+                        
+                        <div><span class="help-key">SHIFT</span></div>
+                        <div>Activate Slow-Motion Chrono Shift (requires slow-mo charge).</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">📱 Mobile Controls</h3>
+                    <div class="help-grid">
+                        <div><span class="help-key">TAP / HOLD</span></div>
+                        <div>Tap anywhere to jump. Hold to jump higher.</div>
+                        
+                        <div><span class="help-key">⏳ BUTTON</span></div>
+                        <div>Tap the floating hourglass button at the bottom of the screen to activate slow-mo.</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">🛡️ Equipped Gear Perks</h3>
+                    <div id="help-perk-details" style="font-size: 12px; line-height: 1.4; color: #00ffff; background: rgba(0, 255, 255, 0.05); border: 1px dashed rgba(0, 255, 255, 0.2); padding: 8px; border-radius: 6px;">
+                        Loading perks...
+                    </div>
+                </div>
+
+                <button id="close-help-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; padding: 8px 24px; border-radius: 6px; cursor: pointer; transition: all 0.2s; margin-top: 14px; align-self: center;">CLOSE</button>
+            </div>
+        </div>
+
         <!-- Simulated Ad Overlay -->
         <div id="ad-overlay">
             <div class="ad-player-box">
@@ -1168,6 +1325,7 @@
 
         <!-- Start Screen Action Buttons -->
         <button id="show-leaderboard-start" class="hud-action-btn" style="bottom: 25px; left: 30px;">🏆 LEADERBOARD</button>
+        <button id="show-help-start" class="hud-action-btn" style="bottom: 25px; left: 190px;">❓ INFO</button>
         <button id="show-shop-start" class="hud-action-btn" style="bottom: 25px; right: 30px;">🛒 SHOP</button>
         <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
         
@@ -1176,6 +1334,9 @@
 
         <!-- Double Chips Button (Game Over overlay HUD) -->
         <button id="double-chips-btn" class="hud-action-btn hidden" style="bottom: 95px; left: 50%; transform: translateX(-50%); border-color: #ffd700; color: #ffd700; font-size: 14px; font-weight: 800; background: rgba(30, 20, 0, 0.85); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); z-index: 80;">🎬 DOUBLE CHIPS (WATCH AD)</button>
+        
+        <!-- Sound Toggle Button -->
+        <button id="sound-toggle-btn" class="sound-toggle-btn">🔊</button>
     </div>
 
     <script>
@@ -1251,6 +1412,7 @@
                 }
             },
             playJump() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 let osc = this.ctx.createOscillator();
@@ -1269,6 +1431,7 @@
                 osc.stop(this.ctx.currentTime + 0.15);
             },
             playDash() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 let osc = this.ctx.createOscillator();
@@ -1293,6 +1456,7 @@
                 osc.stop(this.ctx.currentTime + 0.2);
             },
             playDeath() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
 
@@ -1338,6 +1502,7 @@
                 subOsc.stop(this.ctx.currentTime + 0.35);
             },
             playScore() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 let osc = this.ctx.createOscillator();
@@ -1356,6 +1521,7 @@
                 osc.stop(this.ctx.currentTime + 0.22);
             },
             playKill() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 let osc = this.ctx.createOscillator();
@@ -1374,6 +1540,7 @@
                 osc.stop(this.ctx.currentTime + 0.12);
             },
             playChip() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 let osc = this.ctx.createOscillator();
@@ -1398,6 +1565,7 @@
                 osc.stop(this.ctx.currentTime + 0.18);
             },
             playStyleUp(rank) {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 
@@ -1428,6 +1596,7 @@
                 });
             },
             playNearMiss() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 let osc = this.ctx.createOscillator();
@@ -1446,6 +1615,7 @@
                 osc.stop(this.ctx.currentTime + 0.18);
             },
             playPowerup() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 let osc = this.ctx.createOscillator();
@@ -1465,6 +1635,7 @@
                 osc.stop(this.ctx.currentTime + 0.3);
             },
             playShatter() {
+                if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
                 // Highpass filtered white noise burst for shield breaking
@@ -1531,6 +1702,13 @@
                 this.activeNodes = [];
             },
             
+            mute() {
+                this.activeNodes.forEach(node => {
+                    try { node.stop(); } catch(e) {}
+                });
+                this.activeNodes = [];
+            },
+            
             tick() {
                 if (!this.isPlaying) return;
                 
@@ -1549,6 +1727,7 @@
             
             scheduleNote(index, time) {
                 if (!this.isPlaying || !this.ctx) return;
+                if (isMuted) return;
                 
                 let osc = this.ctx.createOscillator();
                 let gain = this.ctx.createGain();
@@ -1605,6 +1784,7 @@
         let bonusRoomTimer = 0;
 
         // --- LEVEL PROGRESSION & RETENTION ---
+        let isMuted = localStorage.getItem('ninja_is_muted') === 'true';
         let playerLevel = parseInt(localStorage.getItem('ninja_level')) || 1;
         let playerXP = parseInt(localStorage.getItem('ninja_xp')) || 0;
         let dailyStreak = parseInt(localStorage.getItem('ninja_daily_streak')) || 0;
@@ -1707,7 +1887,7 @@
 
         // --- MISSION / ACHIEVEMENT VARIABLES ---
         let completedMissions = JSON.parse(localStorage.getItem('ninja_completed_missions')) || [];
-        const missions = [
+        let missions = JSON.parse(localStorage.getItem('ninja_active_missions')) || [
             { id: 'chips', text: 'Collect 15 Chips in a single run', target: 15, reward: 5 },
             { id: 'drones', text: 'Destroy 3 Drones in a single run', target: 3, reward: 8 },
             { id: 'nodash', text: 'Reach Sector 2 without using Dash', target: 1, reward: 10 }
@@ -1716,6 +1896,8 @@
         let runChipsCollected = 0;
         let runDronesDestroyed = 0;
         let runUsedDash = false;
+        let runSlowMoTime = 0;
+        let runUsedSlowMo = false;
         let goldReviveUsed = false;
 
         // --- PLAYER (Ninja) ---
@@ -1803,6 +1985,7 @@
                     if (!this.isGrounded) {
                         this.isGrounded = true;
                         this.landSquash = 1.0; // Trigger landing impact squash
+                        spawnLandingPuff(this.x + this.width / 2, FLOOR_Y);
                     }
                 }
 
@@ -1813,13 +1996,9 @@
                     if (gameFrames % 6 === 0 && Math.abs(this.x - 200) < 50) {
                         spawnRunParticles(this.x, FLOOR_Y);
                     }
-                    // Gold skin extra sparks
-                    if (selectedSkin === 'gold' && Math.random() < 0.15) {
-                        spawnGoldSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
-                    }
-                    // Platinum skin extra sparks
-                    if (selectedSkin === 'platinum' && Math.random() < 0.15) {
-                        spawnPlatinumSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    // Skin cosmetic sparks
+                    if (Math.random() < 0.15) {
+                        spawnCosmeticSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
                     }
                     // SSS Fever rainbow sparks
                     if (comboRank === 'SSS' && Math.random() < 0.3) {
@@ -1856,13 +2035,9 @@
                     if (isDashing && Math.random() < 0.6) {
                         spawnDashSpark(this.x, this.y + Math.random() * this.height);
                     }
-                    // Gold skin extra sparks
-                    if (selectedSkin === 'gold' && Math.random() < 0.3) {
-                        spawnGoldSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
-                    }
-                    // Platinum skin extra sparks
-                    if (selectedSkin === 'platinum' && Math.random() < 0.3) {
-                        spawnPlatinumSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    // Skin cosmetic sparks in air/dash
+                    if (Math.random() < 0.3) {
+                        spawnCosmeticSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
                     }
                     // SSS Fever rainbow sparks in air/dash
                     if (comboRank === 'SSS' && Math.random() < 0.4) {
@@ -1995,22 +2170,25 @@
                 return;
             }
 
-            // Determine difficulty curves based on currentSector
+            // Determine difficulty curves based on currentSector, scaled gradually by game time (+12% every 100 seconds, capped at 1.5x)
+            let speedFactor = 1.0 + (gameTime / 100) * 0.12;
+            speedFactor = Math.min(1.5, speedFactor);
+
             if (currentSector === 1) {
                 currentPhase = 1;
-                baseObstacleSpeed = 6.0;
-                minSpawnDelay = 160;
-                maxSpawnDelay = 220;
+                baseObstacleSpeed = 6.0 * speedFactor;
+                minSpawnDelay = Math.max(100, Math.floor(160 / speedFactor));
+                maxSpawnDelay = Math.max(140, Math.floor(220 / speedFactor));
             } else if (currentSector === 2) {
                 currentPhase = 2;
-                baseObstacleSpeed = 9.0;
-                minSpawnDelay = 100;
-                maxSpawnDelay = 140;
+                baseObstacleSpeed = 9.0 * speedFactor;
+                minSpawnDelay = Math.max(70, Math.floor(100 / speedFactor));
+                maxSpawnDelay = Math.max(90, Math.floor(140 / speedFactor));
             } else {
                 currentPhase = 3;
-                baseObstacleSpeed = 12.0;
-                minSpawnDelay = 65;
-                maxSpawnDelay = 85;
+                baseObstacleSpeed = 12.0 * speedFactor;
+                minSpawnDelay = Math.max(50, Math.floor(65 / speedFactor));
+                maxSpawnDelay = Math.max(65, Math.floor(85 / speedFactor));
             }
 
             // If a portal gateway is currently scrolling on screen, pause obstacle spawns
@@ -2125,8 +2303,24 @@
             let size = 36;
             let baseY = FLOOR_Y - size - (Math.random() * 110 + 60);
 
+            // 60% Standard, 25% Chaser, 15% Shielded
+            let r = Math.random();
+            let subtype = 'standard';
+            let hp = 1;
+            
+            if (r < 0.6) {
+                subtype = 'standard';
+            } else if (r < 0.85) {
+                subtype = 'chaser';
+            } else {
+                subtype = 'shielded';
+                hp = 2; // Shielded drone has 2 HP
+            }
+
             gameObjects.push({
                 type: 'drone',
+                subtype: subtype,
+                hp: hp,
                 x: LOGICAL_WIDTH + 50,
                 y: baseY,
                 baseY: baseY,
@@ -2217,7 +2411,12 @@
 
                     // Sinusoidal bobbing hover animations
                     if (obj.type === 'drone') {
-                        obj.y = obj.baseY + Math.sin(gameFrames * 0.08 + obj.phaseOffset) * 35;
+                        if (obj.subtype === 'chaser' && obj.x < LOGICAL_WIDTH * 0.65 && obj.x > player.x) {
+                            let targetY = player.y + player.height / 2 - obj.h / 2;
+                            obj.y += (targetY - obj.y) * 0.035 * timeScale;
+                        } else {
+                            obj.y = obj.baseY + Math.sin(gameFrames * 0.08 + obj.phaseOffset) * 35;
+                        }
                     } else if (obj.type === 'chip') {
                         obj.y = obj.baseY + Math.sin(gameFrames * 0.12 + obj.phaseOffset) * 8;
                     } else if (obj.type === 'magnet' || obj.type === 'shield_pu') {
@@ -2303,7 +2502,15 @@
 
                 } else if (obj.type === 'drone') {
                     // --- CYBER DRONES (Diamond glow shape) ---
-                    let droneGlow = currentPhase === 3 ? '#ffaa00' : '#00ffff';
+                    let droneGlow = '#00ffff';
+                    if (obj.subtype === 'chaser') {
+                        droneGlow = '#ff3300';
+                    } else if (obj.subtype === 'shielded') {
+                        droneGlow = '#ffd700';
+                    } else {
+                        droneGlow = currentPhase === 3 ? '#ffaa00' : '#00ffff';
+                    }
+                    
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = droneGlow;
                     ctx.fillStyle = '#06161a';
@@ -2319,11 +2526,24 @@
                     ctx.fill();
                     ctx.stroke();
 
-                    ctx.fillStyle = '#ffffff';
+                    ctx.fillStyle = obj.subtype === 'chaser' ? '#ff3300' : '#ffffff';
                     ctx.shadowBlur = 0;
                     ctx.beginPath();
                     ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 5 + Math.sin(gameFrames * 0.2) * 2, 0, Math.PI * 2);
                     ctx.fill();
+
+                    // Shield ring for shielded variant
+                    if (obj.subtype === 'shielded' && obj.hp > 1) {
+                        ctx.strokeStyle = '#ffd700';
+                        ctx.lineWidth = 1.5;
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = '#ffd700';
+                        ctx.beginPath();
+                        let radius = obj.w * 0.85;
+                        let angleOffset = gameFrames * 0.05;
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, radius, angleOffset, angleOffset + Math.PI * 1.5);
+                        ctx.stroke();
+                    }
 
                 } else if (obj.type === 'chip') {
                     // --- NEON GOLD COLLECTIBLE ENERGY CHIPS ---
@@ -2622,6 +2842,18 @@
 
                     } else if (obj.type === 'drone' && isDashing) {
                         // --- DASH ATTACK (Destroys Flying Drones) ---
+                        if (obj.subtype === 'shielded' && obj.hp > 1) {
+                            obj.hp--;
+                            Sound.playShatter();
+                            spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                            shakeTime = 10;
+                            shakeIntensity = 4;
+                            score += Math.round(15 * getComboMultiplier() * activeMultiplier);
+                            spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, "SHIELD HIT!", 'score');
+                            hitstopFrames = 3;
+                            continue;
+                        }
+
                         let killVal = Math.round(50 * getComboMultiplier() * activeMultiplier);
                         score += killVal;
                         dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 25);
@@ -2938,7 +3170,7 @@
         // --- PARTICLE SYSTEM ---
         let particles = [];
 
-        function spawnParticle(x, y, vx, vy, size, color, decay, shrink = 0) {
+        function spawnParticle(x, y, vx, vy, size, color, decay, shrink = 0, shape = 'square') {
             particles.push({
                 x: x,
                 y: y,
@@ -2948,7 +3180,8 @@
                 color: color,
                 alpha: 1.0,
                 decay: decay,
-                shrink: shrink
+                shrink: shrink,
+                shape: shape
             });
         }
 
@@ -2958,7 +3191,7 @@
                 let vy = (Math.random() - 0.3) * -4;
                 let size = Math.random() * 5 + 3;
                 let decay = Math.random() * 0.03 + 0.02;
-                spawnParticle(x, y, vx, vy, size, secondaryColor, decay);
+                spawnParticle(x, y, vx, vy, size, secondaryColor, decay, 0.05, 'circle');
             }
         }
 
@@ -2967,7 +3200,7 @@
             let vy = (Math.random() - 0.5) * -2;
             let size = Math.random() * 4 + 2;
             let decay = Math.random() * 0.05 + 0.03;
-            spawnParticle(x, y, vx, vy, size, `rgba(${hexToRgb(primaryColor)}, 0.65)`, decay);
+            spawnParticle(x, y, vx, vy, size, `rgba(${hexToRgb(primaryColor)}, 0.65)`, decay, 0.02, 'square');
         }
 
         function spawnDashSpark(x, y) {
@@ -2977,7 +3210,7 @@
             let decay = Math.random() * 0.06 + 0.04;
             let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
             let pColor = selectedSkin === 'classic' ? secondaryColor : activeSkinObj.trailColor;
-            spawnParticle(x, y, vx, vy, size, pColor, decay);
+            spawnParticle(x, y, vx, vy, size, pColor, decay, 0.02, 'square');
         }
 
         function spawnGoldSpark(x, y) {
@@ -2985,7 +3218,7 @@
             let vy = (Math.random() - 0.5) * 4 - 2;
             let size = Math.random() * 3 + 1.5;
             let decay = Math.random() * 0.04 + 0.02;
-            spawnParticle(x, y, vx, vy, size, '#ffd700', decay);
+            spawnParticle(x, y, vx, vy, size * 1.5, '#ffd700', decay, 0.02, 'star');
         }
 
         function spawnPlatinumSpark(x, y) {
@@ -2993,7 +3226,7 @@
             let vy = (Math.random() - 0.5) * 4 - 2;
             let size = Math.random() * 3 + 1.5;
             let decay = Math.random() * 0.04 + 0.02;
-            spawnParticle(x, y, vx, vy, size, '#e5e8e8', decay);
+            spawnParticle(x, y, vx, vy, size, '#e5e8e8', decay, 0.02, 'circle');
         }
 
         function spawnRainbowSpark(x, y) {
@@ -3002,7 +3235,38 @@
             let size = Math.random() * 3 + 1.5;
             let decay = Math.random() * 0.04 + 0.02;
             let hue = Math.floor(Math.random() * 360);
-            spawnParticle(x, y, vx, vy, size, `hsla(${hue}, 100%, 50%, 0.9)`, decay);
+            spawnParticle(x, y, vx, vy, size * 1.2, `hsla(${hue}, 100%, 50%, 0.9)`, decay, 0.02, 'star');
+        }
+
+        function spawnCosmeticSpark(x, y) {
+            let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
+            let vx = (Math.random() - 0.5) * 4 - 2;
+            let vy = (Math.random() - 0.5) * 4 - 2;
+            let size = Math.random() * 5 + 2;
+            let decay = Math.random() * 0.04 + 0.025;
+            
+            if (selectedSkin === 'classic') {
+                spawnParticle(x, y, vx, vy, size, activeSkinObj.trailColor, decay, 0.05, 'square');
+            } else if (selectedSkin === 'holo') {
+                let holoColor = Math.random() < 0.2 ? '#bd00ff' : '#00ffff';
+                spawnParticle(x + (Math.random()-0.5)*12, y + (Math.random()-0.5)*12, vx, vy, size, holoColor, decay, 0.03, 'square');
+            } else if (selectedSkin === 'gold') {
+                spawnParticle(x, y, vx, vy, size * 1.5, '#ffd700', decay, 0.04, 'star');
+            } else if (selectedSkin === 'platinum') {
+                spawnParticle(x, y, vx, vy, size, '#e5e8e8', decay, 0.03, 'circle');
+            } else if (selectedSkin === 'chronomaster') {
+                spawnParticle(x, y, vx, vy, size * 1.3, '#ff00aa', decay, 0.03, 'star');
+            }
+        }
+
+        function spawnLandingPuff(x, y) {
+            for (let i = 0; i < 12; i++) {
+                let vx = (Math.random() - 0.5) * 8;
+                let vy = -Math.random() * 3 - 1;
+                let size = Math.random() * 8 + 4;
+                let decay = Math.random() * 0.04 + 0.03;
+                spawnParticle(x, y, vx, vy, size, 'rgba(189, 0, 255, 0.4)', decay, 0.1, 'circle');
+            }
         }
 
         function spawnChipCollectParticles(x, y) {
@@ -3013,7 +3277,7 @@
                 let vy = Math.sin(angle) * speed;
                 let size = Math.random() * 4 + 2;
                 let decay = Math.random() * 0.04 + 0.03;
-                spawnParticle(x, y, vx, vy, size, '#ffaa00', decay);
+                spawnParticle(x, y, vx, vy, size, '#ffaa00', decay, 0.05, 'star');
             }
         }
 
@@ -3026,7 +3290,7 @@
                 let vy = Math.sin(angle) * speed;
                 let size = Math.random() * 5 + 3;
                 let decay = Math.random() * 0.03 + 0.02;
-                spawnParticle(x, y, vx, vy, size, droneColor, decay);
+                spawnParticle(x, y, vx, vy, size, droneColor, decay, 0.05, 'circle');
             }
         }
 
@@ -3038,7 +3302,7 @@
                 let vy = Math.sin(angle) * speed;
                 let size = Math.random() * 8 + 4;
                 let decay = Math.random() * 0.02 + 0.015;
-                spawnParticle(x, y, vx, vy, size, primaryColor, decay, 0.05);
+                spawnParticle(x, y, vx, vy, size, primaryColor, decay, 0.05, 'square');
             }
             for (let i = 0; i < 20; i++) {
                 let angle = Math.random() * Math.PI * 2;
@@ -3047,7 +3311,7 @@
                 let vy = Math.sin(angle) * speed;
                 let size = Math.random() * 6 + 2;
                 let decay = Math.random() * 0.025 + 0.02;
-                spawnParticle(x, y, vx, vy, size, secondaryColor, decay, 0.03);
+                spawnParticle(x, y, vx, vy, size, secondaryColor, decay, 0.03, 'circle');
             }
         }
 
@@ -3067,7 +3331,27 @@
                 ctx.save();
                 ctx.globalAlpha = p.alpha;
                 ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
+                
+                if (p.shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (p.shape === 'star') {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y - p.size);
+                    ctx.lineTo(p.x + p.size/3, p.y - p.size/3);
+                    ctx.lineTo(p.x + p.size, p.y);
+                    ctx.lineTo(p.x + p.size/3, p.y + p.size/3);
+                    ctx.lineTo(p.x, p.y + p.size);
+                    ctx.lineTo(p.x - p.size/3, p.y + p.size/3);
+                    ctx.lineTo(p.x - p.size, p.y);
+                    ctx.lineTo(p.x - p.size/3, p.y - p.size/3);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                }
+                
                 ctx.restore();
             }
         }
@@ -3087,20 +3371,70 @@
         }
 
         // --- ENVIRONMENT BACKGROUND DRAW ROUTINES (Parallax & perspective Floor) ---
+        function pseudoRandom(seed) {
+            let x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function drawCityscape(speedMultiplier, baseColor, layerHeightScale) {
+            let offset = (scrollX * speedMultiplier);
+            ctx.fillStyle = baseColor;
+            
+            // We want to draw buildings that cover from x = -w to x = LOGICAL_WIDTH + w
+            let startIndex = Math.floor(offset / 150) - 2;
+            
+            for (let i = startIndex; i < startIndex + 15; i++) {
+                let seed = i * 123.456;
+                let w = 80 + pseudoRandom(seed) * 90;
+                let h = (120 + pseudoRandom(seed + 1) * 220) * layerHeightScale;
+                
+                let x = (i * 150) - offset;
+                let y = FLOOR_Y - h;
+                
+                // Draw building rect
+                ctx.fillRect(x, y, w, h);
+                
+                // Draw antennas
+                if (pseudoRandom(seed + 2) < 0.4) {
+                    ctx.strokeStyle = `rgba(${hexToRgb(secondaryColor)}, 0.4)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x + w/2, y);
+                    ctx.lineTo(x + w/2, y - 25 * layerHeightScale);
+                    ctx.stroke();
+                }
+                
+                // Windows!
+                if (layerHeightScale > 0.6) { // Only medium and near layer gets windows
+                    ctx.fillStyle = `rgba(255, 255, 255, 0.08)`;
+                    let winRows = Math.floor(h / 30);
+                    let winCols = Math.floor(w / 20);
+                    for (let r = 1; r < winRows - 1; r++) {
+                        for (let c = 1; c < winCols - 1; c++) {
+                            ctx.fillRect(x + c * 20, y + r * 30, 8, 12);
+                        }
+                    }
+                    ctx.fillStyle = baseColor; // restore building color
+                }
+            }
+        }
+
         function drawBackground() {
             let skyCenterColor = '#190a2c';
-            let mountainColor1 = '#15062a';
-            let mountainColor2 = '#20083c';
+            let cityFarColor = 'rgba(21, 6, 45, 0.5)';
+            let cityMidColor = 'rgba(15, 4, 32, 0.75)';
+            let cityNearColor = 'rgba(8, 2, 18, 0.95)';
             
             if (currentSector === 3) {
                 skyCenterColor = '#2a071c';
-                mountainColor1 = '#230310';
-                mountainColor2 = '#3c1d05'; // Sector 3 mountain 2 override
-                mountainColor2 = '#3c0316';
+                cityFarColor = 'rgba(45, 6, 21, 0.5)';
+                cityMidColor = 'rgba(32, 4, 15, 0.75)';
+                cityNearColor = 'rgba(18, 2, 8, 0.95)';
             } else if (currentSector === 2) {
                 skyCenterColor = '#2e1805';
-                mountainColor1 = '#2a1403';
-                mountainColor2 = '#3c1d05';
+                cityFarColor = 'rgba(45, 20, 6, 0.5)';
+                cityMidColor = 'rgba(32, 12, 4, 0.75)';
+                cityNearColor = 'rgba(18, 5, 2, 0.95)';
             }
 
             let skyGrad = ctx.createRadialGradient(
@@ -3139,25 +3473,9 @@
             ctx.stroke();
             ctx.restore();
 
-            drawMountains(0.12, mountainColor1, 250, 120);
-            drawMountains(0.35, mountainColor2, 160, 60);
-        }
-
-        function drawMountains(speedMultiplier, color, baseHeight, amplitude) {
-            let offset = (scrollX * speedMultiplier) % LOGICAL_WIDTH;
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.moveTo(0, FLOOR_Y);
-
-            for (let x = 0; x <= LOGICAL_WIDTH + 100; x += 10) {
-                let worldX = x + offset;
-                let y = FLOOR_Y - baseHeight - Math.sin(worldX * 0.005) * amplitude - Math.cos(worldX * 0.012) * (amplitude * 0.4);
-                ctx.lineTo(x, y);
-            }
-
-            ctx.lineTo(LOGICAL_WIDTH, FLOOR_Y);
-            ctx.closePath();
-            ctx.fill();
+            drawCityscape(0.08, cityFarColor, 0.5);
+            drawCityscape(0.2, cityMidColor, 0.85);
+            drawCityscape(0.4, cityNearColor, 1.25);
         }
 
         function drawFloorGrid() {
@@ -3350,6 +3668,12 @@
                     completed = true;
                 } else if (m.id === 'drones' && runDronesDestroyed >= m.target) {
                     completed = true;
+                } else if (m.id === 'score' && score >= m.target) {
+                    completed = true;
+                } else if (m.id === 'slowmo_time' && runSlowMoTime >= m.target) {
+                    completed = true;
+                } else if (m.id === 'sectors_noslowmo' && currentSector >= 2 && !runUsedSlowMo) {
+                    completed = true;
                 } else if (m.id === 'nodash' && currentSector >= 2 && !runUsedDash) {
                     completed = true;
                 }
@@ -3393,6 +3717,7 @@
                 ctx.font = '600 13px "Outfit", sans-serif';
                 let isDone = completedMissions.includes(m.id);
                 let progressStr = '';
+                let isFailed = false;
                 if (isDone) {
                     progressStr = '[COMPLETED 🟢]';
                     ctx.fillStyle = '#2ecc71';
@@ -3401,16 +3726,20 @@
                         progressStr = `(${runChipsCollected}/${m.target})`;
                     } else if (m.id === 'drones') {
                         progressStr = `(${runDronesDestroyed}/${m.target})`;
+                    } else if (m.id === 'score') {
+                        progressStr = `(${score}/${m.target})`;
+                    } else if (m.id === 'slowmo_time') {
+                        progressStr = `(${Math.floor(runSlowMoTime)}s/${m.target}s)`;
+                    } else if (m.id === 'sectors_noslowmo') {
+                        progressStr = runUsedSlowMo ? '[FAILED 🔴]' : '[ACTIVE 🔵]';
+                        isFailed = runUsedSlowMo;
                     } else if (m.id === 'nodash') {
                         progressStr = runUsedDash ? '[FAILED 🔴]' : '[ACTIVE 🔵]';
+                        isFailed = runUsedDash;
                     }
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                    ctx.fillStyle = isFailed ? 'rgba(255, 100, 100, 0.45)' : 'rgba(255, 255, 255, 0.75)';
                 }
                 
-                if (m.id === 'nodash' && runUsedDash && !isDone) {
-                    ctx.fillStyle = 'rgba(255, 100, 100, 0.45)';
-                }
-
                 ctx.fillText(`• ${m.text}`, x, y);
                 ctx.textAlign = 'right';
                 ctx.fillText(`${progressStr}  +${m.reward} 🪙`, x + 340, y);
@@ -3717,6 +4046,8 @@
             runChipsCollected = 0;
             runDronesDestroyed = 0;
             runUsedDash = false;
+            runSlowMoTime = 0;
+            runUsedSlowMo = false;
             goldReviveUsed = false;
             
             consecutiveChips = 0;
@@ -3746,6 +4077,7 @@
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
                 document.getElementById('shop-overlay').classList.contains('active') ||
                 document.getElementById('daily-overlay').classList.contains('active') ||
+                document.getElementById('help-overlay').classList.contains('active') ||
                 document.getElementById('checkout-overlay').classList.contains('active') ||
                 document.getElementById('revive-countdown-overlay').classList.contains('active')) {
                 return;
@@ -3949,9 +4281,39 @@
             // Subtract 24 hours from last claim time so we can claim again
             lastDailyClaimTime = Math.max(0, lastDailyClaimTime - 24 * 60 * 60 * 1000);
             localStorage.setItem('ninja_last_claim_time', lastDailyClaimTime);
+            
+            // Cheat reset active daily missions
+            localStorage.setItem('ninja_last_mission_reset', 0);
+            generateMissions(true);
+            
             Sound.playPowerup();
             renderDailyCalendar();
         };
+
+        function generateMissions(force = false) {
+            let lastReset = parseInt(localStorage.getItem('ninja_last_mission_reset')) || 0;
+            let now = Date.now();
+            
+            if (force || now - lastReset >= 24 * 60 * 60 * 1000 || !localStorage.getItem('ninja_active_missions') || missions.length === 0) {
+                localStorage.setItem('ninja_last_mission_reset', now);
+                
+                const missionPool = [
+                    { id: 'chips', text: 'Collect 20 Chips in a single run', target: 20, reward: 8 },
+                    { id: 'drones', text: 'Destroy 4 Drones in a single run', target: 4, reward: 10 },
+                    { id: 'score', text: 'Reach 800 Score in a single run', target: 800, reward: 12 },
+                    { id: 'slowmo_time', text: 'Chrono Shift for 6s in a single run', target: 6, reward: 10 },
+                    { id: 'sectors_noslowmo', text: 'Reach Sector 2 without Chrono Shift', target: 1, reward: 15 },
+                    { id: 'nodash', text: 'Reach Sector 2 without using Dash', target: 1, reward: 15 }
+                ];
+                
+                let shuffled = [...missionPool].sort(() => 0.5 - Math.random());
+                missions = shuffled.slice(0, 3);
+                completedMissions = [];
+                
+                localStorage.setItem('ninja_active_missions', JSON.stringify(missions));
+                localStorage.setItem('ninja_completed_missions', JSON.stringify(completedMissions));
+            }
+        }
 
         window.claimDaily = function(dayIndex) {
             let reward = DAILY_REWARDS_DATA[dayIndex];
@@ -4350,15 +4712,18 @@
             const btnDaily = document.getElementById('show-daily-btn');
             const btnSlowMo = document.getElementById('activate-slowmo-btn');
             const btnDoubleChips = document.getElementById('double-chips-btn');
+            const btnHelp = document.getElementById('show-help-start');
 
             if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
                 btnStart.classList.remove('hidden');
                 btnShop.classList.remove('hidden');
                 btnDaily.classList.remove('hidden');
+                if (btnHelp) btnHelp.classList.remove('hidden');
             } else {
                 btnStart.classList.add('hidden');
                 btnShop.classList.add('hidden');
                 btnDaily.classList.add('hidden');
+                if (btnHelp) btnHelp.classList.add('hidden');
             }
 
             if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
@@ -4372,6 +4737,46 @@
                 btnDoubleChips.classList.remove('hidden');
             } else {
                 btnDoubleChips.classList.add('hidden');
+            }
+        }
+
+        function showHelp() {
+            const overlay = document.getElementById('help-overlay');
+            overlay.classList.add('active');
+            updateHelpOverlayPerks();
+        }
+
+        function hideHelp() {
+            const overlay = document.getElementById('help-overlay');
+            overlay.classList.remove('active');
+            lastOverlayCloseTime = Date.now();
+        }
+
+        function updateHelpOverlayPerks() {
+            const currentSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
+            const perkDiv = document.getElementById('help-perk-details');
+            if (perkDiv) {
+                perkDiv.innerHTML = `<strong>Equipped Gear:</strong> <span style="color: ${currentSkinObj.color}; font-weight: bold;">${currentSkinObj.name}</span><br><em>Ability:</em> ${currentSkinObj.desc}`;
+            }
+        }
+
+        function updateSoundToggleButton() {
+            const btn = document.getElementById('sound-toggle-btn');
+            if (btn) {
+                btn.innerText = isMuted ? '🔇' : '🔊';
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            localStorage.setItem('ninja_is_muted', isMuted);
+            updateSoundToggleButton();
+            if (isMuted) {
+                BGM.mute();
+            } else {
+                if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
+                    BGM.start();
+                }
             }
         }
 
@@ -4530,6 +4935,17 @@
             }
         });
 
+        // Initialize Help Overlay click listeners
+        document.getElementById('show-help-start').addEventListener('click', showHelp);
+        document.getElementById('close-help-btn').addEventListener('click', hideHelp);
+
+        // Initialize Sound Toggle click listener
+        document.getElementById('sound-toggle-btn').addEventListener('click', toggleMute);
+        updateSoundToggleButton();
+
+        // Initialize daily achievements
+        generateMissions(false);
+
         // Initialize buttons visibility
         updateHTMLButtons();
 
@@ -4607,6 +5023,8 @@
                     // Ticks down active slow-mo hourglass duration
                     if (hourglassActiveTimer > 0) {
                         hourglassActiveTimer--;
+                        runSlowMoTime += (1 / 60) * timeScale;
+                        runUsedSlowMo = true;
                     }
 
                     // Ticks down bonus room duration
