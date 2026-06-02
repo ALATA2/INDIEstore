@@ -3518,7 +3518,7 @@
             let btnW = 340;
             let btnH = 65;
             let btnX = LOGICAL_WIDTH / 2 - btnW / 2;
-            let btnY = LOGICAL_HEIGHT / 2 + 60;
+            let btnY = LOGICAL_HEIGHT / 2 + 80;
 
             ctx.fillStyle = 'rgba(21, 8, 45, 0.8)';
             ctx.strokeStyle = '#00ffff';
@@ -3556,7 +3556,7 @@
             drawEquippedSkinInfo(880, 280);
             
             // Draw player XP bar
-            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 500, 360);
+            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 560, 360);
         }
 
         function drawGameOverScreen() {
@@ -3604,7 +3604,7 @@
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             let pulse = Math.abs(Math.sin(Date.now() * 0.005));
             ctx.globalAlpha = 0.4 + pulse * 0.6;
-            ctx.fillText("Tap anywhere to restart", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 170);
+            ctx.fillText("Tap anywhere to restart", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 140);
             ctx.restore();
 
             // Mobile tag drawn on gameover screen
@@ -3620,7 +3620,7 @@
             drawEquippedSkinInfo(880, 280);
 
             // Draw player XP bar
-            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 500, 360);
+            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 560, 360);
         }
 
         // --- CONTROL LOOPS AND GAME RESET ---
