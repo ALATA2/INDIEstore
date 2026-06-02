@@ -4367,6 +4367,10 @@
         function hideLeaderboard() {
             const overlay = document.getElementById('leaderboard-overlay');
             overlay.classList.remove('active');
+            if (gameState === STATE_GAMEOVER) {
+                gameState = STATE_START;
+                updateHTMLButtons();
+            }
         }
 
         function fetchScores() {
