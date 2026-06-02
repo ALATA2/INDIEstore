@@ -1618,6 +1618,7 @@
         let activeMultiplier = 1.0;
         let multiplierTimer = 0;
         let adRevivesUsed = 0; // max 1 per run
+        let isReviveOverlayActive = false; // flag to freeze update ticks during ad revive countdown
 
         // --- GAMEPLAY VARIABLES ---
         const FLOOR_Y = 580; // Y coordinate representing the solid ground
@@ -3626,7 +3627,8 @@
         // --- CONTROL LOOPS AND GAME RESET ---
         function triggerGameOver() {
             if (adRevivesUsed === 0) {
-                // First crash: show ad revive screen countdown overlay
+                // First crash: show ad revive screen countdown overlay and freeze logic
+                isReviveOverlayActive = true;
                 Sound.playDeath();
                 BGM.stop();
                 shakeTime = 25;
@@ -3716,6 +3718,7 @@
             activeMultiplier = 1.0;
             multiplierTimer = 0;
             adRevivesUsed = 0;
+            isReviveOverlayActive = false;
             document.getElementById('slowmo-charge-badge').innerText = '0';
             
             player.reset();
@@ -4042,9 +4045,7 @@
                 timerVal.innerText = reviveTimerCount;
                 
                 if (reviveTimerCount <= 0) {
-                    clearInterval(reviveTimerInterval);
-                    overlay.classList.remove('active');
-                    showLeaderboard();
+                    skipAdRevive();
                 }
             }, 1000);
         }
@@ -4060,6 +4061,7 @@
                 player.y = FLOOR_Y - player.height;
                 player.isGrounded = true;
                 gameState = STATE_PLAYING;
+                isReviveOverlayActive = false;
                 BGM.start();
                 
                 // Clear immediate hazards to avoid spawn kill
@@ -4072,7 +4074,9 @@
         window.skipAdRevive = function() {
             clearInterval(reviveTimerInterval);
             document.getElementById('revive-countdown-overlay').classList.remove('active');
-            showLeaderboard();
+            isReviveOverlayActive = false;
+            adRevivesUsed = 1; // Mark revive used so triggerGameOver runs finalization logic
+            triggerGameOver();
         };
 
         window.watchAdDouble = function() {
@@ -4541,7 +4545,7 @@
             if (hitstopFrames > 0) {
                 hitstopFrames--;
             } else {
-                if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
+                if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
                     gameFrames++;
                     gameTime += (1 / 60) * timeScale;
                     scrollX += (gameState === STATE_BONUS_ROOM ? 14 : 7) * timeScale;
