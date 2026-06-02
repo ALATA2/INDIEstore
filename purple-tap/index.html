@@ -3371,6 +3371,20 @@
         }
 
         // --- ENVIRONMENT BACKGROUND DRAW ROUTINES (Parallax & perspective Floor) ---
+        function getLocationLabel() {
+            if (gameState === STATE_BONUS_ROOM) {
+                return "HYPER DIMENSION - VOID 777";
+            }
+            if (currentSector === 1) {
+                return "Summer Glade - Plot 042";
+            } else if (currentSector === 2) {
+                return "GRID METROPOLIS - SECTOR 108";
+            } else if (currentSector === 3) {
+                return "APOCALYPSE DOME - WASTELAND 03";
+            }
+            return "Summer Glade - Plot 042";
+        }
+
         function pseudoRandom(seed) {
             let x = Math.sin(seed) * 10000;
             return x - Math.floor(x);
@@ -3633,12 +3647,12 @@
             ctx.fillText("DASH ENERGY", LOGICAL_WIDTH / 2, barY - 8);
             ctx.restore();
 
-            // Permanent "Summer Glade - Plot 042" label in the top-right corner
+            // Permanent location label in the top-right corner
             ctx.save();
             ctx.font = '600 16px "Outfit", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
             ctx.textAlign = 'right';
-            ctx.fillText("Summer Glade - Plot 042", LOGICAL_WIDTH - 30, 45);
+            ctx.fillText(getLocationLabel(), LOGICAL_WIDTH - 30, 45);
             ctx.restore();
 
             // Magnet Timer Indicator if active
@@ -3882,12 +3896,12 @@
             ctx.restore();
             ctx.restore();
 
-            // Mobile tag "Summer Glade - Plot 042" drawn on title screen as well
+            // Mobile tag drawn on title screen as well
             ctx.save();
             ctx.font = '600 16px "Outfit", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
             ctx.textAlign = 'right';
-            ctx.fillText("Summer Glade - Plot 042", LOGICAL_WIDTH - 30, 45);
+            ctx.fillText(getLocationLabel(), LOGICAL_WIDTH - 30, 45);
             ctx.restore();
 
             // Draw active missions and equipped skin info
@@ -3951,7 +3965,7 @@
             ctx.font = '600 16px "Outfit", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
             ctx.textAlign = 'right';
-            ctx.fillText("Summer Glade - Plot 042", LOGICAL_WIDTH - 30, 45);
+            ctx.fillText(getLocationLabel(), LOGICAL_WIDTH - 30, 45);
             ctx.restore();
 
             // Draw active missions and equipped skin info
