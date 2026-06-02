@@ -1623,6 +1623,7 @@
         let multiplierTimer = 0;
         let adRevivesUsed = 0; // max 1 per run
         let isReviveOverlayActive = false; // flag to freeze update ticks during ad revive countdown
+        let lastOverlayCloseTime = 0; // cooldown timestamp to prevent touch click-throughs when closing overlays
 
         // --- GAMEPLAY VARIABLES ---
         const FLOOR_Y = 580; // Y coordinate representing the solid ground
@@ -3742,11 +3743,15 @@
 
         function onPress() {
             // Guard if overlays are active to prevent actions
-            if (document.getElementById('leaderboard-overlay').classList.contains('active')) {
+            if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
+                document.getElementById('shop-overlay').classList.contains('active') ||
+                document.getElementById('daily-overlay').classList.contains('active') ||
+                document.getElementById('checkout-overlay').classList.contains('active') ||
+                document.getElementById('revive-countdown-overlay').classList.contains('active')) {
                 return;
             }
-            if (document.getElementById('shop-overlay').classList.contains('active')) {
-                return;
+            if (Date.now() - lastOverlayCloseTime < 300) {
+                return; // Prevent accidental click-throughs right after closing overlays
             }
             if (gameState === STATE_START) {
                 Sound.playScore();
@@ -3880,6 +3885,7 @@
 
         function hideDailyRewards() {
             document.getElementById('daily-overlay').classList.remove('active');
+            lastOverlayCloseTime = Date.now();
         }
 
         function renderDailyCalendar() {
@@ -4158,6 +4164,7 @@
 
         window.cancelCheckout = function() {
             document.getElementById('checkout-overlay').classList.remove('active');
+            lastOverlayCloseTime = Date.now();
         };
 
         window.confirmPayment = function(packId) {
@@ -4191,6 +4198,7 @@
                 
                 setTimeout(() => {
                     document.getElementById('checkout-overlay').classList.remove('active');
+                    lastOverlayCloseTime = Date.now();
                     renderShop();
                 }, 1500);
                 
@@ -4275,6 +4283,7 @@
 
         function hideShop() {
             document.getElementById('shop-overlay').classList.remove('active');
+            lastOverlayCloseTime = Date.now();
         }
 
         function renderShop() {
@@ -4375,6 +4384,7 @@
         function hideLeaderboard() {
             const overlay = document.getElementById('leaderboard-overlay');
             overlay.classList.remove('active');
+            lastOverlayCloseTime = Date.now();
             if (gameState === STATE_GAMEOVER) {
                 gameState = STATE_START;
                 updateHTMLButtons();
