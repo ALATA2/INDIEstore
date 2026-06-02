@@ -2196,30 +2196,32 @@
             for (let i = gameObjects.length - 1; i >= 0; i--) {
                 let obj = gameObjects[i];
                 
-                // Pull Chips toward player if Magnet buff is active
-                if (obj.type === 'chip' && magnetTimer > 0) {
-                    let dx = (player.x + player.width / 2) - (obj.x + obj.w / 2);
-                    let dy = (player.y + player.height / 2) - (obj.y + obj.h / 2);
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-                    let magnetRadius = selectedSkin === 'holo' ? 570 : 380;
-                    if (dist < magnetRadius) {
-                        obj.x += (dx / dist) * 14 * timeScale;
-                        obj.y += (dy / dist) * 14 * timeScale;
-                        obj.baseY = obj.y; // Damp normal oscillation during attraction
+                // Pull Chips toward player if Magnet buff is active and game is playing
+                if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
+                    if (obj.type === 'chip' && magnetTimer > 0) {
+                        let dx = (player.x + player.width / 2) - (obj.x + obj.w / 2);
+                        let dy = (player.y + player.height / 2) - (obj.y + obj.h / 2);
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        let magnetRadius = selectedSkin === 'holo' ? 570 : 380;
+                        if (dist < magnetRadius) {
+                            obj.x += (dx / dist) * 14 * timeScale;
+                            obj.y += (dy / dist) * 14 * timeScale;
+                            obj.baseY = obj.y; // Damp normal oscillation during attraction
+                        } else {
+                            obj.x -= baseObstacleSpeed * timeScale;
+                        }
                     } else {
                         obj.x -= baseObstacleSpeed * timeScale;
                     }
-                } else {
-                    obj.x -= baseObstacleSpeed * timeScale;
-                }
 
-                // Sinusoidal bobbing hover animations
-                if (obj.type === 'drone') {
-                    obj.y = obj.baseY + Math.sin(gameFrames * 0.08 + obj.phaseOffset) * 35;
-                } else if (obj.type === 'chip') {
-                    obj.y = obj.baseY + Math.sin(gameFrames * 0.12 + obj.phaseOffset) * 8;
-                } else if (obj.type === 'magnet' || obj.type === 'shield_pu') {
-                    obj.y = obj.baseY + Math.sin(gameFrames * 0.07 + obj.phaseOffset) * 10;
+                    // Sinusoidal bobbing hover animations
+                    if (obj.type === 'drone') {
+                        obj.y = obj.baseY + Math.sin(gameFrames * 0.08 + obj.phaseOffset) * 35;
+                    } else if (obj.type === 'chip') {
+                        obj.y = obj.baseY + Math.sin(gameFrames * 0.12 + obj.phaseOffset) * 8;
+                    } else if (obj.type === 'magnet' || obj.type === 'shield_pu') {
+                        obj.y = obj.baseY + Math.sin(gameFrames * 0.07 + obj.phaseOffset) * 10;
+                    }
                 }
 
                 // DRAW GAME OBJECTS
@@ -2510,20 +2512,22 @@
 
                 // COLLISION AND SCORE CHECKS
                 let isColliding = false;
-                if (obj.type === 'laser_barrier') {
-                    if (obj.warningTimer <= 0) {
-                        let playerRight = player.x + player.width;
-                        let laserRight = obj.x + obj.w;
-                        if (playerRight > obj.x && player.x < laserRight) {
-                            if (obj.heightType === 'low') {
-                                isColliding = (player.y + player.height > FLOOR_Y - 140);
-                            } else {
-                                isColliding = (player.y < FLOOR_Y - 120);
+                if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
+                    if (obj.type === 'laser_barrier') {
+                        if (obj.warningTimer <= 0) {
+                            let playerRight = player.x + player.width;
+                            let laserRight = obj.x + obj.w;
+                            if (playerRight > obj.x && player.x < laserRight) {
+                                if (obj.heightType === 'low') {
+                                    isColliding = (player.y + player.height > FLOOR_Y - 140);
+                                } else {
+                                    isColliding = (player.y < FLOOR_Y - 120);
+                                }
                             }
                         }
+                    } else if (obj.type !== 'portal') {
+                        isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal');
                     }
-                } else if (obj.type !== 'portal') {
-                    isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal');
                 }
 
                 if (isColliding) {
