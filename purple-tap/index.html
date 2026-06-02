@@ -3514,10 +3514,12 @@
             drawMountains(0.04, mountainColor1, 220, 100);
             drawMountains(0.08, mountainColor2, 140, 50);
 
-            // Draw cyberpunk cityscape layers in front of the mountains
-            drawCityscape(0.15, cityFarColor, 0.5);
-            drawCityscape(0.3, cityMidColor, 0.85);
-            drawCityscape(0.5, cityNearColor, 1.25);
+            // Draw cyberpunk cityscape layers in front of the mountains only from Sector 2 onwards
+            if (gameState !== STATE_BONUS_ROOM && currentSector >= 2) {
+                drawCityscape(0.15, cityFarColor, 0.5);
+                drawCityscape(0.3, cityMidColor, 0.85);
+                drawCityscape(0.5, cityNearColor, 1.25);
+            }
         }
 
         function drawFloorGrid() {
