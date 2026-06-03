@@ -2166,7 +2166,25 @@
             },
             
             start() {
+                if (isMuted) return;
                 if (this.isPlaying) return;
+                if (!this.ctx) {
+                    Sound.init();
+                    this.ctx = Sound.ctx;
+                }
+                if (!this.ctx) return;
+                
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume().then(() => {
+                        if (isMuted) return;
+                        this.isPlaying = true;
+                        this.nextNoteTime = this.ctx.currentTime + 0.1;
+                        this.noteIndex = 0;
+                        this.tick();
+                    }).catch(e => console.error("BGM resume failed:", e));
+                    return;
+                }
+                
                 this.isPlaying = true;
                 this.nextNoteTime = this.ctx.currentTime + 0.1;
                 this.noteIndex = 0;
