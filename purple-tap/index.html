@@ -45,6 +45,240 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Cookie Banner styling */
+        .cookie-banner {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 16px 24px;
+            background: rgba(8, 3, 18, 0.95);
+            border-top: 2px solid #00ffff;
+            box-shadow: 0 -5px 25px rgba(0, 255, 255, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 110;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            color: #ffffff;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(100%);
+        }
+        .cookie-banner.active {
+            transform: translateY(0);
+        }
+        .cookie-text {
+            max-width: 70%;
+            line-height: 1.5;
+            text-align: left;
+        }
+        .cookie-text a {
+            color: #00ffff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .cookie-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .cookie-btn {
+            padding: 8px 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .cookie-btn.accept {
+            background: rgba(0, 255, 255, 0.15);
+            border: 1.5px solid #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.25);
+        }
+        .cookie-btn.accept:hover {
+            background: #00ffff;
+            color: #000000;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.45);
+        }
+        .cookie-btn.decline {
+            background: transparent;
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .cookie-btn.decline:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            color: #ffffff;
+        }
+
+        /* Mock Google Account Selector styles */
+        .google-box {
+            width: 90%;
+            max-width: 380px;
+            background: #ffffff;
+            color: #202124;
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-family: 'Outfit', sans-serif;
+        }
+        .google-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .google-logo {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+        .google-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #202124;
+        }
+        .google-subtitle {
+            font-size: 13px;
+            color: #5f6368;
+            margin-top: 4px;
+        }
+        .google-account-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            background: #dadce0;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #dadce0;
+            margin-bottom: 16px;
+        }
+        .google-account-item {
+            background: #ffffff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            width: 100%;
+            text-align: left;
+        }
+        .google-account-item:hover {
+            background: #f8f9fa;
+        }
+        .google-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #1a73e8;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .google-account-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .google-account-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #202124;
+        }
+        .google-account-email {
+            font-size: 11px;
+            color: #5f6368;
+        }
+        .google-custom-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 12px;
+            font-family: inherit;
+        }
+        .google-custom-input:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+        }
+        .google-submit-btn {
+            width: 100%;
+            padding: 10px;
+            background: #1a73e8;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            font-family: inherit;
+        }
+        .google-submit-btn:hover {
+            background: #1557b0;
+        }
+        .google-cancel {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #1a73e8;
+            cursor: pointer;
+        }
+        .google-cancel:hover {
+            text-decoration: underline;
+        }
+
+        /* Privacy Policy modal formatting */
+        .legal-box {
+            width: 95%;
+            max-width: 580px;
+            background: rgba(16, 6, 36, 0.98);
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 35px rgba(0, 255, 255, 0.35);
+            border-radius: 12px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            max-height: 85%;
+            font-family: 'Outfit', sans-serif;
+            color: #ffffff;
+        }
+        .legal-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            text-align: left;
+            padding-right: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .legal-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 15px;
+            color: #00ffff;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed rgba(0,255,255,0.3);
+            padding-bottom: 4px;
+        }
+        .legal-content p {
+            margin-bottom: 12px;
+            color: rgba(255,255,255,0.85);
+        }
+
         /* Base CSS reset */
         * {
             box-sizing: border-box;
@@ -1215,6 +1449,40 @@
                 font-size: 11px;
                 gap: 4px 6px;
             }
+            /* Mobile adjustments for new overlays */
+            .cookie-banner {
+                padding: 8px 16px;
+                font-size: 11px;
+            }
+            .cookie-btn {
+                padding: 6px 12px;
+                font-size: 10px;
+            }
+            .legal-box {
+                padding: 12px 18px;
+                max-height: 96%;
+            }
+            .google-box {
+                padding: 12px 18px;
+                max-height: 96%;
+                max-width: 320px;
+            }
+            .google-header {
+                margin-bottom: 10px;
+            }
+            .google-logo {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+            .google-title {
+                font-size: 15px;
+            }
+            .google-account-list {
+                margin-bottom: 8px;
+            }
+            .google-account-item {
+                padding: 8px 12px;
+            }
         }
     </style>
 </head>
@@ -1325,6 +1593,13 @@
                     </div>
                 </div>
 
+                <div class="help-section">
+                    <h3 class="help-section-title">☁️ Cloud Backup & Profile</h3>
+                    <div id="help-account-details" style="font-size: 12px; line-height: 1.4; color: #bd00ff; background: rgba(189, 0, 255, 0.05); border: 1px dashed rgba(189, 0, 255, 0.2); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; gap: 8px;">
+                        Loading account status...
+                    </div>
+                </div>
+
                 <button id="close-help-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; padding: 8px 24px; border-radius: 6px; cursor: pointer; transition: all 0.2s; margin-top: 14px; align-self: center;">CLOSE</button>
             </div>
         </div>
@@ -1364,6 +1639,7 @@
         <!-- Start Screen Action Buttons -->
         <button id="show-leaderboard-start" class="hud-action-btn" style="bottom: 25px; left: 30px;">🏆 LEADERBOARD</button>
         <button id="show-help-start" class="hud-action-btn" style="bottom: 25px; left: 190px;">❓ INFO</button>
+        <button id="show-privacy-start" class="hud-action-btn" style="bottom: 25px; right: 190px;">📄 PRIVACY</button>
         <button id="show-shop-start" class="hud-action-btn" style="bottom: 25px; right: 30px;">🛒 SHOP</button>
         <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
         
@@ -1380,6 +1656,87 @@
         <div id="cloud-sync-toast" class="cloud-sync-toast">
             <span class="cloud-icon" id="cloud-sync-icon">☁️</span>
             <span id="cloud-sync-text">Backup Syncing...</span>
+        </div>
+
+        <!-- Cookie Consent Banner -->
+        <div id="cookie-banner" class="cookie-banner">
+            <div class="cookie-text">
+                We use cookies and local storage to save your game progress, settings, and high scores. By clicking "Accept All", you agree to our storage policies. Read our <a id="cookie-privacy-link">Privacy Policy</a>.
+            </div>
+            <div class="cookie-buttons">
+                <button id="cookie-decline-btn" class="cookie-btn decline">DECLINE</button>
+                <button id="cookie-accept-btn" class="cookie-btn accept">ACCEPT ALL</button>
+            </div>
+        </div>
+
+        <!-- Mock Google Sign-In Overlay -->
+        <div id="google-signin-overlay" class="hud-overlay">
+            <div class="google-box">
+                <!-- Main Account Selector Container -->
+                <div id="google-main-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div class="google-header">
+                        <div class="google-logo">
+                            <span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span>
+                        </div>
+                        <div class="google-title">Sign in with Google</div>
+                        <div class="google-subtitle">to sync progress with Neonja Cloud Backup</div>
+                    </div>
+                    <div class="google-account-list">
+                        <div class="google-account-item" data-email="ninja.pro@gmail.com" data-name="Ninja Pro">
+                            <div class="google-avatar">N</div>
+                            <div class="google-account-info">
+                                <span class="google-account-name">Ninja Pro</span>
+                                <span class="google-account-email">ninja.pro@gmail.com</span>
+                            </div>
+                        </div>
+                        <div class="google-account-item" data-email="retro.racer@gmail.com" data-name="Retro Racer">
+                            <div class="google-avatar" style="background:#34A853">R</div>
+                            <div class="google-account-info">
+                                <span class="google-account-name">Retro Racer</span>
+                                <span class="google-account-email">retro.racer@gmail.com</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:100%; text-align:left; font-size:12px; margin-bottom:8px; font-weight:600; color:#5f6368; font-family:inherit;">Or use custom email:</div>
+                    <input type="email" id="google-custom-email" class="google-custom-input" placeholder="name@example.com">
+                    <div id="google-error-msg" style="color: #ea4335; font-size: 11px; margin-top: -8px; margin-bottom: 8px; display: none; text-align: left; width: 100%;">Please enter a valid email address.</div>
+                    <button id="google-submit-btn" class="google-submit-btn">Continue</button>
+                    <div id="google-cancel-btn" class="google-cancel">Cancel</div>
+                </div>
+                
+                <!-- Google Loader Overlay (hidden by default) -->
+                <div id="google-loading-container" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0; width: 100%;">
+                    <div class="checkout-spinner" style="border-left-color: #4285F4; margin-bottom: 16px;"></div>
+                    <div style="font-size: 14px; font-weight: 500; color: #202124;">Connecting...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Policy Overlay Modal -->
+        <div id="privacy-overlay" class="hud-overlay">
+            <div class="legal-box">
+                <div class="legal-content">
+                    <h1 style="font-family:'Orbitron',sans-serif; font-size:22px; color:#00ffff; text-align:center; margin-bottom:15px; font-weight:900;">PRIVACY POLICY</h1>
+                    <p><strong>Effective Date: June 3, 2026</strong></p>
+                    <p>Your privacy is important to us. This Privacy Policy explains how our game collects, uses, and safeguards your local data in compliance with the General Data Protection Regulation (GDPR) and California Consumer Privacy Act (CCPA).</p>
+                    
+                    <h2>1. Data Collection & Local Storage</h2>
+                    <p>We use standard HTML5 local storage (localStorage) to store player profiles on your device. This includes your high score, game frames, total collected chips, XP progression, level, equipped ninja skins, and daily reward streak timestamps. This data remains on your physical device unless you clear your browser cache.</p>
+                    
+                    <h2>2. Google Account Linking</h2>
+                    <p>Linking your guest account to a Google Profile enables Neonja Cloud Backup synchronization. We only store a verified reference to your email address (e.g. user@gmail.com) to allow restoring progress across multiple browsers or devices. We do not access your contacts, passwords, or personal files.</p>
+                    
+                    <h2>3. Cookies Usage</h2>
+                    <p>We do not use tracking or advertising cookies. We only store essential state flags to remember whether you have accepted our cookie policy to avoid displaying the notice repeatedly.</p>
+                    
+                    <h2>4. Your Rights (GDPR & CCPA)</h2>
+                    <p>You have full control over your data. At any time, you can reset or delete your profile. To perform a complete data deletion, go to the Shop or Profile panel and click "Disconnect" or reset your browser cache. This instantly destroys all local and synced profile records.</p>
+                    
+                    <h2>5. Contact & Support</h2>
+                    <p>If you have any questions about this privacy statement, you can consult the development logs or report issues on our GitHub repository: github.com/ALATA2/INDIEstore.</p>
+                </div>
+                <button id="privacy-close-btn" class="hud-action-btn" style="position:static; margin:0 auto; width:120px;">CLOSE</button>
+            </div>
         </div>
     </div>
 
@@ -4587,7 +4944,7 @@
             
             ctx.font = '500 12px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.fillText("v1.2.0 - Theme & Shuriken Update", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
+            ctx.fillText("v1.3.0 - Golden Path Sync & Legal Compliance", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
             ctx.restore();
 
             ctx.save();
@@ -4817,6 +5174,8 @@
                 document.getElementById('daily-overlay').classList.contains('active') ||
                 document.getElementById('help-overlay').classList.contains('active') ||
                 document.getElementById('checkout-overlay').classList.contains('active') ||
+                document.getElementById('privacy-overlay').classList.contains('active') ||
+                document.getElementById('google-signin-overlay').classList.contains('active') ||
                 document.getElementById('revive-countdown-overlay').classList.contains('active')) {
                 return;
             }
@@ -4852,14 +5211,18 @@
 
         // Spacebar keyboard event bindings
         window.addEventListener('keydown', (e) => {
-            // Avoid triggering jump if nickname input or overlays are active
-            if (document.activeElement === document.getElementById('player-name-input')) {
+            // Avoid triggering jump if nickname input, email input, or overlays are active
+            if (document.activeElement === document.getElementById('player-name-input') ||
+                document.activeElement === document.getElementById('google-custom-email')) {
                 return;
             }
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
                 document.getElementById('shop-overlay').classList.contains('active') ||
                 document.getElementById('daily-overlay').classList.contains('active') ||
+                document.getElementById('help-overlay').classList.contains('active') ||
                 document.getElementById('checkout-overlay').classList.contains('active') ||
+                document.getElementById('privacy-overlay').classList.contains('active') ||
+                document.getElementById('google-signin-overlay').classList.contains('active') ||
                 document.getElementById('revive-countdown-overlay').classList.contains('active')) {
                 return;
             }
@@ -4875,12 +5238,15 @@
         });
 
         window.addEventListener('keyup', (e) => {
-            // Avoid triggering jump if nickname input or overlays are active
-            if (document.activeElement === document.getElementById('player-name-input')) {
+            // Avoid triggering jump if nickname input, email input, or overlays are active
+            if (document.activeElement === document.getElementById('player-name-input') ||
+                document.activeElement === document.getElementById('google-custom-email')) {
                 return;
             }
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
-                document.getElementById('shop-overlay').classList.contains('active')) {
+                document.getElementById('shop-overlay').classList.contains('active') ||
+                document.getElementById('privacy-overlay').classList.contains('active') ||
+                document.getElementById('google-signin-overlay').classList.contains('active')) {
                 return;
             }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
@@ -5451,17 +5817,20 @@
             const btnSlowMo = document.getElementById('activate-slowmo-btn');
             const btnDoubleChips = document.getElementById('double-chips-btn');
             const btnHelp = document.getElementById('show-help-start');
+            const btnPrivacy = document.getElementById('show-privacy-start');
 
             if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
                 btnStart.classList.remove('hidden');
                 btnShop.classList.remove('hidden');
                 btnDaily.classList.remove('hidden');
                 if (btnHelp) btnHelp.classList.remove('hidden');
+                if (btnPrivacy) btnPrivacy.classList.remove('hidden');
             } else {
                 btnStart.classList.add('hidden');
                 btnShop.classList.add('hidden');
                 btnDaily.classList.add('hidden');
                 if (btnHelp) btnHelp.classList.add('hidden');
+                if (btnPrivacy) btnPrivacy.classList.add('hidden');
             }
 
             if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
@@ -5482,6 +5851,7 @@
             const overlay = document.getElementById('help-overlay');
             overlay.classList.add('active');
             updateHelpOverlayPerks();
+            updateHelpAccountStatus();
         }
 
         function hideHelp() {
@@ -5495,6 +5865,43 @@
             const perkDiv = document.getElementById('help-perk-details');
             if (perkDiv) {
                 perkDiv.innerHTML = `<strong>Equipped Gear:</strong> <span style="color: ${currentSkinObj.color}; font-weight: bold;">${currentSkinObj.name}</span><br><em>Ability:</em> ${currentSkinObj.desc}`;
+            }
+        }
+
+        function updateHelpAccountStatus() {
+            const detailsDiv = document.getElementById('help-account-details');
+            if (!detailsDiv) return;
+            
+            const linkedEmail = localStorage.getItem('ninja_linked_email');
+            if (linkedEmail) {
+                detailsDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                        <span><strong>Status:</strong> Synced (Cloud Active)</span>
+                        <button id="google-disconnect-btn" class="cookie-btn decline" style="margin:0; padding:4px 8px; font-size:10px; cursor:pointer;">DISCONNECT</button>
+                    </div>
+                    <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:2px;">Linked Account: <span style="color:#00ffff; font-weight:bold;">\${linkedEmail}</span></div>
+                `;
+                
+                document.getElementById('google-disconnect-btn').addEventListener('click', () => {
+                    localStorage.removeItem('ninja_linked_email');
+                    // Manually trigger the sync toast to show disconnect completed
+                    CloudSave.saveProfile('ninja_linked_email', null);
+                    // play click or score sound
+                    if (!isMuted && Sound.ctx) Sound.playJump();
+                    updateHelpAccountStatus();
+                });
+            } else {
+                detailsDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:8px;">
+                        <span><strong>Status:</strong> Guest (Local Only)</span>
+                        <button id="google-link-btn" class="cookie-btn accept" style="margin:0; padding:6px 12px; font-size:11px; box-shadow:none; flex-shrink:0; cursor:pointer;">🔗 LINK GOOGLE ACCOUNT</button>
+                    </div>
+                    <div style="font-size:10px; color:rgba(255,255,255,0.6); margin-top:2px;">Link your account to back up progression and high scores.</div>
+                `;
+                
+                document.getElementById('google-link-btn').addEventListener('click', () => {
+                    showGoogleSignIn();
+                });
             }
         }
 
@@ -5676,6 +6083,116 @@
         // Initialize Help Overlay click listeners
         document.getElementById('show-help-start').addEventListener('click', showHelp);
         document.getElementById('close-help-btn').addEventListener('click', hideHelp);
+
+        // --- LEGAL COMPLIANCE & MOCK GOOGLE SIGN-IN HANDLERS ---
+        
+        // Cookie Consent Banner
+        const cookieBanner = document.getElementById('cookie-banner');
+        if (localStorage.getItem('ninja_cookie_consent') !== 'true') {
+            cookieBanner.classList.add('active');
+        }
+        
+        document.getElementById('cookie-accept-btn').addEventListener('click', () => {
+            localStorage.setItem('ninja_cookie_consent', 'true');
+            cookieBanner.classList.remove('active');
+            if (!isMuted && Sound.ctx) Sound.playScore(); // gentle feedback chime
+        });
+        
+        document.getElementById('cookie-decline-btn').addEventListener('click', () => {
+            cookieBanner.classList.remove('active');
+        });
+        
+        document.getElementById('cookie-privacy-link').addEventListener('click', showPrivacy);
+        
+        // Privacy Policy Modal
+        function showPrivacy() {
+            document.getElementById('privacy-overlay').classList.add('active');
+        }
+        
+        function hidePrivacy() {
+            document.getElementById('privacy-overlay').classList.remove('active');
+            lastOverlayCloseTime = Date.now();
+        }
+        
+        document.getElementById('show-privacy-start').addEventListener('click', showPrivacy);
+        document.getElementById('privacy-close-btn').addEventListener('click', hidePrivacy);
+        
+        // Google Sign-In Mockup
+        function showGoogleSignIn() {
+            // Hide help modal temporarily so Google is focused
+            document.getElementById('help-overlay').classList.remove('active');
+            document.getElementById('google-signin-overlay').classList.add('active');
+            
+            // Reset modal states
+            document.getElementById('google-main-container').style.display = 'flex';
+            document.getElementById('google-loading-container').style.display = 'none';
+            document.getElementById('google-custom-email').value = '';
+            document.getElementById('google-error-msg').style.display = 'none';
+            document.getElementById('google-custom-email').style.borderColor = '#dadce0';
+        }
+        
+        function hideGoogleSignIn(reopenHelp = false) {
+            document.getElementById('google-signin-overlay').classList.remove('active');
+            lastOverlayCloseTime = Date.now();
+            if (reopenHelp) {
+                showHelp();
+            }
+        }
+        
+        document.getElementById('google-cancel-btn').addEventListener('click', () => {
+            hideGoogleSignIn(true);
+        });
+        
+        // Bind selection of preset mockup accounts
+        document.querySelectorAll('.google-account-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const email = item.getAttribute('data-email');
+                processGoogleLogin(email);
+            });
+        });
+        
+        // Bind custom email submission
+        document.getElementById('google-submit-btn').addEventListener('click', () => {
+            const emailInput = document.getElementById('google-custom-email');
+            const email = emailInput.value.trim();
+            const errorMsg = document.getElementById('google-error-msg');
+            
+            // Simple email validation regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                emailInput.style.borderColor = '#ea4335';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            errorMsg.style.display = 'none';
+            emailInput.style.borderColor = '#dadce0';
+            processGoogleLogin(email);
+        });
+        
+        // Also support Enter key inside custom email input
+        document.getElementById('google-custom-email').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('google-submit-btn').click();
+            }
+        });
+        
+        function processGoogleLogin(email) {
+            // Show loader, hide inputs
+            document.getElementById('google-main-container').style.display = 'none';
+            document.getElementById('google-loading-container').style.display = 'flex';
+            
+            setTimeout(() => {
+                // Save to localStorage (which triggers CloudSave.saveProfile automatically)
+                localStorage.setItem('ninja_linked_email', email);
+                
+                // Play sound chime
+                Sound.playPowerup();
+                
+                // Done! Close Google overlay and reopen Help panel with updated status
+                hideGoogleSignIn(true);
+            }, 1200);
+        }
 
         // Initialize Sound Toggle click listener
         document.getElementById('sound-toggle-btn').addEventListener('click', toggleMute);
