@@ -2230,20 +2230,103 @@
                 if (!this.isPlaying || !this.ctx) return;
                 if (isMuted) return;
                 
+                let theme = getActiveTheme();
+                let notesPool = theme.bassNotes || this.notes;
+                let freq = notesPool[index % notesPool.length];
+                
+                // Shifts base pitches down by 1 full octave during slow-mo for a heavy, distorted timeline effect
+                let timeScaleFactor = timeScale < 0.5 ? 0.5 : 1.0;
+                let baseFreq = freq * timeScaleFactor;
+
+                // 1. Procedural Kick Drum (synthesized low frequency sine sweep on major beats)
+                if (index % 4 === 0) {
+                    let kickOsc = this.ctx.createOscillator();
+                    let kickGain = this.ctx.createGain();
+                    kickOsc.connect(kickGain);
+                    kickGain.connect(this.ctx.destination);
+                    
+                    kickOsc.type = 'sine';
+                    let startK = timeScale < 0.5 ? 80 : 150;
+                    let endK = timeScale < 0.5 ? 20 : 42;
+                    kickOsc.frequency.setValueAtTime(startK, time);
+                    kickOsc.frequency.exponentialRampToValueAtTime(endK, time + 0.12);
+                    
+                    kickGain.gain.setValueAtTime(0.12, time);
+                    kickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+                    
+                    kickOsc.start(time);
+                    kickOsc.stop(time + 0.12);
+                    this.activeNodes.push(kickOsc);
+                }
+
+                // 2. Procedural Hi-hat (synthesized highpass white-noise emulator on off-beats)
+                if (index % 4 === 2) {
+                    let hatOsc = this.ctx.createOscillator();
+                    let hatGain = this.ctx.createGain();
+                    let hatFilter = this.ctx.createBiquadFilter();
+                    
+                    hatOsc.connect(hatFilter);
+                    hatFilter.connect(hatGain);
+                    hatGain.connect(this.ctx.destination);
+                    
+                    hatOsc.type = 'square';
+                    hatOsc.frequency.setValueAtTime(9000, time);
+                    
+                    hatFilter.type = 'highpass';
+                    let cutF = timeScale < 0.5 ? 4000 : 7000;
+                    hatFilter.frequency.setValueAtTime(cutF, time);
+                    
+                    hatGain.gain.setValueAtTime(0.015, time);
+                    hatGain.gain.exponentialRampToValueAtTime(0.001, time + 0.06);
+                    
+                    hatOsc.start(time);
+                    hatOsc.stop(time + 0.06);
+                    this.activeNodes.push(hatOsc);
+                }
+
+                // 3. Melodic lead arpeggio layer (plays higher notes on beats for an epic cyber-synth feel)
+                if (index % 2 === 0) {
+                    let leadOsc = this.ctx.createOscillator();
+                    let leadGain = this.ctx.createGain();
+                    let leadFilter = this.ctx.createBiquadFilter();
+                    
+                    leadOsc.connect(leadFilter);
+                    leadFilter.connect(leadGain);
+                    leadGain.connect(this.ctx.destination);
+                    
+                    leadOsc.type = 'triangle';
+                    
+                    // Key intervals (Root, Minor Third, Fifth, Minor Seventh) to keep it dark and cyberpunk
+                    const intervals = [4.0, 4.8, 6.0, 7.2];
+                    let multiplier = intervals[(index / 2) % intervals.length];
+                    let lFreq = baseFreq * multiplier;
+                    
+                    leadOsc.frequency.setValueAtTime(lFreq, time);
+                    
+                    leadFilter.type = 'bandpass';
+                    leadFilter.frequency.setValueAtTime(1200, time);
+                    leadFilter.Q.setValueAtTime(2.0, time);
+                    
+                    leadGain.gain.setValueAtTime(0.0, time);
+                    leadGain.gain.linearRampToValueAtTime(0.03, time + 0.02);
+                    leadGain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+                    
+                    leadOsc.start(time);
+                    leadOsc.stop(time + 0.22);
+                    this.activeNodes.push(leadOsc);
+                }
+
+                // 4. Bass Line Synth Note
                 let osc = this.ctx.createOscillator();
                 let gain = this.ctx.createGain();
                 let filter = this.ctx.createBiquadFilter();
                 
-                let theme = getActiveTheme();
-                osc.type = theme.oscType || 'sawtooth';
-                let notesPool = theme.bassNotes || this.notes;
-                let freq = notesPool[index % notesPool.length];
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
                 
-                // Shifts bass down by 1 full octave during slow-mo for a heavy, distorted timeline effect
-                if (timeScale < 0.5) {
-                    freq = freq * 0.5;
-                }
-                osc.frequency.setValueAtTime(freq, time);
+                osc.type = theme.oscType || 'sawtooth';
+                osc.frequency.setValueAtTime(baseFreq, time);
                 
                 // Classic filter envelope
                 filter.type = 'lowpass';
@@ -2263,15 +2346,11 @@
                 gain.gain.linearRampToValueAtTime(0.12, time + 0.02);
                 gain.gain.exponentialRampToValueAtTime(0.001, time + 0.20);
                 
-                osc.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.ctx.destination);
-                
                 osc.start(time);
                 osc.stop(time + 0.22);
                 
                 this.activeNodes.push(osc);
-                if (this.activeNodes.length > 25) {
+                while (this.activeNodes.length > 80) {
                     this.activeNodes.shift();
                 }
             }
