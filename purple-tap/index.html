@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA standalone capabilities to enable fullscreen when added to home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Purple Tap - One-Tap Action Ninja</title>
     <!-- Load Orbitron fonts for a sci-fi neon style and Outfit for clean copy -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -5203,6 +5207,19 @@
             updateHTMLButtons();
         }
 
+        function goFullscreen() {
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen().catch(err => {
+                    console.log("Fullscreen request failed: ", err);
+                });
+            } else if (docEl.webkitRequestFullscreen) { /* Safari / iOS Chrome */
+                docEl.webkitRequestFullscreen();
+            } else if (docEl.msRequestFullscreen) { /* IE11 */
+                docEl.msRequestFullscreen();
+            }
+        }
+
         function onPress() {
             // Guard if overlays are active to prevent actions
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
@@ -5219,6 +5236,12 @@
                 return; // Prevent accidental click-throughs right after closing overlays
             }
             if (gameState === STATE_START) {
+                // Try to go fullscreen on mobile devices to hide browser navigation/address bars
+                const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                if (isMobileDevice) {
+                    goFullscreen();
+                }
+
                 Sound.playScore();
                 gameState = STATE_PLAYING;
                 tutorialDismissed = true;
