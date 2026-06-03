@@ -895,6 +895,30 @@
             box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
         }
 
+        /* Flexbox wrapper to align and scale start buttons nicely */
+        .bottom-actions-container {
+            position: absolute;
+            bottom: 25px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 0 16px;
+            box-sizing: border-box;
+            z-index: 90;
+            pointer-events: none;
+        }
+        .bottom-actions-container .hud-action-btn, 
+        .bottom-actions-container .daily-rewards-btn {
+            position: static;
+            transform: none;
+            margin: 0;
+            pointer-events: auto;
+        }
+
         /* Rewarded Ad Overlay */
         #ad-overlay {
             position: absolute;
@@ -1483,6 +1507,16 @@
             .google-account-item {
                 padding: 8px 12px;
             }
+            .bottom-actions-container {
+                bottom: 12px;
+                gap: 6px;
+                padding: 0 8px;
+            }
+            .bottom-actions-container .hud-action-btn,
+            .bottom-actions-container .daily-rewards-btn {
+                padding: 6px 12px;
+                font-size: 10px;
+            }
         }
     </style>
 </head>
@@ -1637,11 +1671,13 @@
         </div>
 
         <!-- Start Screen Action Buttons -->
-        <button id="show-leaderboard-start" class="hud-action-btn" style="bottom: 25px; left: 30px;">🏆 LEADERBOARD</button>
-        <button id="show-help-start" class="hud-action-btn" style="bottom: 25px; left: 190px;">❓ INFO</button>
-        <button id="show-privacy-start" class="hud-action-btn" style="bottom: 25px; right: 190px;">📄 PRIVACY</button>
-        <button id="show-shop-start" class="hud-action-btn" style="bottom: 25px; right: 30px;">🛒 SHOP</button>
-        <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
+        <div class="bottom-actions-container">
+            <button id="show-leaderboard-start" class="hud-action-btn">🏆 LEADERBOARD</button>
+            <button id="show-help-start" class="hud-action-btn">❓ INFO</button>
+            <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
+            <button id="show-privacy-start" class="hud-action-btn">📄 PRIVACY</button>
+            <button id="show-shop-start" class="hud-action-btn">🛒 SHOP</button>
+        </div>
         
         <!-- Hourglass Activating Button (Gameplay overlay HUD) -->
         <button id="activate-slowmo-btn" class="hud-action-btn hidden" style="bottom: 25px; left: 50%; transform: translateX(-50%); border-color: #00ffff; color: #00ffff; font-size: 14px; font-weight: 800; background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; z-index: 85;">⏳<span id="slowmo-charge-badge" style="position: absolute; top: -5px; right: -5px; background: #ff0055; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 1.5px solid white;">0</span></button>
