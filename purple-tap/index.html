@@ -7,6 +7,44 @@
     <!-- Load Orbitron fonts for a sci-fi neon style and Outfit for clean copy -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
+        /* Cloud Sync Visual Toast styles */
+        .cloud-sync-toast {
+            position: absolute;
+            top: 25px;
+            left: 270px;
+            padding: 8px 12px;
+            background: rgba(16, 6, 36, 0.75);
+            border: 1.5px dashed #00ffff;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: #00ffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(-10px);
+            z-index: 95;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+        .cloud-sync-toast.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .cloud-icon {
+            display: inline-block;
+            font-size: 14px;
+        }
+        .cloud-icon.spin {
+            animation: cloudSpin 1.2s linear infinite;
+        }
+        @keyframes cloudSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Base CSS reset */
         * {
             box-sizing: border-box;
@@ -1337,6 +1375,12 @@
         
         <!-- Sound Toggle Button -->
         <button id="sound-toggle-btn" class="sound-toggle-btn">🔊</button>
+
+        <!-- Cloud Save Toast Notification -->
+        <div id="cloud-sync-toast" class="cloud-sync-toast">
+            <span class="cloud-icon" id="cloud-sync-icon">☁️</span>
+            <span id="cloud-sync-text">Backup Syncing...</span>
+        </div>
     </div>
 
     <script>
@@ -1363,6 +1407,48 @@
         window.addEventListener('load', resizeGame);
         // Execute immediately to avoid jumpy layouts
         resizeGame();
+
+        // --- CLOUD SAVE SYSTEM VISUALIZER ---
+        const CloudSave = {
+            toast: null,
+            icon: null,
+            text: null,
+            timer: null,
+            
+            init() {
+                this.toast = document.getElementById('cloud-sync-toast');
+                this.icon = document.getElementById('cloud-sync-icon');
+                this.text = document.getElementById('cloud-sync-text');
+            },
+            
+            saveProfile(key, val) {
+                if (!this.toast) this.init();
+                if (this.toast) {
+                    this.toast.classList.add('active');
+                    this.icon.classList.add('spin');
+                    this.text.innerText = "Backup Syncing...";
+                    
+                    if (this.timer) clearTimeout(this.timer);
+                    this.timer = setTimeout(() => {
+                        this.icon.classList.remove('spin');
+                        this.text.innerText = "Backup Complete! ☁️";
+                        
+                        this.timer = setTimeout(() => {
+                            this.toast.classList.remove('active');
+                        }, 1200);
+                    }, 1000);
+                }
+            }
+        };
+
+        // Wrap localStorage.setItem globally to trigger visual cloud backups
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = function(key, value) {
+            originalSetItem.call(localStorage, key, value);
+            if (key !== 'ninja_is_muted' && key !== 'ninja_last_mission_reset') {
+                CloudSave.saveProfile(key, value);
+            }
+        };
 
         // --- CONFIGURATION AND INITIALIZATION ---
         const canvas = document.getElementById('gameCanvas');
@@ -1733,8 +1819,10 @@
                 let gain = this.ctx.createGain();
                 let filter = this.ctx.createBiquadFilter();
                 
-                osc.type = 'sawtooth';
-                let freq = this.notes[index];
+                let theme = getActiveTheme();
+                osc.type = theme.oscType || 'sawtooth';
+                let notesPool = theme.bassNotes || this.notes;
+                let freq = notesPool[index % notesPool.length];
                 
                 // Shifts bass down by 1 full octave during slow-mo for a heavy, distorted timeline effect
                 if (timeScale < 0.5) {
@@ -1836,8 +1924,9 @@
 
         const SHOP_SKINS = [
             { id: 'classic', name: 'Classic Purple', desc: 'Standard cyber ninja suit (No Buffs)', price: 0, color: '#bd00ff', trailColor: '#00ffff' },
-            { id: 'holo', name: 'Holo Cyan', desc: 'Hologram suit (+50% Magnet Range)', price: 150, color: '#00ffff', trailColor: '#00c3ff' },
+            { id: 'holo', name: 'Holo Cyan', desc: 'Hologram suit: permanent 220px passive magnet (+570px when buff is active)', price: 150, color: '#00ffff', trailColor: '#00c3ff' },
             { id: 'gold', name: 'Gold Overlord', desc: 'Legendary gold suit (1x Revive per run)', price: 300, color: '#ffd700', trailColor: '#ffaa00' },
+            { id: 'shadowstrike', name: 'Shadow Strike', desc: 'Specialized crimson suit: fires plasma shurikens when dashing to destroy hazards', price: 500, color: '#ff003c', trailColor: '#ff3300' },
             { id: 'platinum', name: 'Platinum Lord', desc: 'Divine platinum armor (Double Jump ability)', price: 9999, color: '#e5e8e8', trailColor: '#95a5a6' },
             { id: 'chronomaster', name: 'Chrono Master', desc: 'Day 7 Reward: 50% slow-mo cost & 2x powerup time', price: -1, color: '#ff00aa', trailColor: '#ff0055' }
         ];
@@ -1857,6 +1946,8 @@
                 cityNearColor: 'rgba(8, 2, 18, 0.95)',
                 obstacleGlow: '#ff00ff',
                 droneGlow: '#00ffff',
+                oscType: 'sawtooth',
+                bassNotes: [41.20, 41.20, 82.40, 41.20, 49.00, 49.00, 98.00, 49.00, 55.00, 55.00, 110.00, 55.00, 65.41, 65.41, 130.81, 65.41],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     let cx = LOGICAL_WIDTH - 250;
@@ -1894,6 +1985,8 @@
                 cityNearColor: 'rgba(20, 60, 100, 0.95)',
                 obstacleGlow: '#e6f7ff',
                 droneGlow: '#00ffd8',
+                oscType: 'sine',
+                bassNotes: [82.41, 82.41, 164.81, 82.41, 98.00, 98.00, 196.00, 98.00, 110.00, 110.00, 220.00, 110.00, 130.81, 130.81, 261.63, 130.81],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
@@ -1925,6 +2018,8 @@
                 cityNearColor: 'rgba(100, 30, 8, 0.95)',
                 obstacleGlow: '#ff6c00',
                 droneGlow: '#ffd400',
+                oscType: 'sawtooth',
+                bassNotes: [41.20, 43.65, 87.31, 41.20, 41.20, 43.65, 87.31, 43.65, 41.20, 43.65, 41.20, 43.65, 48.99, 48.99, 97.99, 48.99],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     let cx = LOGICAL_WIDTH - 280;
@@ -1969,9 +2064,11 @@
                 mountainColor2: '#2d0303',
                 cityFarColor: 'rgba(40, 2, 2, 0.5)',
                 cityMidColor: 'rgba(60, 4, 4, 0.75)',
-                cityNearColor: 'rgba(80, 5, 5, 0.95)',
+                cityNearColor: 'rgba(8, 2, 2, 0.95)',
                 obstacleGlow: '#ff1a00',
                 droneGlow: '#ffa200',
+                oscType: 'sawtooth',
+                bassNotes: [32.70, 32.70, 65.41, 32.70, 34.65, 34.65, 69.30, 34.65, 36.71, 36.71, 73.42, 36.71, 32.70, 34.65, 36.71, 38.89],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     ctx.fillStyle = 'rgba(255, 120, 0, 0.8)';
@@ -2004,6 +2101,8 @@
                 cityNearColor: 'rgba(35, 45, 80, 0.95)',
                 obstacleGlow: '#00e5ff',
                 droneGlow: '#e0f7fa',
+                oscType: 'triangle',
+                bassNotes: [55.00, 55.00, 110.00, 55.00, 58.27, 58.27, 116.54, 58.27, 65.41, 65.41, 130.81, 65.41, 55.00, 58.27, 65.41, 73.42],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     let mx = LOGICAL_WIDTH - 200;
@@ -2062,6 +2161,8 @@
                 cityNearColor: 'rgba(60, 10, 110, 0.95)',
                 obstacleGlow: '#df00ff',
                 droneGlow: '#ff00b0',
+                oscType: 'sine',
+                bassNotes: [65.41, 65.41, 130.81, 65.41, 77.78, 77.78, 155.56, 77.78, 87.31, 87.31, 174.61, 87.31, 98.00, 98.00, 196.00, 98.00],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     ctx.globalCompositeOperation = 'screen';
@@ -2119,6 +2220,8 @@
                 cityNearColor: 'rgba(0, 40, 85, 0.95)',
                 obstacleGlow: '#00ff9c',
                 droneGlow: '#00aaff',
+                oscType: 'triangle',
+                bassNotes: [36.71, 36.71, 73.42, 36.71, 36.71, 36.71, 73.42, 36.71, 41.20, 41.20, 82.41, 41.20, 41.20, 41.20, 82.41, 41.20],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     ctx.fillStyle = 'rgba(0, 255, 180, 0.25)';
@@ -2154,6 +2257,8 @@
                 cityNearColor: 'rgba(50, 0, 85, 0.95)',
                 obstacleGlow: '#ff0080',
                 droneGlow: '#00f0ff',
+                oscType: 'sawtooth',
+                bassNotes: [48.99, 48.99, 97.98, 48.99, 58.27, 58.27, 116.54, 58.27, 65.41, 65.41, 130.82, 65.41, 73.42, 73.42, 146.83, 73.42],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     ctx.globalCompositeOperation = 'screen';
@@ -2212,6 +2317,8 @@
                 cityNearColor: 'rgba(45, 60, 35, 0.95)',
                 obstacleGlow: '#39ff14',
                 droneGlow: '#ffaa00',
+                oscType: 'square',
+                bassNotes: [38.89, 38.89, 77.78, 38.89, 34.65, 34.65, 69.30, 34.65, 32.70, 32.70, 65.41, 32.70, 29.14, 29.14, 58.27, 29.14],
                 drawCustom: function(ctx, scrollX, gameFrames) {
                     ctx.save();
                     ctx.strokeStyle = 'rgba(57, 255, 20, 0.2)';
@@ -2227,6 +2334,95 @@
                         ctx.moveTo(x, y);
                         ctx.lineTo(x - 6, y + 12);
                         ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+            },
+            {
+                id: 'emerald_canopy',
+                name: 'EMERALD CANOPY',
+                primaryColor: '#00ff66',
+                secondaryColor: '#a8ff00',
+                skyCenterColor: '#021a0c',
+                mountainColor1: '#010f07',
+                mountainColor2: '#032b14',
+                cityFarColor: 'rgba(1, 15, 7, 0.5)',
+                cityMidColor: 'rgba(3, 30, 15, 0.75)',
+                cityNearColor: 'rgba(5, 45, 22, 0.95)',
+                obstacleGlow: '#00ff66',
+                droneGlow: '#a8ff00',
+                oscType: 'triangle',
+                bassNotes: [55.00, 55.00, 110.00, 55.00, 65.41, 65.41, 130.81, 65.41, 73.42, 73.42, 146.83, 73.42, 55.00, 65.41, 82.41, 110.00],
+                drawCustom: function(ctx, scrollX, gameFrames) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(0, 255, 102, 0.25)';
+                    for (let i = 0; i < 20; i++) {
+                        let seed = i * 135.79;
+                        let speedY = 0.5 + pseudoRandom(seed) * 0.8;
+                        let speedX = -1.0 - pseudoRandom(seed + 1) * 1.0;
+                        let x = (pseudoRandom(seed + 2) * LOGICAL_WIDTH - (scrollX * 0.2) + gameFrames * speedX) % LOGICAL_WIDTH;
+                        if (x < 0) x += LOGICAL_WIDTH;
+                        let y = (pseudoRandom(seed + 3) * (FLOOR_Y - 40) + gameFrames * speedY) % (FLOOR_Y - 40);
+                        let r = 2.0 + pseudoRandom(seed + 4) * 4.0;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+            },
+            {
+                id: 'clockwork_core',
+                name: 'CLOCKWORK CORE',
+                primaryColor: '#ff9f00',
+                secondaryColor: '#ff5400',
+                skyCenterColor: '#241505',
+                mountainColor1: '#140b02',
+                mountainColor2: '#361d05',
+                cityFarColor: 'rgba(25, 12, 3, 0.5)',
+                cityMidColor: 'rgba(40, 20, 5, 0.75)',
+                cityNearColor: 'rgba(55, 28, 8, 0.95)',
+                obstacleGlow: '#ff9f00',
+                droneGlow: '#ff5400',
+                oscType: 'square',
+                bassNotes: [41.20, 41.20, 41.20, 41.20, 46.25, 46.25, 46.25, 46.25, 49.00, 49.00, 49.00, 49.00, 41.20, 46.25, 49.00, 55.00],
+                drawCustom: function(ctx, scrollX, gameFrames) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255, 159, 0, 0.08)';
+                    ctx.strokeStyle = 'rgba(255, 159, 0, 0.12)';
+                    ctx.lineWidth = 2;
+                    function drawGear(x, y, r, speedMult) {
+                        let angle = gameFrames * 0.01 * speedMult;
+                        ctx.save();
+                        ctx.translate(x, y);
+                        ctx.rotate(angle);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, r, 0, Math.PI * 2);
+                        ctx.stroke();
+                        let numTeeth = 8;
+                        for (let i = 0; i < numTeeth; i++) {
+                            ctx.rotate((Math.PI * 2) / numTeeth);
+                            ctx.fillRect(-6, -r - 5, 12, 10);
+                        }
+                        ctx.restore();
+                    }
+                    drawGear(180, 160, 50, 1);
+                    drawGear(270, 190, 40, -1.2);
+                    drawGear(LOGICAL_WIDTH - 200, 180, 60, 0.8);
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+                    for (let i = 0; i < 15; i++) {
+                        let seed = i * 654.321;
+                        let speedY = 1.0 + pseudoRandom(seed) * 1.5;
+                        let sway = Math.sin((gameFrames + seed) * 0.02) * 20;
+                        let x = (pseudoRandom(seed + 1) * LOGICAL_WIDTH - (scrollX * 0.2) + sway) % LOGICAL_WIDTH;
+                        if (x < 0) x += LOGICAL_WIDTH;
+                        let y = FLOOR_Y - ((gameFrames * speedY) % FLOOR_Y);
+                        if (y < 0) y += FLOOR_Y;
+                        let size = 8.0 + pseudoRandom(seed + 2) * 15;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
                     }
                     ctx.restore();
                 }
@@ -2808,20 +3004,88 @@
                 
                 // Pull Chips toward player if Magnet buff is active and game is playing
                 if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
-                    if (obj.type === 'chip' && magnetTimer > 0) {
-                        let dx = (player.x + player.width / 2) - (obj.x + obj.w / 2);
-                        let dy = (player.y + player.height / 2) - (obj.y + obj.h / 2);
-                        let dist = Math.sqrt(dx * dx + dy * dy);
-                        let magnetRadius = selectedSkin === 'holo' ? 570 : 380;
-                        if (dist < magnetRadius) {
-                            obj.x += (dx / dist) * 14 * timeScale;
-                            obj.y += (dy / dist) * 14 * timeScale;
-                            obj.baseY = obj.y; // Damp normal oscillation during attraction
+                    if (obj.type === 'shuriken') {
+                        obj.x += obj.vx * timeScale;
+                        
+                        // Collision check between shuriken and hazards (spikes, shields, drones, laser_barriers)
+                        for (let j = gameObjects.length - 1; j >= 0; j--) {
+                            let other = gameObjects[j];
+                            if (other !== obj && (other.type === 'spike' || other.type === 'drone' || other.type === 'shield' || other.type === 'laser_barrier')) {
+                                // Simple bounding box check
+                                if (obj.x < other.x + other.w && obj.x + obj.w > other.x &&
+                                    obj.y < other.y + other.h && obj.y + obj.h > other.y) {
+                                    
+                                    // Trigger destruction
+                                    if (other.type === 'drone') {
+                                        if (other.subtype === 'shielded' && other.hp > 1) {
+                                            other.hp = 1; // Break shield
+                                            spawnDroneExplosionParticles(other.x + other.w/2, other.y + other.h/2);
+                                            Sound.playExplode();
+                                            spawnScorePopup(other.x, other.y, "SHIELD BROKEN!", 'combo');
+                                        } else {
+                                            spawnDroneExplosionParticles(other.x + other.w/2, other.y + other.h/2);
+                                            Sound.playExplode();
+                                            gameObjects.splice(j, 1);
+                                            if (j < i) i--; // adjust index if index shifted
+                                            runDronesDestroyed++;
+                                            addXP(15);
+                                            addComboPoints(12);
+                                            checkMissions();
+                                            spawnScorePopup(other.x, other.y, "SHATTER!", 'combo');
+                                        }
+                                    } else if (other.type === 'spike') {
+                                        spawnDroneExplosionParticles(other.x + other.w/2, other.y + other.h/2);
+                                        Sound.playExplode();
+                                        gameObjects.splice(j, 1);
+                                        if (j < i) i--;
+                                        addXP(10);
+                                        spawnScorePopup(other.x, other.y, "CRUSHED!", 'combo');
+                                    } else if (other.type === 'shield') {
+                                        spawnDroneExplosionParticles(other.x + other.w/2, other.y + other.h/2);
+                                        Sound.playExplode();
+                                        gameObjects.splice(j, 1);
+                                        if (j < i) i--;
+                                        addXP(10);
+                                        spawnScorePopup(other.x, other.y, "SHATTERED!", 'combo');
+                                    } else if (other.type === 'laser_barrier') {
+                                        spawnDroneExplosionParticles(other.x + other.w/2, other.y + other.h/2);
+                                        Sound.playExplode();
+                                        gameObjects.splice(j, 1);
+                                        if (j < i) i--;
+                                        spawnScorePopup(other.x, other.y, "DISRUPTED!", 'combo');
+                                    }
+                                    
+                                    // Destroy shuriken itself
+                                    gameObjects.splice(i, 1);
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // If shuriken is out of bounds or already deleted, skip further updates
+                        if (gameObjects[i] !== obj) continue;
+                        if (obj.x > LOGICAL_WIDTH + 50) {
+                            gameObjects.splice(i, 1);
+                            continue;
+                        }
+                    } else {
+                        let isHolo = (selectedSkin === 'holo');
+                        let hasMagnet = magnetTimer > 0 || isHolo;
+                        if (obj.type === 'chip' && hasMagnet) {
+                            let dx = (player.x + player.width / 2) - (obj.x + obj.w / 2);
+                            let dy = (player.y + player.height / 2) - (obj.y + obj.h / 2);
+                            let dist = Math.sqrt(dx * dx + dy * dy);
+                            let magnetRadius = isHolo ? (magnetTimer > 0 ? 570 : 220) : 380;
+                            if (dist < magnetRadius) {
+                                obj.x += (dx / dist) * 14 * timeScale;
+                                obj.y += (dy / dist) * 14 * timeScale;
+                                obj.baseY = obj.y; // Damp normal oscillation during attraction
+                            } else {
+                                obj.x -= baseObstacleSpeed * timeScale;
+                            }
                         } else {
                             obj.x -= baseObstacleSpeed * timeScale;
                         }
-                    } else {
-                        obj.x -= baseObstacleSpeed * timeScale;
                     }
 
                     // Sinusoidal bobbing hover animations
@@ -2962,6 +3226,28 @@
                         ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, radius, angleOffset, angleOffset + Math.PI * 1.5);
                         ctx.stroke();
                     }
+
+                } else if (obj.type === 'shuriken') {
+                    ctx.save();
+                    ctx.translate(obj.x + obj.w/2, obj.y + obj.h/2);
+                    ctx.rotate(gameFrames * 0.25);
+                    ctx.fillStyle = obj.glowColor;
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = obj.glowColor;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, -obj.w / 2);
+                    for (let j = 0; j < 4; j++) {
+                        ctx.rotate(Math.PI / 2);
+                        ctx.lineTo(0, -obj.w / 2);
+                        ctx.lineTo(obj.w / 8, -obj.w / 8);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
 
                 } else if (obj.type === 'chip') {
                     // --- NEON GOLD COLLECTIBLE ENERGY CHIPS ---
@@ -3164,7 +3450,7 @@
                                 }
                             }
                         }
-                    } else if (obj.type !== 'portal') {
+                    } else if (obj.type !== 'portal' && obj.type !== 'shuriken') {
                         isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal');
                     }
                 }
@@ -4298,6 +4584,10 @@
             ctx.font = 'bold 20px "Orbitron", sans-serif';
             ctx.fillStyle = '#bd00ff';
             ctx.fillText("ONE-TAP ACTION NINJA", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 75);
+            
+            ctx.font = '500 12px "Orbitron", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.fillText("v1.2.0 - Theme & Shuriken Update", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
             ctx.restore();
 
             ctx.save();
@@ -5445,6 +5735,18 @@
                         pressDuration++;
                         if (pressDuration === 9) {
                             Sound.playDash();
+                            if (selectedSkin === 'shadowstrike') {
+                                gameObjects.push({
+                                    type: 'shuriken',
+                                    x: player.x + player.width,
+                                    y: player.y + player.height / 2 - 10,
+                                    w: 24,
+                                    h: 20,
+                                    vx: 15,
+                                    vy: 0,
+                                    glowColor: '#ff3300'
+                                });
+                            }
                         }
                     }
 
@@ -5842,6 +6144,27 @@
         }
 
         requestAnimationFrame(gameLoop);
+
+        // Register Service Worker for offline play and automatic updates
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => {
+                        console.log('[Service Worker] Registered successfully:', reg.scope);
+                        // Check for updates automatically
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('[Service Worker] New update available! Please reload.');
+                                    spawnScorePopup(LOGICAL_WIDTH / 2, 150, "UPDATE DETECTED! RELOAD.", 'achieve');
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => console.error('[Service Worker] Registration failed:', err));
+            });
+        }
 
     </script>
 </body>
