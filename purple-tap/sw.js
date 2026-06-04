@@ -1,7 +1,10 @@
-const CACHE_NAME = 'purple-tap-v1.2.0';
+const CACHE_NAME = 'purple-tap-v1.3.0';
 const ASSETS = [
     './',
     './index.html',
+    './manifest.json',
+    './neonja_icon_192.png',
+    './neonja_icon_512.png',
     './purple-tap.png'
 ];
 

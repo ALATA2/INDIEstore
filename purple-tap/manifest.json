@@ -1,0 +1,24 @@
+{
+  "short_name": "NEONJA",
+  "name": "NEONJA: CHRONO SHIFT",
+  "description": "One-tap cyberpunk action ninja runner with slow-motion time dilation.",
+  "icons": [
+    {
+      "src": "neonja_icon_192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "neonja_icon_512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#080312",
+  "theme_color": "#bd00ff",
+  "display": "standalone",
+  "orientation": "landscape"
+}

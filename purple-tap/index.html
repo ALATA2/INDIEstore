@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <title>NEONJA: CHRONO SHIFT</title>
+    <link rel="manifest" href="manifest.json">
     <!-- Load Orbitron fonts for a sci-fi neon style and Outfit for clean copy -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -259,6 +260,7 @@
             max-height: 85%;
             font-family: 'Outfit', sans-serif;
             color: #ffffff;
+            overflow: hidden;
         }
         .legal-content {
             flex-grow: 1;
@@ -356,6 +358,7 @@
             flex-direction: column;
             align-items: center;
             max-height: 90%;
+            overflow: hidden;
         }
         .leaderboard-title {
             font-family: 'Orbitron', sans-serif;
@@ -473,6 +476,24 @@
             background: rgba(255, 255, 255, 0.2);
             border-color: #ffffff;
         }
+        .close-icon-btn {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            transition: all 0.2s;
+            z-index: 95;
+            padding: 4px 8px;
+        }
+        .close-icon-btn:hover {
+            color: #ff0055;
+            transform: scale(1.15);
+        }
 
         /* Leaderboard Button on Game Screens */
         .hud-action-btn {
@@ -512,6 +533,7 @@
             flex-direction: column;
             align-items: center;
             max-height: 90%;
+            overflow: hidden;
         }
         .shop-title {
             font-family: 'Orbitron', sans-serif;
@@ -768,6 +790,7 @@
 
         /* Daily Rewards Overlay Styles */
         .daily-box {
+            position: relative;
             width: 95%;
             max-width: 580px;
             background: rgba(21, 8, 45, 0.95);
@@ -779,6 +802,7 @@
             flex-direction: column;
             align-items: center;
             max-height: 95%;
+            overflow: hidden;
         }
         .daily-title {
             font-family: 'Orbitron', sans-serif;
@@ -1390,6 +1414,7 @@
 
         /* Help/Info Overlay Styles */
         .help-box {
+            position: relative;
             width: 90%;
             max-width: 500px;
             background: rgba(21, 8, 45, 0.98);
@@ -1400,9 +1425,9 @@
             color: #ffffff;
             font-family: 'Outfit', sans-serif;
             max-height: 90%;
-            overflow-y: auto;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         .help-title {
             font-family: 'Orbitron', sans-serif;
@@ -1541,6 +1566,7 @@
         <!-- HTML Leaderboard Overlay -->
         <div id="leaderboard-overlay" class="hud-overlay">
             <div class="leaderboard-box">
+                <button id="close-leaderboard-btn" class="close-icon-btn">&times;</button>
                 <h2 class="leaderboard-title">🏆 GLOBAL LEADERBOARD</h2>
                 <div id="leaderboard-list" class="leaderboard-list">
                     <div class="leaderboard-loading">Loading scores...</div>
@@ -1554,14 +1580,13 @@
                         <button id="submit-score-btn">SUBMIT</button>
                     </div>
                 </div>
-                
-                <button id="close-leaderboard-btn">CLOSE</button>
             </div>
         </div>
 
         <!-- HTML Shop Overlay -->
         <div id="shop-overlay" class="hud-overlay">
             <div class="shop-box">
+                <button id="close-shop-btn" class="close-icon-btn">&times;</button>
                 <h2 class="shop-title">🛒 NINJA GEAR SHOP</h2>
                 <div class="shop-currency">YOUR CHIPS: <span id="shop-chips-count">0</span> 🪙</div>
                 
@@ -1578,26 +1603,26 @@
                 <div id="shop-iap-list" class="shop-items-grid hidden">
                     <!-- Pack Cards will be generated dynamically -->
                 </div>
-                
-                <button id="close-shop-btn">CLOSE</button>
             </div>
         </div>
 
         <!-- Daily Rewards Overlay -->
         <div id="daily-overlay" class="hud-overlay">
             <div class="daily-box">
+                <button id="close-daily-btn" class="close-icon-btn">&times;</button>
                 <h2 class="daily-title">📅 DAILY CALENDAR</h2>
                 <div class="daily-grid" id="daily-days-grid">
                     <!-- Calendar days will be generated dynamically -->
                 </div>
-                <button id="close-daily-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; padding: 8px 24px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">CLOSE</button>
             </div>
         </div>
 
         <!-- Help Overlay -->
         <div id="help-overlay" class="hud-overlay">
             <div class="help-box">
+                <button id="close-help-btn" class="close-icon-btn">&times;</button>
                 <h2 class="help-title">❓ HOW TO PLAY & CONTROLS</h2>
+                <div style="overflow-y: auto; flex-grow: 1; margin-bottom: 12px; padding-right: 8px; width: 100%;">
                 
                 <div class="help-section">
                     <h3 class="help-section-title">🕹️ Desktop Controls</h3>
@@ -1637,8 +1662,6 @@
                         Loading account status...
                     </div>
                 </div>
-
-                <button id="close-help-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; padding: 8px 24px; border-radius: 6px; cursor: pointer; transition: all 0.2s; margin-top: 14px; align-self: center;">CLOSE</button>
             </div>
         </div>
 
@@ -1755,6 +1778,7 @@
         <!-- Privacy Policy Overlay Modal -->
         <div id="privacy-overlay" class="hud-overlay">
             <div class="legal-box">
+                <button id="privacy-close-btn" class="close-icon-btn">&times;</button>
                 <div class="legal-content">
                     <h1 style="font-family:'Orbitron',sans-serif; font-size:22px; color:#00ffff; text-align:center; margin-bottom:15px; font-weight:900;">PRIVACY POLICY</h1>
                     <p><strong>Effective Date: June 3, 2026</strong></p>
@@ -1775,7 +1799,6 @@
                     <h2>5. Contact & Support</h2>
                     <p>If you have any questions about this privacy statement, you can consult the development logs or report issues on our GitHub repository: github.com/ALATA2/INDIEstore.</p>
                 </div>
-                <button id="privacy-close-btn" class="hud-action-btn" style="position:static; margin:0 auto; width:120px;">CLOSE</button>
             </div>
         </div>
     </div>
@@ -2145,6 +2168,76 @@
                 gain.connect(this.ctx.destination);
                 noise.start();
                 noise.stop(this.ctx.currentTime + 0.25);
+            },
+            playShuriken() {
+                if (isMuted) return;
+                this.init();
+                if (!this.ctx) return;
+                
+                // Create short white noise buffer for the throw/whoosh sound
+                let duration = 0.15;
+                let bufferSize = this.ctx.sampleRate * duration;
+                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                
+                let noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                // Bandpass filter sweep for high-frequency cutting whoosh
+                let filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.Q.setValueAtTime(8, this.ctx.currentTime);
+                filter.frequency.setValueAtTime(8000, this.ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + duration);
+                
+                let gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+                noise.stop(this.ctx.currentTime + duration);
+            },
+            playLevelUp() {
+                if (isMuted) return;
+                this.init();
+                if (!this.ctx) return;
+                
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                const startTime = this.ctx.currentTime;
+                
+                notes.forEach((freq, idx) => {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, startTime + idx * 0.1);
+                    
+                    gain.gain.setValueAtTime(0.0, startTime + idx * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.1, startTime + idx * 0.1 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + idx * 0.1 + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    // Simple delay effect node for spatial width
+                    let delay = this.ctx.createDelay();
+                    delay.delayTime.setValueAtTime(0.08, startTime + idx * 0.1);
+                    let delayGain = this.ctx.createGain();
+                    delayGain.gain.setValueAtTime(0.04, startTime + idx * 0.1);
+                    
+                    gain.connect(delay);
+                    delay.connect(delayGain);
+                    delayGain.connect(this.ctx.destination);
+                    
+                    osc.start(startTime + idx * 0.1);
+                    osc.stop(startTime + idx * 0.1 + 0.45);
+                });
             }
         };
 
@@ -3490,6 +3583,113 @@
             });
         }
 
+        function drawPortal(obj) {
+            let portalColor = obj.sectorTarget === 2 ? '#ff8c00' : '#ff0055';
+            ctx.save();
+            
+            // Neon glow configurations
+            ctx.shadowBlur = 35;
+            ctx.shadowColor = portalColor;
+            ctx.strokeStyle = portalColor;
+            
+            let cx = obj.x + obj.w / 2;
+            let topY = 100;
+            let bottomY = FLOOR_Y;
+            let radius = obj.w / 2;
+            
+            // 1. Draw Outer Arch
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(obj.x, bottomY);
+            ctx.lineTo(obj.x, topY + radius);
+            ctx.arc(cx, topY + radius, radius, Math.PI, 0, false);
+            ctx.lineTo(obj.x + obj.w, bottomY);
+            ctx.stroke();
+
+            // 2. Draw Inner Arch (inset by 12px)
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(obj.x + 12, bottomY);
+            ctx.lineTo(obj.x + 12, topY + radius);
+            ctx.arc(cx, topY + radius, radius - 12, Math.PI, 0, false);
+            ctx.lineTo(obj.x + obj.w - 12, bottomY);
+            ctx.stroke();
+
+            // 3. Fill Archway Interior with clipped gradient and energy lines
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(obj.x + 6, bottomY);
+            ctx.lineTo(obj.x + 6, topY + radius);
+            ctx.arc(cx, topY + radius, radius - 6, Math.PI, 0, false);
+            ctx.lineTo(obj.x + obj.w - 6, bottomY);
+            ctx.closePath();
+            ctx.clip();
+            
+            let grad = ctx.createLinearGradient(obj.x, 0, obj.x + obj.w, 0);
+            grad.addColorStop(0, `rgba(${hexToRgb(portalColor)}, 0.05)`);
+            grad.addColorStop(0.5, `rgba(255, 255, 255, 0.25)`);
+            grad.addColorStop(1, `rgba(${hexToRgb(portalColor)}, 0.05)`);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            
+            // Warp scanlines
+            for (let py = topY + radius; py < bottomY; py += 25) {
+                let shift = Math.sin(gameFrames * 0.12 + py * 0.05) * (radius - 16);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.35 + Math.sin(gameFrames * 0.05 + py) * 0.15})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx - (radius - 14), py);
+                ctx.lineTo(cx + (radius - 14), py);
+                ctx.stroke();
+                
+                // Extra energy core particles
+                ctx.fillStyle = portalColor;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = portalColor;
+                ctx.beginPath();
+                ctx.arc(cx + shift, py, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // 4. Draw Rotating Energy Particle Rings wrapping around the portal
+            let numRings = 5;
+            for (let r = 0; r < numRings; r++) {
+                let ringY = topY + radius + (r * (bottomY - (topY + radius)) / (numRings - 1));
+                let ringW = obj.w * 0.8;
+                let ringH = 15;
+                let angleOffset = r * (Math.PI / numRings) + (gameFrames * 0.04);
+                
+                ctx.save();
+                ctx.strokeStyle = `rgba(${hexToRgb(portalColor)}, 0.45)`;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 10;
+                
+                ctx.beginPath();
+                ctx.ellipse(cx, ringY, ringW, ringH, Math.PI / 12, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                for (let pIdx = 0; pIdx < 3; pIdx++) {
+                    let pAngle = angleOffset + (pIdx * (Math.PI * 2 / 3));
+                    let px = cx + ringW * Math.cos(pAngle);
+                    let py = ringY + ringH * Math.sin(pAngle);
+                    // Project rotation angle
+                    let rotX = cx + (px - cx) * Math.cos(Math.PI / 12) - (py - ringY) * Math.sin(Math.PI / 12);
+                    let rotY = ringY + (px - cx) * Math.sin(Math.PI / 12) + (py - ringY) * Math.cos(Math.PI / 12);
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = portalColor;
+                    ctx.beginPath();
+                    ctx.arc(rotX, rotY, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+            
+            ctx.restore();
+        }
+
         function updateAndDrawGameObjects() {
             let isDashing = isPressing && pressDuration > 8;
 
@@ -3601,33 +3801,7 @@
                 ctx.save();
                 
                 if (obj.type === 'portal') {
-                    let portalColor = obj.sectorTarget === 2 ? '#ff8c00' : '#ff0055';
-                    ctx.save();
-                    ctx.shadowBlur = 30;
-                    ctx.shadowColor = portalColor;
-                    ctx.strokeStyle = portalColor;
-                    ctx.lineWidth = 6;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(obj.x, FLOOR_Y);
-                    ctx.lineTo(obj.x, 100);
-                    ctx.lineTo(obj.x + obj.w, 100);
-                    ctx.lineTo(obj.x + obj.w, FLOOR_Y);
-                    ctx.stroke();
-
-                    ctx.fillStyle = `rgba(${hexToRgb(portalColor)}, 0.15)`;
-                    ctx.fillRect(obj.x, 100, obj.w, FLOOR_Y - 100);
-                    
-                    ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
-                    ctx.lineWidth = 2;
-                    for (let py = 120; py < FLOOR_Y; py += 30) {
-                        let shift = Math.sin(gameFrames * 0.1 + py) * 10;
-                        ctx.beginPath();
-                        ctx.moveTo(obj.x + shift, py);
-                        ctx.lineTo(obj.x + obj.w - shift, py);
-                        ctx.stroke();
-                    }
-                    ctx.restore();
+                    drawPortal(obj);
                 } else if (obj.type === 'spike') {
                     // --- NEON GROUND SPIKES ---
                     let theme = getActiveTheme();
@@ -4118,7 +4292,7 @@
                     screenFlashTimer = 15;
                     
                     // Play sound
-                    Sound.playPowerup();
+                    Sound.playLevelUp();
                     
                     // Shake screen
                     shakeTime = 20;
@@ -4862,8 +5036,8 @@
 
             // Permanent location label in the top-right corner
             ctx.save();
-            ctx.font = '600 16px "Outfit", sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.font = 'bold 18px "Orbitron", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
             ctx.textAlign = 'right';
             ctx.fillText(getLocationLabel(), LOGICAL_WIDTH - 30, 45);
             ctx.restore();
@@ -4911,7 +5085,7 @@
                     localStorage.setItem('ninja_total_chips', totalChips);
                     
                     spawnScorePopup(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, `ACHIEVEMENT: +${m.reward} CHIPS!`, 'achievement');
-                    Sound.playPowerup();
+                    Sound.playLevelUp();
                     updated = true;
                 }
             });
@@ -4923,7 +5097,7 @@
                     setTimeout(() => {
                         completedMissions = [];
                         localStorage.setItem('ninja_completed_missions', JSON.stringify([]));
-                        Sound.playPowerup();
+                        Sound.playLevelUp();
                     }, 3000);
                 }
             }
@@ -4932,16 +5106,16 @@
         function drawMissions(x, yStart) {
             ctx.save();
             ctx.textAlign = 'left';
-            ctx.font = '900 16px "Orbitron", sans-serif';
+            ctx.font = '900 18px "Orbitron", sans-serif';
             ctx.fillStyle = secondaryColor;
             ctx.shadowBlur = 10;
             ctx.shadowColor = secondaryColor;
             ctx.fillText("🎯 ACTIVE ACHIEVEMENTS", x, yStart);
             ctx.shadowBlur = 0;
 
-            let y = yStart + 28;
+            let y = yStart + 32;
             missions.forEach(m => {
-                ctx.font = '600 13px "Outfit", sans-serif';
+                ctx.font = 'bold 15px "Outfit", sans-serif';
                 let isDone = completedMissions.includes(m.id);
                 let progressStr = '';
                 let isFailed = false;
@@ -4964,14 +5138,14 @@
                         progressStr = runUsedDash ? '[FAILED 🔴]' : '[ACTIVE 🔵]';
                         isFailed = runUsedDash;
                     }
-                    ctx.fillStyle = isFailed ? 'rgba(255, 100, 100, 0.45)' : 'rgba(255, 255, 255, 0.75)';
+                    ctx.fillStyle = isFailed ? 'rgba(255, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.95)';
                 }
                 
                 ctx.fillText(`• ${m.text}`, x, y);
                 ctx.textAlign = 'right';
                 ctx.fillText(`${progressStr}  +${m.reward} 🪙`, x + 340, y);
                 ctx.textAlign = 'left';
-                y += 24;
+                y += 28;
             });
             ctx.restore();
         }
@@ -4979,7 +5153,7 @@
         function drawEquippedSkinInfo(x, yStart) {
             ctx.save();
             ctx.textAlign = 'left';
-            ctx.font = '900 16px "Orbitron", sans-serif';
+            ctx.font = '900 18px "Orbitron", sans-serif';
             ctx.fillStyle = primaryColor;
             ctx.shadowBlur = 10;
             ctx.shadowColor = primaryColor;
@@ -4988,7 +5162,7 @@
 
             let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
             
-            ctx.font = '900 20px "Orbitron", sans-serif';
+            ctx.font = '900 22px "Orbitron", sans-serif';
             ctx.fillStyle = activeSkinObj.color;
             ctx.shadowBlur = 8;
             ctx.shadowColor = activeSkinObj.color;
@@ -5008,13 +5182,13 @@
                 flavorText = "Allows a second jump in mid-air to cheat hazards.";
             }
             
-            ctx.font = '600 14px "Outfit", sans-serif';
+            ctx.font = 'bold 15px "Outfit", sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.fillText(abilityText, x, yStart + 60);
 
-            ctx.font = 'italic 12px "Outfit", sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.fillText(flavorText, x, yStart + 80);
+            ctx.font = 'italic 14px "Outfit", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText(flavorText, x, yStart + 85);
 
             ctx.restore();
         }
@@ -5079,8 +5253,8 @@
             ctx.fillStyle = '#bd00ff';
             ctx.fillText("CHRONO SHIFT", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 75);
             
-            ctx.font = '500 12px "Orbitron", sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.font = '500 14px "Orbitron", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
             ctx.fillText("v1.3.0 - Golden Path Sync & Legal Compliance", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
             ctx.restore();
 
@@ -5115,8 +5289,8 @@
 
             // Mobile tag drawn on title screen as well
             ctx.save();
-            ctx.font = '600 16px "Outfit", sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.font = 'bold 18px "Orbitron", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
             ctx.textAlign = 'right';
             ctx.fillText(getLocationLabel(), LOGICAL_WIDTH - 30, 45);
             ctx.restore();
@@ -5125,8 +5299,8 @@
             drawMissions(60, 280);
             drawEquippedSkinInfo(880, 280);
             
-            // Draw player XP bar
-            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 560, 360);
+            // Draw player XP bar (repositioned to top center to avoid bottom overlay overlaps)
+            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 55, 360);
         }
 
         function drawGameOverScreen() {
@@ -5179,8 +5353,8 @@
 
             // Mobile tag drawn on gameover screen
             ctx.save();
-            ctx.font = '600 16px "Outfit", sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.font = 'bold 18px "Orbitron", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
             ctx.textAlign = 'right';
             ctx.fillText(getLocationLabel(), LOGICAL_WIDTH - 30, 45);
             ctx.restore();
@@ -5189,8 +5363,8 @@
             drawMissions(60, 280);
             drawEquippedSkinInfo(880, 280);
 
-            // Draw player XP bar
-            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 560, 360);
+            // Draw player XP bar (repositioned to top center to match start screen)
+            drawPlayerXPBar(LOGICAL_WIDTH / 2 - 180, 55, 360);
         }
 
         // --- CONTROL LOOPS AND GAME RESET ---
@@ -5455,7 +5629,7 @@
             localStorage.setItem('ninja_level', playerLevel);
             localStorage.setItem('ninja_xp', playerXP);
             if (leveledUp) {
-                Sound.playPowerup();
+                Sound.playLevelUp();
             }
         }
 
@@ -5600,7 +5774,7 @@
             localStorage.setItem('ninja_daily_streak', dailyStreak);
             localStorage.setItem('ninja_last_claim_time', lastDailyClaimTime);
 
-            Sound.playPowerup();
+            Sound.playLevelUp();
             renderDailyCalendar();
             
             document.getElementById('shop-chips-count').innerText = totalChips;
@@ -6411,6 +6585,7 @@
                         if (pressDuration === 9) {
                             Sound.playDash();
                             if (selectedSkin === 'shadowstrike') {
+                                Sound.playShuriken();
                                 gameObjects.push({
                                     type: 'shuriken',
                                     x: player.x + player.width,
@@ -6571,19 +6746,7 @@
                         ctx.fill();
                         ctx.stroke();
                     } else if (obj.type === 'portal') {
-                        let portalColor = obj.sectorTarget === 2 ? '#ff8c00' : '#ff0055';
-                        ctx.shadowBlur = 30;
-                        ctx.shadowColor = portalColor;
-                        ctx.strokeStyle = portalColor;
-                        ctx.lineWidth = 6;
-                        ctx.beginPath();
-                        ctx.moveTo(obj.x, FLOOR_Y);
-                        ctx.lineTo(obj.x, 100);
-                        ctx.lineTo(obj.x + obj.w, 100);
-                        ctx.lineTo(obj.x + obj.w, FLOOR_Y);
-                        ctx.stroke();
-                        ctx.fillStyle = `rgba(${hexToRgb(portalColor)}, 0.15)`;
-                        ctx.fillRect(obj.x, 100, obj.w, FLOOR_Y - 100);
+                        drawPortal(obj);
                     } else if (obj.type === 'magnet') {
                         ctx.shadowBlur = 15;
                         ctx.shadowColor = '#e67e22';
