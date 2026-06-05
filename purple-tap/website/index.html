@@ -1907,28 +1907,12 @@
                             <input type="email" id="checkout-email" class="form-control" placeholder="example@domain.com" required>
                         </div>
 
-                        <div class="form-group">
-                            <label for="checkout-card">Card Number</label>
-                            <input type="text" id="checkout-card" class="form-control" placeholder="4000 1234 5678 9010" pattern="[0-9 ]{16,19}" inputmode="numeric" required>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="checkout-expiry">Expiration</label>
-                                <input type="text" id="checkout-expiry" class="form-control" placeholder="MM/YY" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="checkout-cvv">CVV</label>
-                                <input type="text" id="checkout-cvv" class="form-control" placeholder="123" pattern="[0-9]{3,4}" inputmode="numeric" required>
-                            </div>
-                        </div>
-
                         <div class="checkout-summary">
                             <span>Total to Pay:</span>
                             <strong id="checkout-total-price">$9.99</strong>
                         </div>
 
-                        <button type="submit" class="submit-checkout-btn" id="payment-submit-btn">Complete Transaction</button>
+                        <button type="submit" class="submit-checkout-btn" id="payment-submit-btn" style="background: linear-gradient(135deg, #003087 0%, #0079C1 100%); border-color: #003087;">Pay with PayPal <span>🅿️</span></button>
                     </form>
 
                     <div class="payment-methods">
@@ -2101,42 +2085,40 @@
             document.getElementById('checkout-box').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Mock payment processing
+        // Redirect to PayPal for secure payment
         function processPayment(event) {
             event.preventDefault();
             const submitBtn = document.getElementById('payment-submit-btn');
-            const originalText = submitBtn.innerText;
             
             submitBtn.disabled = true;
-            submitBtn.innerText = "Processing transaction...";
-            submitBtn.style.background = "#555555";
+            submitBtn.innerText = "Redirecting to PayPal...";
+            submitBtn.style.background = "#001c66";
             submitBtn.style.boxShadow = "none";
 
+            const name = document.getElementById('checkout-name').value;
+            const email = document.getElementById('checkout-email').value;
+            const price = selectedPackPrice;
+            const pack = selectedPackName;
+
+            // Build PayPal Checkout URL
+            const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick` +
+                `&business=perleaste@yahoo.it` +
+                `&item_name=${encodeURIComponent('NEONJA - ' + pack)}` +
+                `&amount=${price}` +
+                `&currency_code=EUR` +
+                `&no_shipping=1` +
+                `&email=${encodeURIComponent(email)}` +
+                `&first_name=${encodeURIComponent(name)}`;
+
+            try {
+                const audio = new Audio();
+                audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+                audio.play().catch(() => {});
+            } catch(e) {}
+
             setTimeout(() => {
-                try {
-                    const audio = new Audio();
-                    audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-                    audio.play().catch(() => {});
-                } catch(e) {}
-
-                // Trigger toast notification
-                const toast = document.getElementById('toast-success');
-                const toastMsg = document.getElementById('toast-msg');
-                toastMsg.innerText = `Thank you ${document.getElementById('checkout-name').value}! You purchased the ${selectedPackName} successfully. 🪙`;
-                toast.classList.add('active');
-
-                // Reset button & form
-                submitBtn.disabled = false;
-                submitBtn.innerText = originalText;
-                submitBtn.style.background = "";
-                submitBtn.style.boxShadow = "";
-                document.getElementById('donation-form').reset();
-
-                setTimeout(() => {
-                    toast.classList.remove('active');
-                }, 4000);
-
-            }, 2000);
+                window.location.href = paypalUrl;
+            }, 800);
         }
 
         // Live Leaderboard Fetching
