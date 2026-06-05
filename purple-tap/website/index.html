@@ -2143,11 +2143,30 @@
                 if (data && data.dreamlo && data.dreamlo.leaderboard && data.dreamlo.leaderboard.entry) {
                     let entry = data.dreamlo.leaderboard.entry;
                     if (Array.isArray(entry)) {
-                        scores = entry;
+                        scores = [...entry];
                     } else {
                         scores = [entry];
                     }
                 }
+
+                // Merge player's local/offline scores
+                let localScores = [];
+                try {
+                    localScores = JSON.parse(localStorage.getItem('ninja_local_scores')) || [];
+                } catch (e) {
+                    localScores = [];
+                }
+
+                localScores.forEach(localEntry => {
+                    let onlineEntry = scores.find(s => s.name === localEntry.name);
+                    if (onlineEntry) {
+                        if (parseInt(localEntry.score) > parseInt(onlineEntry.score)) {
+                            onlineEntry.score = localEntry.score;
+                        }
+                    } else {
+                        scores.push({ name: localEntry.name, score: localEntry.score });
+                    }
+                });
 
                 if (scores.length === 0) {
                     listDiv.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No scores submitted yet. Be the first!</div>';
@@ -2157,8 +2176,10 @@
                 // Sort scores descending
                 scores.sort((a, b) => parseInt(b.score) - parseInt(a.score));
                 
-                // Limit to top 5
+                // Limit to top 5 to fit UI perfectly
                 scores = scores.slice(0, 5);
+
+                const currentSubmitNick = localStorage.getItem('ninja_nickname');
 
                 scores.forEach((entry, idx) => {
                     const row = document.createElement('div');
@@ -2169,6 +2190,14 @@
                     row.style.display = 'flex';
                     row.style.justifyContent = 'space-between';
                     row.style.alignItems = 'center';
+                    row.style.transition = 'all 0.3s ease';
+
+                    // Highlight current player
+                    if (entry.name === currentSubmitNick) {
+                        row.style.border = '1px solid var(--primary)';
+                        row.style.boxShadow = '0 0 10px var(--primary-glow)';
+                        row.style.background = 'rgba(189, 0, 255, 0.15)';
+                    }
                     
                     let rankIcon = '';
                     if (idx === 0) rankIcon = '🥇 ';
@@ -2189,19 +2218,68 @@
                 console.error('Error fetching live leaderboard:', err);
                 listDiv.innerHTML = `
                     <div style="text-align: center; color: var(--text-muted); padding-bottom: 10px; font-size: 13px;">Connection failed. Displaying offline local records.</div>
-                    <div style="background: rgba(8, 3, 18, 0.6); border: 1px solid rgba(189, 0, 255, 0.2); border-radius: 6px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff;">🥇 CHRONO_MASTER</span>
-                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--primary); text-shadow: 0 0 5px var(--primary-glow);">4,250 pts</span>
-                    </div>
-                    <div style="background: rgba(8, 3, 18, 0.6); border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 6px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff;">🥈 NEON_SHADOW</span>
-                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--secondary); text-shadow: 0 0 5px var(--secondary-glow);">2,900 pts</span>
-                    </div>
-                    <div style="background: rgba(8, 3, 18, 0.6); border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 6px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff;">🥉 CYBER_NINJA</span>
-                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--secondary); text-shadow: 0 0 5px var(--secondary-glow);">1,840 pts</span>
-                    </div>
                 `;
+
+                let scores = [
+                    { name: "CHRONO_MASTER", score: 4250 },
+                    { name: "NEON_SHADOW", score: 2900 },
+                    { name: "CYBER_NINJA", score: 1840 }
+                ];
+
+                let localScores = [];
+                try {
+                    localScores = JSON.parse(localStorage.getItem('ninja_local_scores')) || [];
+                } catch (e) {
+                    localScores = [];
+                }
+
+                localScores.forEach(localEntry => {
+                    let onlineEntry = scores.find(s => s.name === localEntry.name);
+                    if (onlineEntry) {
+                        if (parseInt(localEntry.score) > parseInt(onlineEntry.score)) {
+                            onlineEntry.score = localEntry.score;
+                        }
+                    } else {
+                        scores.push({ name: localEntry.name, score: localEntry.score });
+                    }
+                });
+
+                scores.sort((a, b) => parseInt(b.score) - parseInt(a.score));
+                scores = scores.slice(0, 5);
+
+                const currentSubmitNick = localStorage.getItem('ninja_nickname');
+
+                scores.forEach((entry, idx) => {
+                    const row = document.createElement('div');
+                    row.style.background = 'rgba(8, 3, 18, 0.6)';
+                    row.style.border = '1px solid rgba(0, 255, 255, 0.1)';
+                    row.style.borderRadius = '6px';
+                    row.style.padding = '12px 18px';
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    row.style.marginBottom = idx === 4 ? '0' : '8px';
+
+                    if (entry.name === currentSubmitNick) {
+                        row.style.border = '1px solid var(--primary)';
+                        row.style.boxShadow = '0 0 10px var(--primary-glow)';
+                        row.style.background = 'rgba(189, 0, 255, 0.15)';
+                    }
+
+                    let rankIcon = '';
+                    if (idx === 0) rankIcon = '🥇 ';
+                    else if (idx === 1) rankIcon = '🥈 ';
+                    else if (idx === 2) rankIcon = '🥉 ';
+                    else rankIcon = `#${idx + 1} `;
+
+                    const cleanName = entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                    row.innerHTML = `
+                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px;">${rankIcon}${cleanName}</span>
+                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--secondary); text-shadow: 0 0 5px var(--secondary-glow); flex-shrink: 0;">${parseInt(entry.score).toLocaleString()} pts</span>
+                    `;
+                    listDiv.appendChild(row);
+                });
             }
         }
 
