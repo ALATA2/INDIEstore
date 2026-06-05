@@ -1,4 +1,4 @@
-const CACHE_NAME = 'purple-tap-v1.4.4';
+const CACHE_NAME = 'purple-tap-v1.4.5';
 const ASSETS = [
     './',
     './index.html',
