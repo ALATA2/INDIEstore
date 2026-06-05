@@ -1737,17 +1737,20 @@
             .google-account-item {
                 padding: 8px 12px;
             }
+            .desktop-only-text {
+                display: none;
+            }
             .bottom-actions-container {
-                bottom: 15px;
-                gap: 6px;
-                padding: 6px 8px;
-                flex-wrap: wrap;
-                width: 95%;
-                max-width: 600px;
+                bottom: 12px;
+                gap: 5px;
+                padding: 5px 6px;
+                flex-wrap: nowrap;
+                width: auto;
+                max-width: 98%;
             }
             .bottom-actions-container .hud-action-btn,
             .bottom-actions-container .daily-rewards-btn {
-                padding: 5px 8px;
+                padding: 4px 8px;
                 font-size: 10px;
             }
         }
@@ -1936,8 +1939,8 @@
         <!-- Start Screen Action Buttons -->
         <div class="bottom-actions-container">
             <button id="show-shop-start" class="hud-action-btn">🛒 SHOP</button>
-            <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
-            <button id="show-leaderboard-start" class="hud-action-btn">🏆 LEADERBOARD</button>
+            <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY<span class="desktop-only-text"> REWARDS</span></button>
+            <button id="show-leaderboard-start" class="hud-action-btn">🏆 LEADER<span class="desktop-only-text">BOARD</span></button>
             <button id="show-help-start" class="hud-action-btn">❓ INFO</button>
             <button id="show-privacy-start" class="hud-action-btn">📄 PRIVACY</button>
         </div>
