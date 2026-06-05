@@ -1,0 +1,2405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEONJA: CHRONO SHIFT - Official Website</title>
+    <meta name="description" content="Official website of NEONJA: CHRONO SHIFT. Experience slow-motion time dilation, cross dimensional portals, and unlock legendary skins in this thrilling cyberpunk action runner.">
+    <meta name="keywords" content="Neonja, Chrono Shift, Web Game, HTML5, PWA, Cyberpunk Runner, Indie Game, WOX Engine, videogioco indie, PC indie game, cyberpunk action runner, Borgosesia, Sesiavalley, Valsesia, finocchito">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="NEONJA: CHRONO SHIFT - Cyberpunk One-Tap Runner">
+    <meta property="og:description" content="Experience time dilation and self-generating synthwave soundtracks in this high-performance ninja masterpiece.">
+    <meta property="og:image" content="neonja_promo_banner.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="NEONJA: CHRONO SHIFT - Cyberpunk One-Tap Runner">
+    <meta property="twitter:description" content="Experience time dilation and self-generating synthwave soundtracks in this high-performance ninja masterpiece.">
+    <meta property="twitter:image" content="neonja_promo_banner.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#bd00ff">
+
+    <style>
+        /* CSS VARIABLES & RESET */
+        :root {
+            --bg-color: #080312;
+            --card-bg: rgba(16, 6, 36, 0.75);
+            --border-color: rgba(0, 255, 255, 0.3);
+            --border-color-glow: rgba(0, 255, 255, 0.8);
+            --primary: #bd00ff;
+            --primary-glow: rgba(189, 0, 255, 0.6);
+            --secondary: #00ffff;
+            --secondary-glow: rgba(0, 255, 255, 0.6);
+            --accent: #ffd700;
+            --accent-glow: rgba(255, 215, 0, 0.6);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --text-dark: #100624;
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(189, 0, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.08) 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* UTILITY CLASSES */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 16px;
+        }
+
+        .glow-text-cyan {
+            color: var(--secondary);
+            text-shadow: 0 0 10px var(--secondary-glow);
+        }
+
+        .glow-text-magenta {
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .glow-text-gold {
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* HEADER SECTION */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(8, 3, 18, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(189, 0, 255, 0.15);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.1);
+        }
+
+        .nav-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 80px;
+            transition: var(--transition);
+        }
+
+        header.scrolled .nav-wrapper {
+            height: 64px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 900;
+            color: var(--secondary);
+            text-shadow: 0 0 5px var(--secondary-glow);
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: var(--text-main);
+        }
+
+        .logo-text span {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary);
+            box-shadow: 0 0 8px var(--secondary-glow);
+            transition: var(--transition);
+        }
+
+        nav a:hover {
+            color: var(--text-main);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #8e00c7 100%);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 10px 22px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            color: var(--text-main);
+            text-decoration: none;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px var(--primary-glow);
+            transition: var(--transition);
+        }
+
+        .nav-btn:hover {
+            box-shadow: 0 0 25px var(--primary-glow), 0 0 5px #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* MOBILE MENU TOGGLE */
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+            z-index: 1001;
+        }
+
+        .mobile-toggle span {
+            display: block;
+            width: 28px;
+            height: 3px;
+            background: var(--secondary);
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        /* HERO SECTION */
+        .hero {
+            padding: 160px 0 100px 0;
+            position: relative;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            align-items: center;
+            gap: 48px;
+        }
+
+        .hero-content h1 {
+            font-family: var(--font-display);
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .hero-content .subtitle {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+        }
+
+        .hero-content .desc {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 580px;
+        }
+
+        .hero-ctas {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary) 0%, #00b3b3 100%);
+            border: 1px solid var(--secondary);
+            border-radius: 6px;
+            padding: 16px 36px;
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 15px;
+            letter-spacing: 1.5px;
+            color: var(--text-dark);
+            text-decoration: none;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px var(--secondary-glow);
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 35px var(--secondary-glow), 0 0 5px #ffffff;
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            background: rgba(21, 8, 45, 0.6);
+            border: 1px solid rgba(189, 0, 255, 0.4);
+            border-radius: 6px;
+            padding: 16px 36px;
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 15px;
+            letter-spacing: 1.5px;
+            color: var(--text-main);
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(189, 0, 255, 0.15);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-3px);
+        }
+
+        .hero-visual {
+            position: relative;
+        }
+
+        /* Hero Visual Tabs */
+        .hero-visual-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+        }
+
+        .visual-tab-btn {
+            background: rgba(21, 8, 45, 0.6);
+            border: 1px solid rgba(189, 0, 255, 0.3);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .visual-tab-btn.active {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: var(--secondary);
+            color: var(--secondary);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .visual-tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+        }
+
+        .hero-img-wrapper {
+            position: relative;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+            overflow: hidden;
+            background: var(--card-bg);
+            transition: var(--transition);
+        }
+
+        .hero-img-wrapper:hover {
+            border-color: var(--border-color-glow);
+            box-shadow: 0 0 45px rgba(0, 255, 255, 0.35);
+        }
+
+        .hero-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-badge {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-color);
+            border: 1px solid var(--primary);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px var(--primary-glow);
+            z-index: 10;
+        }
+
+        /* SECTION UTILS */
+        .section-padding {
+            padding: 100px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* FEATURES SECTION */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(189, 0, 255, 0.2);
+            border-radius: 8px;
+            padding: 40px;
+            transition: var(--transition);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(189, 0, 255, 0.15);
+            transform: translateY(-8px);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 24px;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: var(--text-muted);
+            flex-grow: 1;
+        }
+
+        /* SCREENSHOTS / MEDIA GALLERY SECTION */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1.5px solid rgba(189, 0, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: var(--card-bg);
+            transition: var(--transition);
+            aspect-ratio: 16/10;
+        }
+
+        .gallery-item:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.25);
+            transform: translateY(-5px);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(8, 3, 18, 0.95) 0%, transparent 100%);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .gallery-info h4 {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* CONTROLS & SYSTEM REQUIREMENTS SECTION */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 48px;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .specs-grid {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+
+        .controls-card, .reqs-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls-card h3, .reqs-card h3 {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .controls-table, .reqs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .controls-table th, .reqs-table th {
+            text-align: left;
+            font-family: var(--font-display);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--secondary);
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .controls-table td, .reqs-table td {
+            padding: 16px 0;
+            font-size: 14px;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.05);
+        }
+
+        .key-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom-width: 3px;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 11px;
+            color: #ffffff;
+            display: inline-block;
+        }
+
+        /* ROADMAP SECTION */
+        .roadmap-timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        .roadmap-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20px;
+            width: 2px;
+            height: 100%;
+            background: rgba(189, 0, 255, 0.2);
+        }
+
+        .roadmap-item {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 40px;
+        }
+
+        .roadmap-dot {
+            position: absolute;
+            top: 6px;
+            left: 11px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            border: 3px solid rgba(189, 0, 255, 0.4);
+            box-shadow: 0 0 10px rgba(189, 0, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .roadmap-item.completed .roadmap-dot {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .roadmap-item.active .roadmap-dot {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px var(--secondary-glow);
+            animation: pulse-dot 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.25); opacity: 1; }
+        }
+
+        .roadmap-content-box {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+
+        .roadmap-item.active .roadmap-content-box {
+            border-color: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
+        }
+
+        .roadmap-phase {
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .roadmap-item.active .roadmap-phase {
+            color: var(--secondary);
+            text-shadow: 0 0 5px var(--secondary-glow);
+        }
+
+        .roadmap-item.completed .roadmap-phase {
+            color: var(--primary);
+            text-shadow: 0 0 5px var(--primary-glow);
+        }
+
+        .roadmap-content-box h4 {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .roadmap-content-box p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* REVIEWS / TESTIMONIALS SECTION */
+        .review-card {
+            background: var(--card-bg);
+            border-left: 4px solid var(--primary);
+            padding: 32px;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .review-card p {
+            font-size: 16px;
+            font-style: italic;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .review-author {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .review-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--secondary);
+        }
+
+        .review-rating {
+            color: var(--accent);
+            letter-spacing: 2px;
+            font-size: 14px;
+        }
+
+        /* DOWNLOAD SECTION */
+        .download-box {
+            background: radial-gradient(circle at top right, rgba(0, 255, 255, 0.12) 0%, transparent 60%),
+                        radial-gradient(circle at bottom left, rgba(189, 0, 255, 0.12) 0%, transparent 60%),
+                        var(--card-bg);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 60px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 15px 40px rgba(0, 255, 255, 0.05);
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .download-content h3 {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .download-content p {
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        .download-info-list {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .download-info-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .download-info-list li::before {
+            content: '⚡';
+            color: var(--secondary);
+            text-shadow: 0 0 5px var(--secondary-glow);
+        }
+
+        .download-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .download-card {
+            background: rgba(8, 3, 18, 0.6);
+            border: 1px solid rgba(189, 0, 255, 0.2);
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            transition: var(--transition);
+        }
+
+        .download-card:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
+            background: rgba(16, 6, 36, 0.8);
+        }
+
+        .dl-details {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .dl-icon {
+            font-size: 32px;
+        }
+
+        .dl-meta h4 {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .dl-meta span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .dl-btn {
+            background: transparent;
+            border: 1px solid var(--secondary);
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--secondary);
+            text-decoration: none;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .dl-btn:hover {
+            background: var(--secondary);
+            color: var(--text-dark);
+            box-shadow: 0 0 15px var(--secondary-glow);
+        }
+
+        .dl-btn.disabled {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* SUPPORTER & DONATION SECTION */
+        .supporter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 48px;
+            align-items: start;
+        }
+
+        .packs-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .pack-card {
+            background: var(--card-bg);
+            border: 2px solid rgba(189, 0, 255, 0.25);
+            border-radius: 12px;
+            padding: 32px;
+            position: relative;
+            transition: var(--transition);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .pack-card.popular {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+        }
+
+        .pack-card.popular::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: var(--accent);
+            color: var(--text-dark);
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 4px 30px;
+            transform: rotate(45deg);
+        }
+
+        .pack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pack-title h3 {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .pack-price {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .pack-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .pack-features {
+            list-style: none;
+            margin: 8px 0;
+        }
+
+        .pack-features li {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pack-features li::before {
+            content: '✓';
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .pack-select-btn {
+            background: rgba(189, 0, 255, 0.1);
+            border: 1.5px solid var(--primary);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            width: 100%;
+            outline: none;
+        }
+
+        .pack-card.popular .pack-select-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, #b89200 100%);
+            border-color: var(--accent);
+            color: var(--text-dark);
+            font-weight: 900;
+        }
+
+        .pack-select-btn:hover {
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: scale(1.02);
+        }
+
+        .pack-card.popular .pack-select-btn:hover {
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        /* CHECKOUT FORM CARD */
+        .checkout-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 120px;
+        }
+
+        .checkout-box h3 {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(8, 3, 18, 0.8);
+            border: 1px solid rgba(189, 0, 255, 0.3);
+            border-radius: 4px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            outline: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .checkout-summary {
+            background: rgba(8, 3, 18, 0.6);
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checkout-summary span {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .checkout-summary strong {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: var(--secondary);
+            text-shadow: 0 0 8px var(--secondary-glow);
+        }
+
+        .submit-checkout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary) 0%, #00b3b3 100%);
+            border: 1px solid var(--secondary);
+            color: var(--text-dark);
+            padding: 14px;
+            border-radius: 4px;
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 15px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 0 15px var(--secondary-glow);
+        }
+
+        .submit-checkout-btn:hover {
+            box-shadow: 0 0 25px var(--secondary-glow), 0 0 5px #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+
+        .pm-icon {
+            font-size: 20px;
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+
+        .pm-icon:hover {
+            opacity: 1;
+        }
+
+        /* FAQ ACCORDION SECTION */
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .faq-item:hover {
+            border-color: var(--secondary);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            outline: none;
+        }
+
+        .faq-question::after {
+            content: '＋';
+            color: var(--secondary);
+            font-weight: bold;
+            font-size: 18px;
+            transition: var(--transition);
+        }
+
+        .faq-item.active .faq-question::after {
+            content: '－';
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 24px;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding-bottom: 24px;
+        }
+
+        /* SUCCESS TOAST */
+        .toast-success {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-color);
+            border: 1.5px solid var(--secondary);
+            box-shadow: 0 0 25px var(--secondary-glow);
+            padding: 16px 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            font-family: var(--font-display);
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .toast-success.active {
+            bottom: 40px;
+        }
+
+        /* FOOTER */
+        footer {
+            background: rgba(5, 2, 10, 0.95);
+            border-top: 1px solid rgba(189, 0, 255, 0.15);
+            padding: 60px 0 30px 0;
+            margin-top: 60px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-logo-desc p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 16px;
+            max-width: 320px;
+        }
+
+        .footer-links h4 {
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links ul li a {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links ul li a:hover {
+            color: var(--text-main);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* RESPONSIVE MEDIA QUERIES */
+        @media (max-width: 992px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 40px;
+            }
+
+            .hero-content h1 {
+                font-size: 48px;
+            }
+
+            .hero-content .desc {
+                margin: 0 auto 32px auto;
+            }
+
+            .hero-ctas {
+                justify-content: center;
+            }
+
+            .hero-img-wrapper {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .download-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .supporter-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .checkout-box {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 120px 0 60px 0;
+            }
+
+            .section-header h2 {
+                font-size: 30px;
+            }
+
+            .hero-content h1 {
+                font-size: 42px;
+            }
+
+            .hero-content .subtitle {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
+
+            .mobile-toggle {
+                display: flex;
+            }
+
+            nav {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: rgba(8, 3, 18, 0.98);
+                backdrop-filter: blur(16px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 28px;
+                padding: 40px 20px;
+                overflow-y: auto;
+                transition: var(--transition);
+                z-index: 999;
+            }
+
+            header.scrolled nav {
+                top: 64px;
+                height: calc(100vh - 64px);
+            }
+
+            nav.active {
+                left: 0;
+            }
+
+            .nav-btn {
+                padding: 14px 40px;
+                font-size: 15px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .download-card {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .dl-details {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .dl-meta {
+                text-align: center;
+            }
+
+            .dl-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h1 {
+                font-size: 34px;
+            }
+
+            .download-box {
+                padding: 24px;
+            }
+
+            .checkout-box {
+                padding: 20px;
+            }
+
+            .review-card {
+                padding: 20px;
+            }
+
+            .pack-card {
+                padding: 20px;
+            }
+
+            .controls-card, .reqs-card {
+                padding: 24px 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER / NAVIGATION -->
+    <header id="site-header">
+        <div class="container nav-wrapper">
+            <a href="#" class="logo" id="header-logo-link">
+                <div class="logo-icon">N</div>
+                <div class="logo-text">NEON<span>JA</span></div>
+            </a>
+            
+            <button class="mobile-toggle" id="menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav id="main-nav">
+                <a href="#features" id="nav-features-link">Features</a>
+                <a href="#gallery" id="nav-gallery-link">Gallery</a>
+                <a href="#specs" id="nav-specs-link">Controls</a>
+                <a href="#leaderboard" id="nav-leaderboard-link">Leaderboard</a>
+                <a href="#roadmap" id="nav-roadmap-link">Roadmap</a>
+                <a href="#download" id="nav-download-link">Download</a>
+                <a href="#support" id="nav-support-link">Donations</a>
+                <a href="../index.html" class="nav-btn" id="nav-play-btn">Play Now</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <h1>NEONJA</h1>
+                <div class="subtitle glow-text-magenta">CHRONO SHIFT</div>
+                <p class="desc">
+                    Join the future of procedural stealth action. Control space-time with the <strong>Chrono Shift</strong> mechanic: dash at full speed, throw magnetic shurikens, and slow down time to bypass deadly lasers and enemy drones. All driven by self-generating synthwave soundtracks.
+                </p>
+                <div class="hero-ctas">
+                    <a href="../index.html" class="btn-primary" id="hero-play-btn">
+                        <span>▶</span> Play Instantly
+                    </a>
+                    <a href="#download" class="btn-secondary" id="hero-download-btn">
+                        <span>↓</span> Download Game
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="hero-visual-tabs">
+                    <button class="visual-tab-btn active" id="tab-art-btn" onclick="switchHeroVisual('art')">🖼️ Artwork</button>
+                    <button class="visual-tab-btn" id="tab-demo-btn" onclick="switchHeroVisual('demo')">🎮 Live Demo</button>
+                </div>
+                <div class="hero-img-wrapper" id="hero-visual-frame" style="aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;">
+                    <img src="neonja_promo_banner.png" alt="NEONJA: CHRONO SHIFT Game Promo Banner" id="hero-visual-img">
+                    <canvas id="demo-canvas" width="480" height="270" class="hidden" style="width: 100%; height: 100%; display: block;"></canvas>
+                </div>
+                <div class="hero-badge" id="hero-ver-badge">v1.3.1 Active</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="section-padding" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Key Features</h2>
+                <p>Designed for high-performance mobile-first challenges, optimized to guarantee flawless 60 FPS gameplay.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card" id="feat-chrono">
+                    <div class="feature-icon">⏳</div>
+                    <h3>Chrono Shift System</h3>
+                    <p>Hold the screen to activate time dilation. Slow down enemy hazards, perform lightning-fast dashes, and hover over chasms in dilated time, releasing pressure at the perfect moment.</p>
+                </div>
+                
+                <div class="feature-card" id="feat-audio">
+                    <div class="feature-icon">🎵</div>
+                    <h3>Procedural Synth</h3>
+                    <p>An adaptive synthwave soundtrack evolves with your rhythm and running speed. Cross dimensional portals to trigger epic music drops and real-time lowpass filter sweeps.</p>
+                </div>
+                
+                <div class="feature-card" id="feat-skins">
+                    <div class="feature-icon">🛒</div>
+                    <h3>Abilities & Trails</h3>
+                    <p>Unlock futuristic skins in the shop. Each comes with unique passive traits: the double jump of the Platinum armor, the kinetic shurikens of Shadow Strike, or the automatic attraction of Holo Cyan's magnetic chips.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LORE & WORLD ENVIRONMENT SECTION -->
+    <section class="section-padding" id="lore" style="background: rgba(8, 3, 18, 0.95); border-top: 1px solid rgba(189, 0, 255, 0.1); border-bottom: 1px solid rgba(189, 0, 255, 0.1);">
+        <div class="container">
+            <div class="section-header">
+                <h2>Chrono-Stealth & Lost Memories: Enter the Sesiavalley Grid</h2>
+                <p>NEONJA: CHRONO SHIFT is not just a high-speed cyberpunk action runner—it is a journey through a fragmented digital history.</p>
+            </div>
+            
+            <div class="specs-grid" style="align-items: center;">
+                <div class="controls-card" style="padding: 40px; border-color: rgba(189, 0, 255, 0.2);">
+                    <p style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
+                        Step into a digitized memory. In this fast-paced PC indie game, one of the most critical sectors takes players on an immersive journey through a reconstructed virtual simulation of real-world landscapes. Recognized as a highly anticipated videogioco indie, NEONJA blends history and sci-fi.
+                    </p>
+                    <p style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; color: var(--text-muted);">
+                        Players will race through the neon-drenched remnants of <strong>Borgosesia</strong>, a virtual city rebuilt from corrupted architectural archives. Dash across the digital riverbeds of <strong>Valsesia</strong>, where the flowing streams have been replaced by rushing channels of high-velocity data code. The entire region, known in-game as <strong>Sesiavalley</strong>, represents a sanctuary of human memories floating in the digital ether.
+                    </p>
+                    <p style="font-size: 16px; line-height: 1.8;">
+                        Deep within the heart of the valley lies <strong>finocchito</strong>—not just a landmark, but a colossal, rogue AI defense bastion. Safeguarding the central memory vaults, the <strong>finocchito</strong> Sentinel blocks your path with sweeping laser grids and gravity-altering fields. Defeating it is the only way to extract the Chrono core and unlock the ultimate ninja trails.
+                    </p>
+                </div>
+                
+                <div class="reqs-card" style="padding: 24px; display: flex; flex-direction: column; gap: 20px; background: rgba(16, 6, 36, 0.4); border-color: rgba(0, 255, 255, 0.15);">
+                    <div style="border-radius: 8px; overflow: hidden; border: 1.5px solid rgba(0, 255, 255, 0.3); box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);">
+                        <img src="neonja_gameplay_portal.png" alt="Screenshot gameplay gioco indie PC - Esplorazione della città cibernetica di Borgosesia in Sesiavalley" style="width: 100%; display: block; object-fit: cover;">
+                    </div>
+                    <div style="border-radius: 8px; overflow: hidden; border: 1.5px solid rgba(189, 0, 255, 0.3); box-shadow: 0 0 15px rgba(189, 0, 255, 0.1);">
+                        <img src="neonja_gameplay_shop.png" alt="Screenshot gameplay videogioco indie - Combattimento contro la sentinella AI finocchito nei canyon digitali di Valsesia" style="width: 100%; display: block; object-fit: cover;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SCREENSHOTS / MEDIA GALLERY -->
+    <section class="section-padding" style="background: rgba(16, 6, 36, 0.2);" id="gallery">
+        <div class="container">
+            <div class="section-header">
+                <h2>Screenshot Gallery</h2>
+                <p>Explore the retro-futuristic atmosphere and procedural neon environments of Neonja.</p>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="neonja_promo_banner.png" alt="Neonja Promo Graphic">
+                    <div class="gallery-info">
+                        <h4>Cyber Ninja Action</h4>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="neonja_gameplay_portal.png" alt="Warp Dimension Portal">
+                    <div class="gallery-info">
+                        <h4>Warp Portal Dimension</h4>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="neonja_gameplay_shop.png" alt="Neonja Customizer Terminal Shop">
+                    <div class="gallery-info">
+                        <h4>Trail Shop & Customizer</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTROLS & REQS SECTION -->
+    <section class="section-padding" id="specs">
+        <div class="container specs-grid">
+            <!-- Controls Guide -->
+            <div class="controls-card">
+                <h3>Controls Guide</h3>
+                <div class="table-wrapper">
+                    <table class="controls-table">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Desktop (Keyboard/Mouse)</th>
+                                <th>Mobile (Touch)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Jump</strong></td>
+                                <td>Press <span class="key-badge">Space</span> or quick left-click</td>
+                                <td>Quick single tap on the screen</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Slow Down Time (Chrono)</strong></td>
+                                <td>Hold <span class="key-badge">Space</span> or hold left-click</td>
+                                <td>Tap and hold the screen</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Recharge Slow-Mo</strong></td>
+                                <td>Press <span class="key-badge">Shift</span> or <span class="key-badge">C</span> key</td>
+                                <td>Press the floating ⏳ button</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pause Game</strong></td>
+                                <td>Press <span class="key-badge">Esc</span> or <span class="key-badge">P</span> key</td>
+                                <td>Tap the ⏸️ button in the top-right</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- System Requirements -->
+            <div class="reqs-card">
+                <h3>System Requirements</h3>
+                <div class="table-wrapper">
+                    <table class="reqs-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Recommended Specs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Browser</strong></td>
+                                <td>Any modern browser (Chrome, Safari, Firefox, Edge)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Audio</strong></td>
+                                <td>Full Web Audio API support (Headphones recommended 🎧)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Platforms</strong></td>
+                                <td>Windows, macOS, Linux, Android, iOS (Offline PWA)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Graphics</strong></td>
+                                <td>Hardware GPU accelerated Canvas 2D support</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LIVE LEADERBOARD & COMMUNITY SECTION -->
+    <section class="section-padding" style="background: rgba(16, 6, 36, 0.2);" id="leaderboard">
+        <div class="container specs-grid">
+            <!-- Leaderboard Widget -->
+            <div class="controls-card">
+                <h3>🏆 Live Global Leaderboard</h3>
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Real-time fetching of the best records saved on the Dreamlo database.</p>
+                <div id="live-leaderboard-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="text-align: center; color: var(--text-muted); padding: 20px;">Connecting to the global database...</div>
+                </div>
+            </div>
+
+            <!-- Community Card -->
+            <div class="reqs-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                <div>
+                    <h3>💬 Join the Community</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 24px;">Connect with other cyber-ninjas, propose new skills, report bugs, and share your personal high scores on our official channels.</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
+                    <a href="https://discord.com" target="_blank" class="btn-primary" style="justify-content: center; background: linear-gradient(135deg, #7289da 0%, #5b6eae 100%); border-color: #7289da; box-shadow: 0 0 15px rgba(114, 137, 218, 0.4);" id="discord-link">
+                        <span>💬</span> Official Discord Server
+                    </a>
+                    <a href="https://twitter.com" target="_blank" class="btn-secondary" style="justify-content: center;" id="x-link">
+                        <span>𝕏</span> Follow on X / Twitter
+                    </a>
+                    <a href="https://github.com/ALATA2/INDIEstore" target="_blank" class="btn-secondary" style="justify-content: center;" id="github-link">
+                        <span>💻</span> GitHub Repository
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROADMAP SECTION -->
+    <section class="section-padding" id="roadmap">
+        <div class="container">
+            <div class="section-header">
+                <h2>Development Roadmap</h2>
+                <p>Our vision for the future of NEONJA. Follow development progress and check upcoming planned features.</p>
+            </div>
+            
+            <div class="roadmap-timeline">
+                <div class="roadmap-item completed">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content-box">
+                        <span class="roadmap-phase">Phase 1 - Core Release</span>
+                        <h4>Mechanics & Procedural Audio</h4>
+                        <p>Development of the WOX Engine physics framework, slow-motion calculations, procedural obstacles, and adaptive synth audio inside the gameplay loop.</p>
+                    </div>
+                </div>
+
+                <div class="roadmap-item completed">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content-box">
+                        <span class="roadmap-phase">Phase 2 - QoL & Web Portal</span>
+                        <h4>PWA & Detailed Pausing</h4>
+                        <p>Google cloud save integration, offline PWA capability, lowpass filter pause system, and official website launch.</p>
+                    </div>
+                </div>
+
+                <div class="roadmap-item active">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content-box">
+                        <span class="roadmap-phase">Phase 3 - Mobile Wrappers (In Development)</span>
+                        <h4>Mobile Store Publishing</h4>
+                        <p>Configuration of native packages for Android (APK) and iOS (IPA) to submit to Google Play Store and Apple App Store.</p>
+                    </div>
+                </div>
+
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content-box">
+                        <span class="roadmap-phase">Phase 4 - Level Editor & Co-op (Planned)</span>
+                        <h4>Level Editor & Multiplayer</h4>
+                        <p>Visual editor allowing players to create and share custom obstacle courses. Development of an asynchronous co-op multiplayer mode.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- REVIEWS / TESTIMONIALS SECTION -->
+    <section class="section-padding" style="background: rgba(16, 6, 36, 0.2);" id="reviews">
+        <div class="container">
+            <div class="section-header">
+                <h2>What Players Say</h2>
+                <p>Reviews and feedback from our awesome cyberpunk ninja community.</p>
+            </div>
+            
+            <div class="review-card">
+                <p>"The on-the-fly Chrono Shift time slowdown mechanic is incredibly satisfying. The synthwave music drop when passing through the warp portal gives me chills every single time!"</p>
+                <div class="review-author">
+                    <span class="review-name">Indie Dev Weekly</span>
+                    <span class="review-rating">⭐⭐⭐⭐⭐</span>
+                </div>
+            </div>
+            
+            <div class="review-card" style="border-left-color: var(--secondary);">
+                <p>"Excellently optimized for phones. I play it on the subway in offline PWA mode and it's buttery smooth at a solid 60 FPS, with zero lag despite all the particle effects and screen shakes!"</p>
+                <div class="review-author">
+                    <span class="review-name">Kenshin_99 (Player)</span>
+                    <span class="review-rating">⭐⭐⭐⭐⭐</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DOWNLOAD SECTION -->
+    <section class="section-padding" id="download">
+        <div class="container">
+            <div class="download-box">
+                <div class="download-grid">
+                    <div class="download-content">
+                        <h3>Download NEONJA</h3>
+                        <p>NEONJA: CHRONO SHIFT is ready to run offline wherever you are. Download the standalone bundle or play instantly by installing the Web App on your phone.</p>
+                        
+                        <ul class="download-info-list">
+                            <li>No installation required to play in the browser</li>
+                            <li>Full PWA support to play 100% offline</li>
+                            <li>Cloud saves synced with your Google Account</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="download-cards">
+                        <div class="download-card" id="dl-card-web">
+                            <div class="dl-details">
+                                <div class="dl-icon">🌐</div>
+                                <div class="dl-meta">
+                                    <h4>PWA Web App (Recommended)</h4>
+                                    <span>Play directly from the browser and install</span>
+                                </div>
+                            </div>
+                            <a href="../index.html" class="dl-btn" id="dl-web-btn">Play Online</a>
+                        </div>
+                        
+                        <div class="download-card" id="dl-card-zip">
+                            <div class="dl-details">
+                                <div class="dl-icon">📦</div>
+                                <div class="dl-meta">
+                                    <h4>Standalone ZIP Bundle</h4>
+                                    <span>Complete archive v1.3.1 (Play offline)</span>
+                                </div>
+                            </div>
+                            <a href="purple-tap.zip" class="dl-btn" download id="dl-zip-btn">Download .zip</a>
+                        </div>
+                        
+                        <div class="download-card" id="dl-card-android">
+                            <div class="dl-details">
+                                <div class="dl-icon">🤖</div>
+                                <div class="dl-meta">
+                                    <h4>Android Launcher (APK)</h4>
+                                    <span>Coming Soon to Google Play</span>
+                                </div>
+                            </div>
+                            <a href="#" class="dl-btn disabled" id="dl-android-btn">Coming Soon</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DONATIONS / SUPPORT SECTIONS -->
+    <section class="section-padding" style="background: rgba(16, 6, 36, 0.2);" id="support">
+        <div class="container">
+            <div class="section-header">
+                <h2>Support & Donations</h2>
+                <p>Support the independent development of NEONJA by purchasing one of the exclusive packages to sustain developers and unlock incredible rewards!</p>
+            </div>
+            
+            <div class="supporter-grid">
+                <div class="packs-container">
+                    
+                    <!-- Pack 1: Supporter Pack -->
+                    <div class="pack-card" id="pack-supporter">
+                        <div class="pack-header">
+                            <div class="pack-title">
+                                <h3>Supporter Pack</h3>
+                                <span class="glow-text-cyan">Great to get started</span>
+                            </div>
+                            <div class="pack-price">$4.99</div>
+                        </div>
+                        <p class="pack-desc">Get special credits in-game and an exclusive trail skin to thank you for your generous support.</p>
+                        <ul class="pack-features">
+                            <li>Exclusive Silver & Blue Trail for your Ninja</li>
+                            <li>"Supporter" badge visible on your user profile</li>
+                            <li>500 Game Chips credited at launch</li>
+                            <li>Official downloadable MP3 Soundtrack</li>
+                        </ul>
+                        <button class="pack-select-btn" onclick="selectPack('Supporter Pack', 4.99)" id="select-supporter-btn">Choose Package</button>
+                    </div>
+
+                    <!-- Pack 2: Director's Cut -->
+                    <div class="pack-card popular" id="pack-directors">
+                        <div class="pack-header">
+                            <div class="pack-title">
+                                <h3>Director's Cut</h3>
+                                <span class="glow-text-gold">Ultimate Experience</span>
+                            </div>
+                            <div class="pack-price">$9.99</div>
+                        </div>
+                        <p class="pack-desc">The definitive version of NEONJA. Unlock developer tools and premium high-performance skins.</p>
+                        <ul class="pack-features">
+                            <li>Unlocks all cosmetic Skins in the shop</li>
+                            <li>Access to the Developer Cheat Menu</li>
+                            <li>Exclusive Holographic Rainbow Trail</li>
+                            <li>High-resolution FLAC Soundtrack</li>
+                            <li>Priority access to future WOX Engine Betas</li>
+                        </ul>
+                        <button class="pack-select-btn" onclick="selectPack('Director\'s Cut', 9.99)" id="select-directors-btn">Get It Now</button>
+                    </div>
+
+                </div>
+
+                <!-- Checkout Card -->
+                <div class="checkout-box" id="checkout-box">
+                    <h3>Secure Checkout</h3>
+                    <form id="donation-form" onsubmit="processPayment(event)">
+                        <div class="form-group">
+                            <label for="checkout-pack-name">Selected Package</label>
+                            <input type="text" id="checkout-pack-name" class="form-control" value="Director's Cut" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="checkout-name">Full Name</label>
+                            <input type="text" id="checkout-name" class="form-control" placeholder="Enter your name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="checkout-email">Email Address</label>
+                            <input type="email" id="checkout-email" class="form-control" placeholder="example@domain.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="checkout-card">Card Number</label>
+                            <input type="text" id="checkout-card" class="form-control" placeholder="4000 1234 5678 9010" pattern="[0-9 ]{16,19}" inputmode="numeric" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkout-expiry">Expiration</label>
+                                <input type="text" id="checkout-expiry" class="form-control" placeholder="MM/YY" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-cvv">CVV</label>
+                                <input type="text" id="checkout-cvv" class="form-control" placeholder="123" pattern="[0-9]{3,4}" inputmode="numeric" required>
+                            </div>
+                        </div>
+
+                        <div class="checkout-summary">
+                            <span>Total to Pay:</span>
+                            <strong id="checkout-total-price">$9.99</strong>
+                        </div>
+
+                        <button type="submit" class="submit-checkout-btn" id="payment-submit-btn">Complete Transaction</button>
+                    </form>
+
+                    <div class="payment-methods">
+                        <span class="pm-icon">💳</span>
+                        <span class="pm-icon">🅿️</span>
+                        <span class="pm-icon">⚛️</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ ACCORDION SECTION -->
+    <section class="section-padding" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <h2>Frequently Asked Questions (FAQ)</h2>
+                <p>Everything you need to know about Neonja and its game engine.</p>
+            </div>
+            
+            <div class="faq-list">
+                <div class="faq-item" id="faq-q1">
+                    <button class="faq-question" onclick="toggleFaq('faq-q1')">Is the game completely free?</button>
+                    <div class="faq-answer">
+                        <p>Yes, NEONJA: CHRONO SHIFT is 100% free-to-play. You can play online or download the zip file to play offline at no cost. Donations and purchasing Supporter Packs are entirely optional to support our indie development team.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-q2">
+                    <button class="faq-question" onclick="toggleFaq('faq-q2')">How does the offline mode (PWA) work?</button>
+                    <div class="faq-answer">
+                        <p>The game utilizes Progressive Web App (PWA) technology with a dedicated Service Worker. When you visit the site for the first time, all files are stored in your device's cache. You can add the game to your smartphone or desktop home screen and launch it even without an internet connection.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-q3">
+                    <button class="faq-question" onclick="toggleFaq('faq-q3')">Are my profile saves secure?</button>
+                    <div class="faq-answer">
+                        <p>Yes. By default, the game saves your progress (level, coins, and high scores) locally using LocalStorage. To prevent data loss, you can link a simulated Google account from the INFO (?) panel: this triggers instant cloud backups with every game progression.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-q4">
+                    <button class="faq-question" onclick="toggleFaq('faq-q4')">What is the WOX Engine game framework?</button>
+                    <div class="faq-answer">
+                        <p>WOX Engine is our proprietary high-performance framework optimized for Canvas 2D rendering and real-time synthesized Web Audio music generation. It enables the creation of lightweight, fast-loading games with zero external dependencies, ready to run on any browser.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SUCCESS TOAST -->
+    <div id="toast-success" class="toast-success">
+        <span>🏆</span>
+        <span id="toast-msg">Thank you for your support! Transaction completed.</span>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-logo-desc">
+                <a href="#" class="logo" id="footer-logo-link">
+                    <div class="logo-icon">N</div>
+                    <div class="logo-text">NEON<span>JA</span></div>
+                </a>
+                <p>A high-performance runner built on the powerful <strong>WOX Engine</strong>. Space-time dilation and self-generating synthwave at the tip of a single tap.</p>
+            </div>
+            
+            <div class="footer-links">
+                <h4>The Game</h4>
+                <ul>
+                    <li><a href="../index.html" id="footer-play-link">Play Now</a></li>
+                    <li><a href="#features" id="footer-features-link">Features</a></li>
+                    <li><a href="#download" id="footer-download-link">Download ZIP</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#support" id="footer-packs-link">Donations</a></li>
+                    <li><a href="../index.html" id="footer-privacy-link">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container footer-bottom">
+            <span>&copy; 2026 NEONJA Project. All rights reserved.</span>
+            <span>Powered by <span class="glow-text-cyan">WOX ENGINE</span></span>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE JAVASCRIPT -->
+    <script>
+        // Shrink Header on Scroll
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('site-header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile Menu Toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const mainNav = document.getElementById('main-nav');
+
+        menuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('active');
+            const spans = menuToggle.querySelectorAll('span');
+            spans[0].style.transform = mainNav.classList.contains('active') ? 'rotate(45deg) translate(6px, 6px)' : 'none';
+            spans[1].style.opacity = mainNav.classList.contains('active') ? '0' : '1';
+            spans[2].style.transform = mainNav.classList.contains('active') ? 'rotate(-45deg) translate(6px, -7px)' : 'none';
+        });
+
+        // Auto close mobile menu when clicking nav links
+        const navLinks = mainNav.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mainNav.classList.remove('active');
+                const spans = menuToggle.querySelectorAll('span');
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            });
+        });
+
+        // FAQ Toggle Accordion
+        function toggleFaq(itemId) {
+            const item = document.getElementById(itemId);
+            const isActive = item.classList.contains('active');
+            
+            // Close other FAQ items
+            document.querySelectorAll('.faq-item').forEach(faq => {
+                faq.classList.remove('active');
+            });
+
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Supporter Packs Selection
+        let selectedPackName = "Director's Cut";
+        let selectedPackPrice = 9.99;
+
+        function selectPack(packName, price) {
+            selectedPackName = packName;
+            selectedPackPrice = price;
+
+            // Highlight selected card
+            document.querySelectorAll('.pack-card').forEach(card => {
+                card.classList.remove('popular');
+            });
+
+            if (packName === "Director's Cut") {
+                document.getElementById('pack-directors').classList.add('popular');
+            } else {
+                document.getElementById('pack-supporter').classList.add('popular');
+            }
+
+            // Update form input values
+            document.getElementById('checkout-pack-name').value = packName;
+            document.getElementById('checkout-total-price').innerText = `$${price}`;
+
+            // Smooth scroll to checkout form
+            document.getElementById('checkout-box').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Mock payment processing
+        function processPayment(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('payment-submit-btn');
+            const originalText = submitBtn.innerText;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing transaction...";
+            submitBtn.style.background = "#555555";
+            submitBtn.style.boxShadow = "none";
+
+            setTimeout(() => {
+                try {
+                    const audio = new Audio();
+                    audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+                    audio.play().catch(() => {});
+                } catch(e) {}
+
+                // Trigger toast notification
+                const toast = document.getElementById('toast-success');
+                const toastMsg = document.getElementById('toast-msg');
+                toastMsg.innerText = `Thank you ${document.getElementById('checkout-name').value}! You purchased the ${selectedPackName} successfully. 🪙`;
+                toast.classList.add('active');
+
+                // Reset button & form
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                submitBtn.style.background = "";
+                submitBtn.style.boxShadow = "";
+                document.getElementById('donation-form').reset();
+
+                setTimeout(() => {
+                    toast.classList.remove('active');
+                }, 4000);
+
+            }, 2000);
+        }
+
+        // Live Leaderboard Fetching
+        const dreamloPublicCode = '6a1dfd878f40bb17b0410195';
+        
+        async function fetchLiveLeaderboard() {
+            const listDiv = document.getElementById('live-leaderboard-list');
+            if (!listDiv) return;
+
+            try {
+                // Fetch via HTTPS Proxy to bypass Mixed Content SSL issues
+                const targetUrl = `http://dreamlo.com/lb/${dreamloPublicCode}/json`;
+                const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
+                
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Database connection failed');
+                
+                const data = await response.json();
+                listDiv.innerHTML = ''; // Clean loading text
+                
+                let scores = [];
+                if (data && data.dreamlo && data.dreamlo.leaderboard && data.dreamlo.leaderboard.entry) {
+                    let entry = data.dreamlo.leaderboard.entry;
+                    if (Array.isArray(entry)) {
+                        scores = entry;
+                    } else {
+                        scores = [entry];
+                    }
+                }
+
+                if (scores.length === 0) {
+                    listDiv.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No scores submitted yet. Be the first!</div>';
+                    return;
+                }
+
+                // Sort scores descending
+                scores.sort((a, b) => parseInt(b.score) - parseInt(a.score));
+                
+                // Limit to top 5
+                scores = scores.slice(0, 5);
+
+                scores.forEach((entry, idx) => {
+                    const row = document.createElement('div');
+                    row.style.background = 'rgba(8, 3, 18, 0.6)';
+                    row.style.border = '1px solid rgba(0, 255, 255, 0.1)';
+                    row.style.borderRadius = '6px';
+                    row.style.padding = '12px 18px';
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    
+                    let rankIcon = '';
+                    if (idx === 0) rankIcon = '🥇 ';
+                    else if (idx === 1) rankIcon = '🥈 ';
+                    else if (idx === 2) rankIcon = '🥉 ';
+                    else rankIcon = `#${idx + 1} `;
+
+                    const cleanName = entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    
+                    row.innerHTML = `
+                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px;">${rankIcon}${cleanName}</span>
+                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--secondary); text-shadow: 0 0 5px var(--secondary-glow); flex-shrink: 0;">${parseInt(entry.score).toLocaleString()} pts</span>
+                    `;
+                    listDiv.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error('Error fetching live leaderboard:', err);
+                listDiv.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding-bottom: 10px; font-size: 13px;">Connection failed. Displaying offline local records.</div>
+                    <div style="background: rgba(8, 3, 18, 0.6); border: 1px solid rgba(189, 0, 255, 0.2); border-radius: 6px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff;">🥇 CHRONO_MASTER</span>
+                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--primary); text-shadow: 0 0 5px var(--primary-glow);">4,250 pts</span>
+                    </div>
+                    <div style="background: rgba(8, 3, 18, 0.6); border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 6px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff;">🥈 NEON_SHADOW</span>
+                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--secondary); text-shadow: 0 0 5px var(--secondary-glow);">2,900 pts</span>
+                    </div>
+                    <div style="background: rgba(8, 3, 18, 0.6); border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 6px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-family: var(--font-display); font-weight: 700; color: #ffffff;">🥉 CYBER_NINJA</span>
+                        <span style="font-family: var(--font-display); font-weight: 700; color: var(--secondary); text-shadow: 0 0 5px var(--secondary-glow);">1,840 pts</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Switch Hero Visual Art vs Live Demo
+        let demoInitialized = false;
+        function switchHeroVisual(tab) {
+            const btnArt = document.getElementById('tab-art-btn');
+            const btnDemo = document.getElementById('tab-demo-btn');
+            const imgVisual = document.getElementById('hero-visual-img');
+            const canvasVisual = document.getElementById('demo-canvas');
+
+            if (tab === 'art') {
+                btnArt.classList.add('active');
+                btnDemo.classList.remove('active');
+                imgVisual.classList.remove('hidden');
+                canvasVisual.classList.add('hidden');
+            } else {
+                btnArt.classList.remove('active');
+                btnDemo.classList.add('active');
+                imgVisual.classList.add('hidden');
+                canvasVisual.classList.remove('hidden');
+                
+                if (!demoInitialized) {
+                    initDemoSimulation();
+                    demoInitialized = true;
+                }
+            }
+        }
+
+        // Gameplay Canvas Demo Simulation (Auto play block ninja)
+        function initDemoSimulation() {
+            const canvas = document.getElementById('demo-canvas');
+            if (!canvas) return;
+            
+            const dctx = canvas.getContext('2d');
+            let playerX = 60;
+            let playerY = 160;
+            let playerVY = 0;
+            let groundY = 200;
+            let obstacleX = 500;
+            let obstacleType = 'spike';
+            let slowMo = false;
+            let trail = [];
+            let score = 0;
+            let loopFrame = 0;
+
+            function updateDemo() {
+                loopFrame++;
+                
+                // Clear and draw bg
+                dctx.fillStyle = '#080312';
+                dctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw grid
+                dctx.strokeStyle = 'rgba(0, 255, 255, 0.04)';
+                dctx.lineWidth = 1;
+                for (let gx = 0; gx < canvas.width; gx += 30) {
+                    dctx.beginPath();
+                    dctx.moveTo(gx, 0);
+                    dctx.lineTo(gx, canvas.height);
+                    dctx.stroke();
+                }
+                for (let gy = 0; gy < canvas.height; gy += 30) {
+                    dctx.beginPath();
+                    dctx.moveTo(0, gy);
+                    dctx.lineTo(canvas.width, gy);
+                    dctx.stroke();
+                }
+
+                // Draw floor line
+                dctx.strokeStyle = 'rgba(0, 255, 255, 0.4)';
+                dctx.lineWidth = 2.5;
+                dctx.beginPath();
+                dctx.moveTo(0, groundY);
+                dctx.lineTo(canvas.width, groundY);
+                dctx.stroke();
+
+                // Speeds based on slowmo state
+                let runSpeed = slowMo ? 1.5 : 5.0;
+                obstacleX -= runSpeed;
+                
+                // Respawn obstacle
+                if (obstacleX < -30) {
+                    obstacleX = 500;
+                    obstacleType = Math.random() < 0.5 ? 'spike' : 'coin';
+                    if (obstacleType === 'coin') score += 10;
+                }
+
+                // AI Jump trigger
+                if (obstacleType === 'spike' && obstacleX > 90 && obstacleX < 140 && playerY === groundY - 26) {
+                    playerVY = -9.5; // Trigger jump
+                }
+
+                // AI Slow-mo trigger for chip attraction
+                if (obstacleType === 'coin' && obstacleX > 160 && obstacleX < 280) {
+                    slowMo = true;
+                    playerX += (180 - playerX) * 0.06; // Slide dash forward
+                } else {
+                    slowMo = false;
+                    playerX += (70 - playerX) * 0.06; // Revert back
+                }
+
+                // Physics gravity
+                playerVY += 0.45;
+                playerY += playerVY;
+                if (playerY >= groundY - 26) {
+                    playerY = groundY - 26;
+                    playerVY = 0;
+                }
+
+                // Trail management
+                if (slowMo || playerVY !== 0) {
+                    trail.push({x: playerX, y: playerY});
+                    if (trail.length > 5) trail.shift();
+                } else {
+                    if (trail.length > 0) trail.shift();
+                }
+
+                // Draw trail shadow
+                for (let i = 0; i < trail.length; i++) {
+                    let pt = trail[i];
+                    let alpha = (i + 1) / trail.length * 0.25;
+                    dctx.fillStyle = `rgba(189, 0, 255, ${alpha})`;
+                    dctx.fillRect(pt.x, pt.y, 26, 26);
+                }
+
+                // Draw Player
+                dctx.save();
+                dctx.fillStyle = '#bd00ff';
+                dctx.shadowBlur = 12;
+                dctx.shadowColor = '#bd00ff';
+                dctx.fillRect(playerX, playerY, 26, 26);
+                dctx.restore();
+
+                // Draw Obstacles
+                if (obstacleType === 'spike') {
+                    dctx.save();
+                    dctx.fillStyle = '#ff0055';
+                    dctx.strokeStyle = '#ffffff';
+                    dctx.lineWidth = 1;
+                    dctx.shadowBlur = 10;
+                    dctx.shadowColor = '#ff0055';
+                    dctx.beginPath();
+                    dctx.moveTo(obstacleX, groundY);
+                    dctx.lineTo(obstacleX + 13, groundY - 22);
+                    dctx.lineTo(obstacleX + 26, groundY);
+                    dctx.closePath();
+                    dctx.fill();
+                    dctx.stroke();
+                    dctx.restore();
+                } else {
+                    dctx.save();
+                    dctx.fillStyle = '#ffd700';
+                    dctx.shadowBlur = 10;
+                    dctx.shadowColor = '#ffd700';
+                    dctx.beginPath();
+                    dctx.arc(obstacleX + 13, groundY - 18, 7, 0, Math.PI * 2);
+                    dctx.fill();
+                    dctx.restore();
+                }
+
+                // Draw HUD Text
+                dctx.font = '900 11px "Orbitron", sans-serif';
+                dctx.fillStyle = '#ffffff';
+                dctx.fillText(`SCORE: ${score}`, 20, 26);
+
+                if (slowMo) {
+                    dctx.fillStyle = '#00ffff';
+                    dctx.fillText("CHRONO DASH", canvas.width - 130, 26);
+                }
+
+                requestAnimationFrame(updateDemo);
+            }
+            updateDemo();
+        }
+
+        // Initialize leaderboard on window load
+        window.addEventListener('load', () => {
+            fetchLiveLeaderboard();
+        });
+    </script>
+</body>
+</html>
