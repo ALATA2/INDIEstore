@@ -391,11 +391,21 @@
         .leaderboard-item.top-rank {
             color: #ffaa00;
         }
+        @keyframes holo-glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
         .leaderboard-item.current-player {
-            background: rgba(186, 85, 211, 0.2);
-            border: 1px solid #bd00ff;
-            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.45), rgba(0, 255, 255, 0.45), rgba(255, 0, 255, 0.45), rgba(255, 215, 0, 0.45));
+            background-size: 300% 300%;
+            animation: holo-glow 4s ease infinite;
+            border: 1.5px dashed #ffd700;
+            border-radius: 6px;
             color: #ffffff;
+            font-weight: 800;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.8), 0 0 12px rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.35);
         }
         .leaderboard-item:last-child {
             border-bottom: none;
@@ -689,10 +699,21 @@
 
         /* Optimize HUD Overlays for small/mobile landscape screens */
         @media (max-height: 480px) {
-            .leaderboard-box, .shop-box {
+            .leaderboard-box, .shop-box, .settings-box {
                 padding: 12px 18px;
                 border-radius: 8px;
                 max-height: 96%;
+            }
+            .settings-title {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+            .settings-option {
+                margin-bottom: 10px;
+                gap: 4px;
+            }
+            .settings-label {
+                font-size: 12px;
             }
             .leaderboard-title, .shop-title {
                 font-size: 18px;
@@ -924,26 +945,38 @@
         }
 
         /* Flexbox wrapper to align and scale start buttons nicely */
+        /* Flexbox wrapper to align and scale start buttons nicely (Dock style) */
         .bottom-actions-container {
             position: absolute;
             bottom: 25px;
-            left: 0;
-            width: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            max-width: 95%;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 12px;
-            padding: 0 16px;
-            box-sizing: border-box;
-            z-index: 90;
-            pointer-events: none;
+            padding: 10px 20px;
+            background: rgba(16, 6, 36, 0.75);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 100;
+            pointer-events: auto;
+            transition: all 0.3s ease;
         }
         .bottom-actions-container .hud-action-btn, 
         .bottom-actions-container .daily-rewards-btn {
             position: static;
             transform: none;
             margin: 0;
+            padding: 8px 16px;
+            font-size: 12px;
+            white-space: nowrap;
             pointer-events: auto;
         }
 
@@ -1387,11 +1420,17 @@
             }
         }
 
-        /* QoL Sound Toggle Button styles */
-        .sound-toggle-btn {
+        /* Top Right Controls Container (Settings & Sound) */
+        .top-controls-container {
             position: absolute;
             top: 25px;
             right: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 120;
+            pointer-events: auto;
+        }
+        .top-controls-container .control-btn {
             background: rgba(21, 8, 45, 0.85);
             border: 1px solid rgba(0, 255, 255, 0.4);
             border-radius: 50%;
@@ -1404,12 +1443,171 @@
             font-size: 18px;
             cursor: pointer;
             transition: all 0.2s;
-            z-index: 90;
         }
-        .sound-toggle-btn:hover {
+        .top-controls-container .control-btn:hover {
             background: #00ffff;
             color: #100624;
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+        .sound-toggle-btn, .settings-toggle-btn {
+            /* Handled by .top-controls-container .control-btn */
+        }
+
+        /* Settings Overlay Styles */
+        .settings-box {
+            width: 90%;
+            max-width: 440px;
+            background: rgba(21, 8, 45, 0.95);
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+            z-index: 105;
+        }
+        .settings-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .settings-option {
+            width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .settings-option.toggle-option {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .settings-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .settings-label span {
+            color: #00ffff;
+        }
+        .settings-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            transition: background 0.3s;
+        }
+        .settings-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #00ffff;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.8);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .settings-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        .settings-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #00ffff;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.8);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .settings-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Toggle switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: .3s;
+            border-radius: 34px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #ffffff;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-toggle {
+            background-color: #bd00ff;
+            border-color: #bd00ff;
+        }
+        input:checked + .slider-toggle:before {
+            transform: translateX(24px);
+            background-color: #00ffff;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.8);
+        }
+
+        /* Neon Confetti Celebration */
+        .neon-confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0.85;
+            box-shadow: 0 0 8px currentColor;
+            animation: fall-confetti 3.5s linear forwards;
+        }
+        @keyframes fall-confetti {
+            0% {
+                transform: translateY(-20px) rotate(0deg) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(480px) rotate(720deg) translateX(var(--drift));
+                opacity: 0;
+            }
         }
 
         /* Help/Info Overlay Styles */
@@ -1476,9 +1674,12 @@
 
         /* Mobile height adjustments for sound toggle and help overlay */
         @media (max-height: 480px) {
-            .sound-toggle-btn {
+            .top-controls-container {
                 top: 15px;
-                right: 30px;
+                right: 20px;
+                gap: 8px;
+            }
+            .top-controls-container .control-btn {
                 width: 32px;
                 height: 32px;
                 font-size: 14px;
@@ -1538,12 +1739,12 @@
             }
             .bottom-actions-container {
                 bottom: 12px;
-                gap: 6px;
-                padding: 0 8px;
+                gap: 8px;
+                padding: 6px 12px;
             }
             .bottom-actions-container .hud-action-btn,
             .bottom-actions-container .daily-rewards-btn {
-                padding: 6px 12px;
+                padding: 6px 10px;
                 font-size: 10px;
             }
         }
@@ -1617,6 +1818,37 @@
             </div>
         </div>
 
+        <!-- HTML Settings Overlay -->
+        <div id="settings-overlay" class="hud-overlay">
+            <div class="settings-box">
+                <button id="close-settings-btn" class="close-icon-btn">&times;</button>
+                <h2 class="settings-title">⚙️ GAME SETTINGS</h2>
+                
+                <div class="settings-option">
+                    <label class="settings-label">SFX Volume <span id="sfx-vol-label">70%</span></label>
+                    <input type="range" id="settings-sfx-vol" min="0" max="1" step="0.05" value="0.7" class="settings-slider">
+                </div>
+
+                <div class="settings-option">
+                    <label class="settings-label">BGM Volume <span id="bgm-vol-label">70%</span></label>
+                    <input type="range" id="settings-bgm-vol" min="0" max="1" step="0.05" value="0.7" class="settings-slider">
+                </div>
+
+                <div class="settings-option toggle-option">
+                    <label class="settings-label">Performance Mode <span style="font-size: 11px; opacity: 0.7; display: block;">Reduces background/unnecessary particles.</span></label>
+                    <label class="switch">
+                        <input type="checkbox" id="settings-perf-mode">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option">
+                    <label class="settings-label">Screen Shake <span id="shake-intensity-label">100%</span></label>
+                    <input type="range" id="settings-shake-mult" min="0" max="2" step="0.1" value="1.0" class="settings-slider">
+                </div>
+            </div>
+        </div>
+
         <!-- Help Overlay -->
         <div id="help-overlay" class="hud-overlay">
             <div class="help-box">
@@ -1664,6 +1896,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
         <!-- Simulated Ad Overlay -->
         <div id="ad-overlay">
@@ -1699,11 +1932,11 @@
 
         <!-- Start Screen Action Buttons -->
         <div class="bottom-actions-container">
+            <button id="show-shop-start" class="hud-action-btn">🛒 SHOP</button>
+            <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
             <button id="show-leaderboard-start" class="hud-action-btn">🏆 LEADERBOARD</button>
             <button id="show-help-start" class="hud-action-btn">❓ INFO</button>
-            <button id="show-daily-btn" class="daily-rewards-btn">📅 DAILY REWARDS</button>
             <button id="show-privacy-start" class="hud-action-btn">📄 PRIVACY</button>
-            <button id="show-shop-start" class="hud-action-btn">🛒 SHOP</button>
         </div>
         
         <!-- Hourglass Activating Button (Gameplay overlay HUD) -->
@@ -1712,8 +1945,12 @@
         <!-- Double Chips Button (Game Over overlay HUD) -->
         <button id="double-chips-btn" class="hud-action-btn hidden" style="bottom: 95px; left: 50%; transform: translateX(-50%); border-color: #ffd700; color: #ffd700; font-size: 14px; font-weight: 800; background: rgba(30, 20, 0, 0.85); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); z-index: 80;">🎬 DOUBLE CHIPS (WATCH AD)</button>
         
-        <!-- Sound Toggle Button -->
-        <button id="sound-toggle-btn" class="sound-toggle-btn">🔊</button>
+        <!-- Top Right Controls (Settings & Sound Toggle) -->
+        <div class="top-controls-container">
+            <button id="pause-toggle-btn" class="control-btn pause-toggle-btn hidden">⏸️</button>
+            <button id="settings-toggle-btn" class="control-btn settings-toggle-btn">⚙️</button>
+            <button id="sound-toggle-btn" class="control-btn sound-toggle-btn">🔊</button>
+        </div>
 
         <!-- Cloud Save Toast Notification -->
         <div id="cloud-sync-toast" class="cloud-sync-toast">
@@ -1804,6 +2041,75 @@
     </div>
 
     <script>
+        // --- Polyfill/Fallbacks for Older Browsers & WebView Environments ---
+        
+        // 1. Canvas roundRect Polyfill (Safari < 16, Chrome < 105, Firefox < 102)
+        if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                if (typeof r === 'undefined') {
+                    r = 0;
+                }
+                if (typeof r === 'number') {
+                    r = { topLeft: r, topRight: r, bottomRight: r, bottomLeft: r };
+                } else if (Array.isArray(r)) {
+                    if (r.length === 1) {
+                        r = { topLeft: r[0], topRight: r[0], bottomRight: r[0], bottomLeft: r[0] };
+                    } else if (r.length === 2) {
+                        r = { topLeft: r[0], topRight: r[1], bottomRight: r[0], bottomLeft: r[1] };
+                    } else if (r.length === 3) {
+                        r = { topLeft: r[0], topRight: r[1], bottomRight: r[2], bottomLeft: r[1] };
+                    } else if (r.length >= 4) {
+                        r = { topLeft: r[0], topRight: r[1], bottomRight: r[2], bottomLeft: r[3] };
+                    }
+                }
+                const topLeft = r.topLeft || 0;
+                const topRight = r.topRight || 0;
+                const bottomRight = r.bottomRight || 0;
+                const bottomLeft = r.bottomLeft || 0;
+
+                this.beginPath();
+                this.moveTo(x + topLeft, y);
+                this.lineTo(x + w - topRight, y);
+                this.arcTo(x + w, y, x + w, y + topRight, topRight);
+                this.lineTo(x + w, y + h - bottomRight);
+                this.arcTo(x + w, y + h, x + w - bottomRight, y + h, bottomRight);
+                this.lineTo(x + bottomLeft, y + h);
+                this.arcTo(x, y + h, x, y + h - bottomLeft, bottomLeft);
+                this.lineTo(x, y + topLeft);
+                this.arcTo(x, y, x + topLeft, y, topLeft);
+                this.closePath();
+                return this;
+            };
+        }
+
+        // 2. Safe localStorage Fallback (Handles iframe cookies blocking, incognito restrictions, sandbox errors)
+        try {
+            // Test if localStorage is available and fully functional
+            localStorage.setItem('__test_local_storage__', '1');
+            localStorage.removeItem('__test_local_storage__');
+        } catch (e) {
+            console.warn("localStorage access is restricted. Using in-memory fallback storage:", e);
+            const store = {};
+            try {
+                Object.defineProperty(window, 'localStorage', {
+                    value: {
+                        getItem: (key) => store[key] || null,
+                        setItem: (key, value) => { store[key] = String(value); },
+                        removeItem: (key) => { delete store[key]; },
+                        clear: () => { store = {}; },
+                        key: (index) => Object.keys(store)[index] || null,
+                        get length() { return Object.keys(store).length; }
+                    },
+                    writable: true,
+                    configurable: true
+                });
+            } catch (defineError) {
+                console.error("Could not define localStorage mock:", defineError);
+            }
+        }
+
+
+
         // --- VIEWPORT SCALING & DYNAMIC RESIZING ---
         function resizeGame() {
             const container = document.getElementById('game-container');
@@ -1862,13 +2168,22 @@
         };
 
         // Wrap localStorage.setItem globally to trigger visual cloud backups
-        const originalSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {
-            originalSetItem.call(localStorage, key, value);
-            if (key !== 'ninja_is_muted' && key !== 'ninja_last_mission_reset') {
-                CloudSave.saveProfile(key, value);
-            }
-        };
+        let originalSetItem;
+        try {
+            originalSetItem = localStorage.setItem;
+            localStorage.setItem = function(key, value) {
+                try {
+                    originalSetItem.call(localStorage, key, value);
+                } catch (e) {
+                    console.warn("localStorage.setItem call failed:", e);
+                }
+                if (key !== 'ninja_is_muted' && key !== 'ninja_last_mission_reset') {
+                    CloudSave.saveProfile(key, value);
+                }
+            };
+        } catch (e) {
+            console.warn("Could not wrap localStorage.setItem:", e);
+        }
 
         // --- CONFIGURATION AND INITIALIZATION ---
         const canvas = document.getElementById('gameCanvas');
@@ -1928,8 +2243,8 @@
                 osc.frequency.setValueAtTime(160, this.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(580, this.ctx.currentTime + 0.15);
                 
-                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.12 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.15);
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -1947,13 +2262,12 @@
                 osc.frequency.setValueAtTime(110, this.ctx.currentTime);
                 osc.frequency.linearRampToValueAtTime(260, this.ctx.currentTime + 0.2);
                 
-                // Lowpass filter sweeps the frequencies to give the dash a futuristic depth
                 let filter = this.ctx.createBiquadFilter();
                 filter.type = 'lowpass';
                 filter.frequency.setValueAtTime(600, this.ctx.currentTime);
                 
-                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.08 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.2);
                 
                 osc.connect(filter);
                 filter.connect(gain);
@@ -1966,7 +2280,6 @@
                 this.init();
                 if (!this.ctx) return;
 
-                // White noise generator for the impact explosion
                 let bufferSize = this.ctx.sampleRate * 0.45;
                 let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 let data = buffer.getChannelData(0);
@@ -1983,8 +2296,8 @@
                 filter.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.45);
                 
                 let gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.28, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.45);
+                gain.gain.setValueAtTime(0.28 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.45);
                 
                 noise.connect(filter);
                 filter.connect(gain);
@@ -1992,15 +2305,14 @@
                 noise.start();
                 noise.stop(this.ctx.currentTime + 0.45);
                 
-                // Sub-bass sine wave thump
                 let subOsc = this.ctx.createOscillator();
                 let subGain = this.ctx.createGain();
                 subOsc.type = 'sine';
                 subOsc.frequency.setValueAtTime(130, this.ctx.currentTime);
                 subOsc.frequency.linearRampToValueAtTime(30, this.ctx.currentTime + 0.35);
                 
-                subGain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-                subGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+                subGain.gain.setValueAtTime(0.25 * sfxVolume, this.ctx.currentTime);
+                subGain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.35);
                 
                 subOsc.connect(subGain);
                 subGain.connect(this.ctx.destination);
@@ -2015,11 +2327,11 @@
                 let gain = this.ctx.createGain();
                 
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(987.77, this.ctx.currentTime); // B5
-                osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime + 0.07); // E6
+                osc.frequency.setValueAtTime(987.77, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime + 0.07);
                 
-                gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+                gain.gain.setValueAtTime(0.06 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.22);
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -2037,8 +2349,8 @@
                 osc.frequency.setValueAtTime(800, this.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.12);
                 
-                gain.gain.setValueAtTime(0.14, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.14 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.12);
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -2060,10 +2372,9 @@
                 osc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
                 osc.frequency.setValueAtTime(baseFreq * 1.5, this.ctx.currentTime + 0.05);
                 
-                // Volume envelope slightly louder for high combos
-                let vol = 0.06 + Math.min(0.04, consecutiveChips * 0.005);
+                let vol = (0.06 + Math.min(0.04, consecutiveChips * 0.005)) * sfxVolume;
                 gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+                gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.18);
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -2091,8 +2402,8 @@
                     osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.06);
                     
                     gain.gain.setValueAtTime(0.0, this.ctx.currentTime + idx * 0.06);
-                    gain.gain.linearRampToValueAtTime(0.06, this.ctx.currentTime + idx * 0.06 + 0.02);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.06 + 0.25);
+                    gain.gain.linearRampToValueAtTime(0.06 * sfxVolume, this.ctx.currentTime + idx * 0.06 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001 * sfxVolume, this.ctx.currentTime + idx * 0.06 + 0.25);
                     
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
@@ -2112,8 +2423,8 @@
                 osc.frequency.setValueAtTime(550, this.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(950, this.ctx.currentTime + 0.18);
                 
-                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+                gain.gain.setValueAtTime(0.05 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001 * sfxVolume, this.ctx.currentTime + 0.18);
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -2132,8 +2443,8 @@
                 osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
                 osc.frequency.exponentialRampToValueAtTime(1760, this.ctx.currentTime + 0.3);
                 
-                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.08 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001 * sfxVolume, this.ctx.currentTime + 0.3);
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -2144,7 +2455,6 @@
                 if (isMuted) return;
                 this.init();
                 if (!this.ctx) return;
-                // Highpass filtered white noise burst for shield breaking
                 let bufferSize = this.ctx.sampleRate * 0.25;
                 let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 let data = buffer.getChannelData(0);
@@ -2160,8 +2470,8 @@
                 filter.frequency.setValueAtTime(2000, this.ctx.currentTime);
                 
                 let gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.15 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001 * sfxVolume, this.ctx.currentTime + 0.25);
                 
                 noise.connect(filter);
                 filter.connect(gain);
@@ -2174,7 +2484,6 @@
                 this.init();
                 if (!this.ctx) return;
                 
-                // Create short white noise buffer for the throw/whoosh sound
                 let duration = 0.15;
                 let bufferSize = this.ctx.sampleRate * duration;
                 let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -2186,7 +2495,6 @@
                 let noise = this.ctx.createBufferSource();
                 noise.buffer = buffer;
                 
-                // Bandpass filter sweep for high-frequency cutting whoosh
                 let filter = this.ctx.createBiquadFilter();
                 filter.type = 'bandpass';
                 filter.Q.setValueAtTime(8, this.ctx.currentTime);
@@ -2194,8 +2502,8 @@
                 filter.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + duration);
                 
                 let gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                gain.gain.setValueAtTime(0.18 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + duration);
                 
                 noise.connect(filter);
                 filter.connect(gain);
@@ -2219,17 +2527,16 @@
                     osc.frequency.setValueAtTime(freq, startTime + idx * 0.1);
                     
                     gain.gain.setValueAtTime(0.0, startTime + idx * 0.1);
-                    gain.gain.linearRampToValueAtTime(0.1, startTime + idx * 0.1 + 0.02);
-                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + idx * 0.1 + 0.3);
+                    gain.gain.linearRampToValueAtTime(0.1 * sfxVolume, startTime + idx * 0.1 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001 * sfxVolume, startTime + idx * 0.1 + 0.3);
                     
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
                     
-                    // Simple delay effect node for spatial width
                     let delay = this.ctx.createDelay();
                     delay.delayTime.setValueAtTime(0.08, startTime + idx * 0.1);
                     let delayGain = this.ctx.createGain();
-                    delayGain.gain.setValueAtTime(0.04, startTime + idx * 0.1);
+                    delayGain.gain.setValueAtTime(0.04 * sfxVolume, startTime + idx * 0.1);
                     
                     gain.connect(delay);
                     delay.connect(delayGain);
@@ -2242,20 +2549,37 @@
         };
 
         // --- PROCEDURAL BGM ENGINE ---
-        // Generates a dynamic 120 BPM Synthwave bassline that morphs in slow-motion
-        const BGM = {
+              const BGM = {
             ctx: null,
             nextNoteTime: 0.0,
             noteIndex: 0,
             isPlaying: false,
             timerId: null,
             activeNodes: [],
+            masterFilter: null,
+            volumeNode: null,
             
-            // Bass line sequence frequencies: E1, E1, E2, E1, G1, G1, G2, G1, A1, A1, A2, A1, C2, C2, C3, C2
             notes: [41.20, 41.20, 82.40, 41.20, 49.00, 49.00, 98.00, 49.00, 55.00, 55.00, 110.00, 55.00, 65.41, 65.41, 130.81, 65.41],
             
             init(audioCtx) {
                 this.ctx = audioCtx;
+                if (!this.masterFilter) {
+                    this.masterFilter = this.ctx.createBiquadFilter();
+                    this.masterFilter.type = 'lowpass';
+                    this.masterFilter.frequency.setValueAtTime(20000, this.ctx.currentTime);
+                    
+                    this.volumeNode = this.ctx.createGain();
+                    this.volumeNode.gain.setValueAtTime(isMuted ? 0 : bgmVolume, this.ctx.currentTime);
+                    
+                    this.masterFilter.connect(this.volumeNode);
+                    this.volumeNode.connect(this.ctx.destination);
+                }
+            },
+            
+            updateVolume() {
+                if (this.volumeNode && this.ctx) {
+                    this.volumeNode.gain.setValueAtTime(isMuted ? 0 : bgmVolume, this.ctx.currentTime);
+                }
             },
             
             start() {
@@ -2266,6 +2590,8 @@
                     this.ctx = Sound.ctx;
                 }
                 if (!this.ctx) return;
+                
+                this.init(this.ctx);
                 
                 if (this.ctx.state === 'suspended') {
                     this.ctx.resume().then(() => {
@@ -2306,11 +2632,10 @@
             tick() {
                 if (!this.isPlaying) return;
                 
-                let scheduleAheadTime = 0.2; // Schedules 200ms ahead
+                let scheduleAheadTime = 0.2;
                 while (this.nextNoteTime < this.ctx.currentTime + scheduleAheadTime) {
                     this.scheduleNote(this.noteIndex, this.nextNoteTime);
                     
-                    // Beat tempo expands inversely proportional to the slow-mo factor
                     let stepDuration = 0.22 * (1.0 / timeScale);
                     this.nextNoteTime += stepDuration;
                     this.noteIndex = (this.noteIndex + 1) % this.notes.length;
@@ -2327,16 +2652,16 @@
                 let notesPool = theme.bassNotes || this.notes;
                 let freq = notesPool[index % notesPool.length];
                 
-                // Shifts base pitches down by 1 full octave during slow-mo for a heavy, distorted timeline effect
                 let timeScaleFactor = timeScale < 0.5 ? 0.5 : 1.0;
                 let baseFreq = freq * timeScaleFactor;
 
-                // 1. Procedural Kick Drum (synthesized low frequency sine sweep on major beats)
+                let bgmTarget = this.masterFilter || this.ctx.destination;
+
                 if (index % 4 === 0) {
                     let kickOsc = this.ctx.createOscillator();
                     let kickGain = this.ctx.createGain();
                     kickOsc.connect(kickGain);
-                    kickGain.connect(this.ctx.destination);
+                    kickGain.connect(bgmTarget);
                     
                     kickOsc.type = 'sine';
                     let startK = timeScale < 0.5 ? 80 : 150;
@@ -2352,7 +2677,6 @@
                     this.activeNodes.push(kickOsc);
                 }
 
-                // 2. Procedural Hi-hat (synthesized highpass white-noise emulator on off-beats)
                 if (index % 4 === 2) {
                     let hatOsc = this.ctx.createOscillator();
                     let hatGain = this.ctx.createGain();
@@ -2360,7 +2684,7 @@
                     
                     hatOsc.connect(hatFilter);
                     hatFilter.connect(hatGain);
-                    hatGain.connect(this.ctx.destination);
+                    hatGain.connect(bgmTarget);
                     
                     hatOsc.type = 'square';
                     hatOsc.frequency.setValueAtTime(9000, time);
@@ -2377,7 +2701,6 @@
                     this.activeNodes.push(hatOsc);
                 }
 
-                // 3. Melodic lead arpeggio layer (plays higher notes on beats for an epic cyber-synth feel)
                 if (index % 2 === 0) {
                     let leadOsc = this.ctx.createOscillator();
                     let leadGain = this.ctx.createGain();
@@ -2385,11 +2708,10 @@
                     
                     leadOsc.connect(leadFilter);
                     leadFilter.connect(leadGain);
-                    leadGain.connect(this.ctx.destination);
+                    leadGain.connect(bgmTarget);
                     
                     leadOsc.type = 'triangle';
                     
-                    // Key intervals (Root, Minor Third, Fifth, Minor Seventh) to keep it dark and cyberpunk
                     const intervals = [4.0, 4.8, 6.0, 7.2];
                     let multiplier = intervals[(index / 2) % intervals.length];
                     let lFreq = baseFreq * multiplier;
@@ -2409,22 +2731,19 @@
                     this.activeNodes.push(leadOsc);
                 }
 
-                // 4. Bass Line Synth Note
                 let osc = this.ctx.createOscillator();
                 let gain = this.ctx.createGain();
                 let filter = this.ctx.createBiquadFilter();
                 
                 osc.connect(filter);
                 filter.connect(gain);
-                gain.connect(this.ctx.destination);
+                gain.connect(bgmTarget);
                 
                 osc.type = theme.oscType || 'sawtooth';
                 osc.frequency.setValueAtTime(baseFreq, time);
                 
-                // Classic filter envelope
                 filter.type = 'lowpass';
                 if (timeScale < 0.5) {
-                    // Underwater muffled filter: frequency stays very low
                     filter.frequency.setValueAtTime(180, time);
                     filter.frequency.exponentialRampToValueAtTime(300, time + 0.04);
                     filter.frequency.exponentialRampToValueAtTime(120, time + 0.18);
@@ -2434,7 +2753,6 @@
                     filter.frequency.exponentialRampToValueAtTime(80, time + 0.18);
                 }
                 
-                // Volume envelope
                 gain.gain.setValueAtTime(0.0, time);
                 gain.gain.linearRampToValueAtTime(0.12, time + 0.02);
                 gain.gain.exponentialRampToValueAtTime(0.001, time + 0.20);
@@ -2450,11 +2768,251 @@
         };
 
         // --- GAME STATES ---
+        const STATE_SPLASH = 'SPLASH';
         const STATE_START = 'START';
         const STATE_PLAYING = 'PLAYING';
         const STATE_GAMEOVER = 'GAMEOVER';
         const STATE_BONUS_ROOM = 'BONUS_ROOM';
-        let gameState = STATE_START;
+        let gameState = STATE_SPLASH;
+        let isPaused = false;
+
+        // Chrono Waves array
+        let chronoWaves = [];
+        
+        // Death glitch tracking
+        let isDeathGlitching = false;
+        let deathGlitchFrames = 0;
+        
+        // New personal best tracking
+        let isNewBestScore = false;
+        
+        // Confetti submission flag
+        let justSubmittedScore = false;
+
+        // Sound settings variables
+        let sfxVolume = localStorage.getItem('ninja_sfx_volume') !== null ? parseFloat(localStorage.getItem('ninja_sfx_volume')) : 0.7;
+        let bgmVolume = localStorage.getItem('ninja_bgm_volume') !== null ? parseFloat(localStorage.getItem('ninja_bgm_volume')) : 0.7;
+        let performanceMode = localStorage.getItem('ninja_perf_mode') === 'true';
+        let shakeIntensityMultiplier = localStorage.getItem('ninja_shake_mult') !== null ? parseFloat(localStorage.getItem('ninja_shake_mult')) : 1.0;
+
+        function togglePause() {
+            if (gameState !== STATE_PLAYING && gameState !== STATE_BONUS_ROOM) return;
+            
+            isPaused = !isPaused;
+            const btnPause = document.getElementById('pause-toggle-btn');
+            
+            if (isPaused) {
+                if (btnPause) btnPause.innerText = '▶️';
+                // Muffle BGM with lowpass filter
+                if (BGM.masterFilter && BGM.ctx && !isMuted) {
+                    BGM.masterFilter.frequency.setValueAtTime(300, BGM.ctx.currentTime);
+                }
+            } else {
+                if (btnPause) btnPause.innerText = '⏸️';
+                // Restore BGM frequency
+                if (BGM.masterFilter && BGM.ctx && !isMuted) {
+                    BGM.masterFilter.frequency.setValueAtTime(20000, BGM.ctx.currentTime);
+                }
+            }
+        }
+
+        function drawPauseOverlay() {
+            ctx.save();
+            ctx.fillStyle = 'rgba(8, 3, 18, 0.65)';
+            ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#00ffff';
+            ctx.font = '900 52px "Orbitron", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText("GAME PAUSED", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 25);
+            ctx.shadowBlur = 0;
+
+            ctx.font = 'bold 20px "Orbitron", sans-serif';
+            ctx.fillStyle = '#00ffff';
+            let pulse = Math.abs(Math.sin(Date.now() * 0.005));
+            ctx.globalAlpha = 0.4 + pulse * 0.6;
+            ctx.fillText("Press P or Tap Screen to Resume", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 25);
+            ctx.restore();
+        }
+
+        function showSettings() {
+            document.getElementById('settings-overlay').classList.add('active');
+            if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isPaused) {
+                togglePause();
+            }
+        }
+        function hideSettings() {
+            document.getElementById('settings-overlay').classList.remove('active');
+            lastOverlayCloseTime = Date.now();
+            if (isPaused) {
+                togglePause();
+            }
+        }
+
+        function spawnChronoWave(x, y) {
+            chronoWaves.push({
+                x: x,
+                y: y,
+                radius: 15,
+                maxRadius: 750,
+                speed: 18,
+                alpha: 1.0
+            });
+        }
+
+        function updateAndDrawChronoWaves() {
+            for (let i = chronoWaves.length - 1; i >= 0; i--) {
+                let w = chronoWaves[i];
+                if (!isPaused) {
+                    w.radius += w.speed * (gameState === STATE_PLAYING ? 1.0 : timeScale);
+                    w.alpha = 1.0 - (w.radius / w.maxRadius);
+                }
+                if (w.radius >= w.maxRadius) {
+                    chronoWaves.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.strokeStyle = `rgba(0, 255, 255, ${w.alpha * 0.4})`;
+                ctx.lineWidth = 8;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00ffff';
+                ctx.beginPath();
+                ctx.arc(w.x, w.y, w.radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.strokeStyle = `rgba(255, 0, 255, ${w.alpha * 0.3})`;
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff00ff';
+                ctx.beginPath();
+                ctx.arc(w.x, w.y, Math.max(1, w.radius - 20), 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function drawDeathGlitch() {
+            let numSlices = 6 + Math.floor(Math.random() * 6);
+            for (let i = 0; i < numSlices; i++) {
+                let sliceY = Math.random() * LOGICAL_HEIGHT;
+                let sliceHeight = 10 + Math.random() * 50;
+                let shiftX = (Math.random() - 0.5) * 60;
+                ctx.save();
+                ctx.drawImage(canvas, 
+                    0, sliceY, LOGICAL_WIDTH, sliceHeight, 
+                    shiftX, sliceY, LOGICAL_WIDTH, sliceHeight
+                );
+                ctx.restore();
+            }
+            let numBlocks = 3 + Math.floor(Math.random() * 4);
+            for (let i = 0; i < numBlocks; i++) {
+                let bx = Math.random() * LOGICAL_WIDTH;
+                let by = Math.random() * LOGICAL_HEIGHT;
+                let bw = 30 + Math.random() * 120;
+                let bh = 10 + Math.random() * 30;
+                ctx.save();
+                ctx.fillStyle = Math.random() < 0.5 ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 255, 0.4)';
+                ctx.fillRect(bx, by, bw, bh);
+                ctx.restore();
+            }
+            if ((deathGlitchFrames >= 22 && deathGlitchFrames <= 25) || 
+                (deathGlitchFrames >= 14 && deathGlitchFrames <= 16) || 
+                (deathGlitchFrames >= 6 && deathGlitchFrames <= 8)) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'difference';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+                ctx.restore();
+            }
+        }
+
+        function spawnLeaderboardConfetti() {
+            const box = document.querySelector('.leaderboard-box');
+            if (!box) return;
+            const colors = ['#00ffff', '#ff00ff', '#ffd700', '#39ff14', '#ff007f'];
+            const numConfetti = 80;
+            for (let i = 0; i < numConfetti; i++) {
+                const conf = document.createElement('div');
+                conf.className = 'neon-confetti';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.color = color;
+                conf.style.backgroundColor = color;
+                conf.style.left = `${Math.random() * 100}%`;
+                conf.style.top = `-20px`;
+                conf.style.animationDelay = `${Math.random() * 2}s`;
+                conf.style.setProperty('--drift', `${(Math.random() - 0.5) * 120}px`);
+                const size = 5 + Math.random() * 7;
+                conf.style.width = `${size}px`;
+                conf.style.height = `${size}px`;
+                box.appendChild(conf);
+                setTimeout(() => conf.remove(), 5500);
+            }
+        }
+
+        function spawnGoldSparkle(x, y) {
+            let vx = (Math.random() - 0.5) * 3;
+            let vy = (Math.random() - 0.8) * 3;
+            let size = Math.random() * 6 + 3;
+            let decay = Math.random() * 0.02 + 0.015;
+            spawnParticle(x, y, vx, vy, size, '#ffd700', decay, 0.04, 'circle');
+        }
+
+        function initSettings() {
+            // Get references
+            const gearBtn = document.getElementById('settings-toggle-btn');
+            if (gearBtn) {
+                gearBtn.addEventListener('click', showSettings);
+            }
+            document.getElementById('close-settings-btn').addEventListener('click', hideSettings);
+
+            const sfxSlider = document.getElementById('settings-sfx-vol');
+            const bgmSlider = document.getElementById('settings-bgm-vol');
+            const perfToggle = document.getElementById('settings-perf-mode');
+            const shakeSlider = document.getElementById('settings-shake-mult');
+
+            const sfxLabel = document.getElementById('sfx-vol-label');
+            const bgmLabel = document.getElementById('bgm-vol-label');
+            const shakeLabel = document.getElementById('shake-intensity-label');
+
+            sfxSlider.value = sfxVolume;
+            sfxLabel.innerText = `${Math.round(sfxVolume * 100)}%`;
+
+            bgmSlider.value = bgmVolume;
+            bgmLabel.innerText = `${Math.round(bgmVolume * 100)}%`;
+
+            perfToggle.checked = performanceMode;
+
+            shakeSlider.value = shakeIntensityMultiplier;
+            shakeLabel.innerText = `${Math.round(shakeIntensityMultiplier * 100)}%`;
+
+            sfxSlider.addEventListener('input', (e) => {
+                sfxVolume = parseFloat(e.target.value);
+                sfxLabel.innerText = `${Math.round(sfxVolume * 100)}%`;
+                localStorage.setItem('ninja_sfx_volume', sfxVolume);
+            });
+
+            bgmSlider.addEventListener('input', (e) => {
+                bgmVolume = parseFloat(e.target.value);
+                bgmLabel.innerText = `${Math.round(bgmVolume * 100)}%`;
+                localStorage.setItem('ninja_bgm_volume', bgmVolume);
+                if (BGM.volumeNode) {
+                    BGM.updateVolume();
+                }
+            });
+
+            perfToggle.addEventListener('change', (e) => {
+                performanceMode = e.target.checked;
+                localStorage.setItem('ninja_perf_mode', performanceMode);
+            });
+
+            shakeSlider.addEventListener('input', (e) => {
+                shakeIntensityMultiplier = parseFloat(e.target.value);
+                shakeLabel.innerText = `${Math.round(shakeIntensityMultiplier * 100)}%`;
+                localStorage.setItem('ninja_shake_mult', shakeIntensityMultiplier);
+            });
+        }
         let preBonusRoomState = STATE_PLAYING;
         let bonusRoomTimer = 0;
 
@@ -3054,8 +3612,9 @@
         let comboRank = 'D';
 
         // Invisible Tutorial Flags
-        let tutorialAlpha = 1.0;
-        let tutorialDismissed = false;
+        let firstJumpOccurred = localStorage.getItem('ninja_first_jump_occurred') === 'true';
+        let tutorialAlpha = firstJumpOccurred ? 0.0 : 1.0;
+        let tutorialDismissed = firstJumpOccurred;
 
         // Screen Shake Timer & Amplitude
         let shakeTime = 0;
@@ -3106,7 +3665,7 @@
             height: 50,
             vy: 0,
             gravity: 1.1,
-            jumpStrength: 19,
+            jumpStrength: 20.5,
             isGrounded: true,
             doubleJumpAvailable: false,
             
@@ -3134,6 +3693,11 @@
             },
 
             jump() {
+                if (!firstJumpOccurred) {
+                    firstJumpOccurred = true;
+                    localStorage.setItem('ninja_first_jump_occurred', 'true');
+                    tutorialDismissed = true;
+                }
                 if (this.isGrounded) {
                     this.vy = -this.jumpStrength;
                     this.isGrounded = false;
@@ -3155,23 +3719,22 @@
 
             update() {
                 let isDashing = isPressing && pressDuration > 8;
+                let isSlowMoActive = isDashing || hourglassActiveTimer > 0;
 
-                if (isDashing) {
-                    runUsedDash = true;
-                    // Time scale transitions down to 0.2
+                if (isSlowMoActive) {
+                    if (isDashing) {
+                        runUsedDash = true;
+                        this.vy *= 0.88;
+                        this.x += (520 - this.x) * 0.15;
+                    } else {
+                        this.x += (200 - this.x) * 0.08;
+                    }
                     timeScale = Math.max(0.2, timeScale - 0.15);
-                    // Floatiness: vertical velocity damped to slide horizontally
-                    this.vy *= 0.88;
-                    // Move player forward in viewport
-                    this.x += (520 - this.x) * 0.15;
                 } else {
-                    // Normalize game time speed
                     timeScale = Math.min(1.0, timeScale + 0.15);
-                    // Reset ninja back to default horizontal position
                     this.x += (200 - this.x) * 0.08;
                 }
 
-                // Apply gravity factor scaled by dash and slow-mo rate
                 let currentGravity = this.gravity * (isDashing ? 0.08 : 1.0) * timeScale;
                 this.vy += currentGravity;
                 this.y += this.vy * timeScale;
@@ -3338,10 +3901,12 @@
             ctx.strokeStyle = `rgba(${hexToRgb(secondaryColor)}, 0.2)`;
             ctx.lineWidth = 2;
             for (let line of speedLines) {
-                line.x -= line.speed * 2.2 * timeScale;
-                if (line.x + line.length < 0) {
-                    line.x = LOGICAL_WIDTH + 10;
-                    line.y = Math.random() * LOGICAL_HEIGHT;
+                if (!isPaused) {
+                    line.x -= line.speed * 2.2 * timeScale;
+                    if (line.x + line.length < 0) {
+                        line.x = LOGICAL_WIDTH + 10;
+                        line.y = Math.random() * LOGICAL_HEIGHT;
+                    }
                 }
                 ctx.beginPath();
                 ctx.moveTo(line.x, line.y);
@@ -4062,7 +4627,7 @@
                             ctx.beginPath();
                             if (obj.heightType === 'low') {
                                 ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
-                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 115);
                             } else {
                                 ctx.moveTo(obj.x + obj.w / 2, 0);
                                 ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
@@ -4072,7 +4637,7 @@
                             ctx.font = 'bold 10px "Orbitron", sans-serif';
                             ctx.fillStyle = '#ff0000';
                             ctx.textAlign = 'center';
-                            let signY = obj.heightType === 'low' ? FLOOR_Y - 150 : FLOOR_Y - 100;
+                            let signY = obj.heightType === 'low' ? FLOOR_Y - 125 : FLOOR_Y - 100;
                             ctx.fillText("⚠️ LASER", obj.x + obj.w / 2, signY);
                             ctx.restore();
                         }
@@ -4087,7 +4652,7 @@
                         ctx.beginPath();
                         if (obj.heightType === 'low') {
                             ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
-                            ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                            ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 115);
                         } else {
                             ctx.moveTo(obj.x + obj.w / 2, 0);
                             ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
@@ -4109,10 +4674,12 @@
                     if (obj.type === 'laser_barrier') {
                         if (obj.warningTimer <= 0) {
                             let playerRight = player.x + player.width;
-                            let laserRight = obj.x + obj.w;
-                            if (playerRight > obj.x && player.x < laserRight) {
+                            let laserCenterX = obj.x + obj.w / 2;
+                            let laserLeft = laserCenterX - 6;
+                            let laserRight = laserCenterX + 6;
+                            if (playerRight > laserLeft && player.x < laserRight) {
                                 if (obj.heightType === 'low') {
-                                    isColliding = (player.y + player.height > FLOOR_Y - 140);
+                                    isColliding = (player.y + player.height > FLOOR_Y - 115);
                                 } else {
                                     isColliding = (player.y < FLOOR_Y - 120);
                                 }
@@ -4200,6 +4767,16 @@
                         preBonusRoomState = gameState;
                         gameState = STATE_BONUS_ROOM;
                         bonusRoomTimer = selectedSkin === 'chronomaster' ? 720 : 360; // 12 or 6 seconds
+                        
+                        // Reset player inputs and place them on the floor to ensure clean jump controls inside the bonus dimension
+                        isPressing = false;
+                        pressDuration = 0;
+                        timeScale = 1.0;
+                        hourglassActiveTimer = 0;
+                        player.y = FLOOR_Y - player.height;
+                        player.vy = 0;
+                        player.isGrounded = true;
+                        
                         screenFlashColor = 'rgba(0, 255, 255, 0.8)';
                         screenFlashTimer = 15;
                         Sound.playPowerup();
@@ -4286,6 +4863,12 @@
                     obj.passed = true;
                     currentSector = obj.sectorTarget;
                     transitionQueued = false;
+                    
+                    // Reset input and time scale to ensure clean player control in the new sector
+                    isPressing = false;
+                    pressDuration = 0;
+                    timeScale = 1.0;
+                    hourglassActiveTimer = 0;
                     
                     // Flash screen
                     screenFlashColor = 'rgba(255, 255, 255, 0.8)';
@@ -4500,12 +5083,14 @@
         function updateAndDrawPopups() {
             for (let i = popups.length - 1; i >= 0; i--) {
                 let p = popups[i];
-                p.y += p.vy * timeScale;
-                p.x += p.vx * timeScale;
-                p.vy *= 0.95;
-                p.alpha -= 0.03 * timeScale;
-                p.scale = Math.max(1.0, p.scale - 0.06 * timeScale);
-                p.angle += p.angleSpeed * timeScale;
+                if (!isPaused) {
+                    p.y += p.vy * timeScale;
+                    p.x += p.vx * timeScale;
+                    p.vy *= 0.95;
+                    p.alpha -= 0.03 * timeScale;
+                    p.scale = Math.max(1.0, p.scale - 0.06 * timeScale);
+                    p.angle += p.angleSpeed * timeScale;
+                }
 
                 if (p.alpha <= 0) {
                     popups.splice(i, 1);
@@ -4543,6 +5128,9 @@
         let particles = [];
 
         function spawnParticle(x, y, vx, vy, size, color, decay, shrink = 0, shape = 'square') {
+            if (performanceMode && Math.random() < 0.7) {
+                return;
+            }
             particles.push({
                 x: x,
                 y: y,
@@ -4691,10 +5279,12 @@
         function updateAndDrawParticles() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
-                p.x += p.vx * timeScale;
-                p.y += p.vy * timeScale;
-                p.alpha -= p.decay * timeScale;
-                p.size = Math.max(0, p.size - p.shrink * timeScale);
+                if (!isPaused) {
+                    p.x += p.vx * timeScale;
+                    p.y += p.vy * timeScale;
+                    p.alpha -= p.decay * timeScale;
+                    p.size = Math.max(0, p.size - p.shrink * timeScale);
+                }
 
                 if (p.alpha <= 0 || p.size <= 0) {
                     particles.splice(i, 1);
@@ -5053,6 +5643,19 @@
                 ctx.fillText(`MAGNET: ${(magnetTimer / 60).toFixed(1)}s`, LOGICAL_WIDTH - 30, 75);
                 ctx.restore();
             }
+
+            // Multiplier Star Timer Indicator if active
+            if (multiplierTimer > 0) {
+                ctx.save();
+                ctx.font = '900 12px "Orbitron", sans-serif';
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = '#ffd700';
+                ctx.textAlign = 'right';
+                let yOffset = magnetTimer > 0 ? 105 : 75;
+                ctx.fillText(`${activeMultiplier}X MULTIPLIER: ${(multiplierTimer / 60).toFixed(1)}s`, LOGICAL_WIDTH - 30, yOffset);
+                ctx.restore();
+            }
         }
 
         // --- MISSION MANAGEMENT LOGIC ---
@@ -5106,16 +5709,16 @@
         function drawMissions(x, yStart) {
             ctx.save();
             ctx.textAlign = 'left';
-            ctx.font = '900 18px "Orbitron", sans-serif';
+            ctx.font = '900 21px "Orbitron", sans-serif';
             ctx.fillStyle = secondaryColor;
             ctx.shadowBlur = 10;
             ctx.shadowColor = secondaryColor;
             ctx.fillText("🎯 ACTIVE ACHIEVEMENTS", x, yStart);
             ctx.shadowBlur = 0;
 
-            let y = yStart + 32;
+            let y = yStart + 36;
             missions.forEach(m => {
-                ctx.font = 'bold 15px "Outfit", sans-serif';
+                ctx.font = 'bold 17px "Outfit", sans-serif';
                 let isDone = completedMissions.includes(m.id);
                 let progressStr = '';
                 let isFailed = false;
@@ -5143,9 +5746,9 @@
                 
                 ctx.fillText(`• ${m.text}`, x, y);
                 ctx.textAlign = 'right';
-                ctx.fillText(`${progressStr}  +${m.reward} 🪙`, x + 340, y);
+                ctx.fillText(`${progressStr}  +${m.reward} 🪙`, x + 350, y);
                 ctx.textAlign = 'left';
-                y += 28;
+                y += 32;
             });
             ctx.restore();
         }
@@ -5153,7 +5756,7 @@
         function drawEquippedSkinInfo(x, yStart) {
             ctx.save();
             ctx.textAlign = 'left';
-            ctx.font = '900 18px "Orbitron", sans-serif';
+            ctx.font = '900 21px "Orbitron", sans-serif';
             ctx.fillStyle = primaryColor;
             ctx.shadowBlur = 10;
             ctx.shadowColor = primaryColor;
@@ -5162,11 +5765,11 @@
 
             let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
             
-            ctx.font = '900 22px "Orbitron", sans-serif';
+            ctx.font = '900 24px "Orbitron", sans-serif';
             ctx.fillStyle = activeSkinObj.color;
             ctx.shadowBlur = 8;
             ctx.shadowColor = activeSkinObj.color;
-            ctx.fillText(activeSkinObj.name.toUpperCase(), x, yStart + 35);
+            ctx.fillText(activeSkinObj.name.toUpperCase(), x, yStart + 36);
             ctx.shadowBlur = 0;
 
             let abilityText = "Ability: None (Pure Skill)";
@@ -5182,13 +5785,13 @@
                 flavorText = "Allows a second jump in mid-air to cheat hazards.";
             }
             
-            ctx.font = 'bold 15px "Outfit", sans-serif';
+            ctx.font = 'bold 17px "Outfit", sans-serif';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(abilityText, x, yStart + 60);
+            ctx.fillText(abilityText, x, yStart + 66);
 
-            ctx.font = 'italic 14px "Outfit", sans-serif';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillText(flavorText, x, yStart + 85);
+            ctx.font = 'italic 15px "Outfit", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.fillText(flavorText, x, yStart + 92);
 
             ctx.restore();
         }
@@ -5237,6 +5840,128 @@
             ctx.restore();
         }
 
+        let splashFrames = 0;
+
+        function drawSplashScreen() {
+            splashFrames++;
+            
+            if (splashFrames >= 90) {
+                gameState = STATE_START;
+                updateHTMLButtons();
+                screenFlashColor = 'rgba(189, 0, 255, 0.4)';
+                screenFlashTimer = 10;
+                lastOverlayCloseTime = Date.now();
+                return;
+            }
+
+            // Draw deep space background
+            ctx.fillStyle = '#080312';
+            ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+            // Draw grid background
+            ctx.save();
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.03)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < LOGICAL_WIDTH; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, LOGICAL_HEIGHT);
+                ctx.stroke();
+            }
+            for (let y = 0; y < LOGICAL_HEIGHT; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(LOGICAL_WIDTH, y);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Calculate fade alpha
+            let alpha = 1.0;
+            if (splashFrames < 15) alpha = splashFrames / 15;
+            else if (splashFrames > 75) alpha = (90 - splashFrames) / 15;
+
+            // Draw glowing tech border brackets around logo area
+            ctx.save();
+            ctx.strokeStyle = `rgba(0, 255, 255, ${alpha * 0.4})`;
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ffff';
+            
+            // Left Bracket
+            ctx.beginPath();
+            ctx.moveTo(LOGICAL_WIDTH / 2 - 200, LOGICAL_HEIGHT / 2 - 60);
+            ctx.lineTo(LOGICAL_WIDTH / 2 - 220, LOGICAL_HEIGHT / 2 - 60);
+            ctx.lineTo(LOGICAL_WIDTH / 2 - 220, LOGICAL_HEIGHT / 2 + 30);
+            ctx.lineTo(LOGICAL_WIDTH / 2 - 200, LOGICAL_HEIGHT / 2 + 30);
+            ctx.stroke();
+
+            // Right Bracket
+            ctx.beginPath();
+            ctx.moveTo(LOGICAL_WIDTH / 2 + 200, LOGICAL_HEIGHT / 2 - 60);
+            ctx.lineTo(LOGICAL_WIDTH / 2 + 220, LOGICAL_HEIGHT / 2 - 60);
+            ctx.lineTo(LOGICAL_WIDTH / 2 + 220, LOGICAL_HEIGHT / 2 + 30);
+            ctx.lineTo(LOGICAL_WIDTH / 2 + 200, LOGICAL_HEIGHT / 2 + 30);
+            ctx.stroke();
+            ctx.restore();
+
+            // Draw Logo text
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.font = '900 46px "Orbitron", sans-serif';
+            ctx.fillText("WOX ENGINE", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 15);
+            ctx.restore();
+
+            // Subtitle text
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#bd00ff';
+            ctx.fillStyle = `rgba(189, 0, 255, ${alpha * 0.95})`;
+            ctx.font = 'bold 14px "Orbitron", sans-serif';
+            ctx.fillText("POWERING THE FUTURE", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 15);
+            ctx.restore();
+
+            // Draw glowing loading bar
+            let barWidth = 320;
+            let barHeight = 6;
+            let barX = LOGICAL_WIDTH / 2 - barWidth / 2;
+            let barY = LOGICAL_HEIGHT / 2 + 80;
+
+            // Bar background slot
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth, barHeight, 3);
+            ctx.fill();
+
+            // Bar progress fill
+            let pct = Math.min(1.0, splashFrames / 90);
+            ctx.save();
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#00ffff';
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth * pct, barHeight, 3);
+            ctx.fill();
+            ctx.restore();
+
+            // Draw scan line animation
+            let scanY = (splashFrames / 90) * LOGICAL_HEIGHT;
+            ctx.save();
+            ctx.strokeStyle = `rgba(0, 255, 255, ${alpha * 0.18})`;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00ffff';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(0, scanY);
+            ctx.lineTo(LOGICAL_WIDTH, scanY);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         function drawStartScreen() {
             ctx.fillStyle = 'rgba(8, 3, 18, 0.35)';
             ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
@@ -5255,7 +5980,7 @@
             
             ctx.font = '500 14px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.fillText("v1.3.0 - Golden Path Sync & Legal Compliance", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
+            ctx.fillText("v1.3.1 - Pause & Multiplier HUD Timer", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
             ctx.restore();
 
             ctx.save();
@@ -5342,6 +6067,25 @@
             ctx.fillText(`BEST: ${bestScore}`, LOGICAL_WIDTH / 2, boxY + 110);
             ctx.restore();
 
+            if (isNewBestScore) {
+                ctx.save();
+                ctx.textAlign = 'center';
+                let pulse = Math.abs(Math.sin(Date.now() * 0.006));
+                let scale = 1.0 + pulse * 0.05;
+                ctx.translate(LOGICAL_WIDTH / 2, boxY - 60);
+                ctx.scale(scale, scale);
+                let goldGrad = ctx.createLinearGradient(-150, -20, 150, 20);
+                goldGrad.addColorStop(0, '#ffd700');
+                goldGrad.addColorStop(0.5, '#ffffff');
+                goldGrad.addColorStop(1, '#ff8c00');
+                ctx.font = '900 32px "Orbitron", sans-serif';
+                ctx.fillStyle = goldGrad;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#ffd700';
+                ctx.fillText("🏆 NEW PERSONAL BEST! 🏆", 0, 0);
+                ctx.restore();
+            }
+
             ctx.save();
             ctx.textAlign = 'center';
             ctx.font = '600 20px "Outfit", sans-serif';
@@ -5369,20 +6113,28 @@
 
         // --- CONTROL LOOPS AND GAME RESET ---
         function triggerGameOver() {
+            if (!isDeathGlitching) {
+                isDeathGlitching = true;
+                deathGlitchFrames = 25;
+                Sound.playDeath();
+                shakeTime = 30;
+                shakeIntensity = 22;
+                spawnDeathExplosion(player.x + player.width / 2, player.y + player.height / 2);
+                return;
+            }
+            
+            isDeathGlitching = false;
+            deathGlitchFrames = 0;
+
             if (adRevivesUsed === 0) {
                 // First crash: show ad revive screen countdown overlay and freeze logic
                 isReviveOverlayActive = true;
-                Sound.playDeath();
                 BGM.stop();
-                shakeTime = 25;
-                shakeIntensity = 20;
-                spawnDeathExplosion(player.x + player.width / 2, player.y + player.height / 2);
                 triggerAdReviveScreen();
                 return;
             }
 
             gameState = STATE_GAMEOVER;
-            Sound.playDeath();
             BGM.stop();
             
             consecutiveChips = 0;
@@ -5405,8 +6157,11 @@
             addXP(runXP);
 
             if (score > bestScore) {
+                isNewBestScore = true;
                 bestScore = score;
                 localStorage.setItem('ninja_best_score', bestScore);
+            } else {
+                isNewBestScore = false;
             }
 
             // Update HTML overlay buttons visibility
@@ -5438,6 +6193,10 @@
             hitstopFrames = 0;
             comboPoints = 0;
             comboRank = 'D';
+            chronoWaves = [];
+            isDeathGlitching = false;
+            deathGlitchFrames = 0;
+            isNewBestScore = false;
             gameObjects = [];
             particles = [];
             popups = [];
@@ -5467,6 +6226,10 @@
             isReviveOverlayActive = false;
             document.getElementById('slowmo-charge-badge').innerText = '0';
             
+            isPaused = false;
+            const btnPause = document.getElementById('pause-toggle-btn');
+            if (btnPause) btnPause.innerText = '⏸️';
+
             player.reset();
             gameState = STATE_PLAYING;
             Sound.playScore();
@@ -5492,6 +6255,7 @@
         }
 
         function onPress() {
+            if (isPaused) return;
             // Guard if overlays are active to prevent actions
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
                 document.getElementById('shop-overlay').classList.contains('active') ||
@@ -5500,11 +6264,20 @@
                 document.getElementById('checkout-overlay').classList.contains('active') ||
                 document.getElementById('privacy-overlay').classList.contains('active') ||
                 document.getElementById('google-signin-overlay').classList.contains('active') ||
-                document.getElementById('revive-countdown-overlay').classList.contains('active')) {
+                document.getElementById('revive-countdown-overlay').classList.contains('active') ||
+                document.getElementById('settings-overlay').classList.contains('active')) {
                 return;
             }
             if (Date.now() - lastOverlayCloseTime < 300) {
                 return; // Prevent accidental click-throughs right after closing overlays
+            }
+            if (gameState === STATE_SPLASH) {
+                gameState = STATE_START;
+                updateHTMLButtons();
+                screenFlashColor = 'rgba(189, 0, 255, 0.4)';
+                screenFlashTimer = 10;
+                lastOverlayCloseTime = Date.now();
+                return;
             }
             if (gameState === STATE_START) {
                 // Try to go fullscreen on mobile devices to hide browser navigation/address bars
@@ -5513,15 +6286,12 @@
                     goFullscreen();
                 }
 
-                Sound.playScore();
-                gameState = STATE_PLAYING;
-                tutorialDismissed = true;
+                restartGame();
+                tutorialDismissed = firstJumpOccurred;
                 obstacleTimer = 180;
-                BGM.start();
-                updateHTMLButtons();
             } else if (gameState === STATE_GAMEOVER) {
                 restartGame();
-            } else if (gameState === STATE_PLAYING) {
+            } else if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
                 isPressing = true;
                 pressDuration = 0;
                 player.jump();
@@ -5529,7 +6299,8 @@
         }
 
         function onRelease() {
-            if (gameState === STATE_PLAYING) {
+            if (isPaused) return;
+            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
                 // Variable Jump Height: if released early while moving upwards, clamp upward velocity to ensure a responsive short jump
                 if (!player.isGrounded && player.vy < -7.5) {
                     player.vy = -7.5;
@@ -5546,6 +6317,16 @@
                 document.activeElement === document.getElementById('google-custom-email')) {
                 return;
             }
+            
+            // Toggle Pause on Esc or P keys
+            if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.code === 'Escape' || e.key === 'Escape') {
+                e.preventDefault();
+                togglePause();
+                return;
+            }
+            
+            if (isPaused) return; // Prevent actions when paused
+
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
                 document.getElementById('shop-overlay').classList.contains('active') ||
                 document.getElementById('daily-overlay').classList.contains('active') ||
@@ -5553,7 +6334,8 @@
                 document.getElementById('checkout-overlay').classList.contains('active') ||
                 document.getElementById('privacy-overlay').classList.contains('active') ||
                 document.getElementById('google-signin-overlay').classList.contains('active') ||
-                document.getElementById('revive-countdown-overlay').classList.contains('active')) {
+                document.getElementById('revive-countdown-overlay').classList.contains('active') ||
+                document.getElementById('settings-overlay').classList.contains('active')) {
                 return;
             }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
@@ -5568,6 +6350,7 @@
         });
 
         window.addEventListener('keyup', (e) => {
+            if (isPaused) return;
             // Avoid triggering jump if nickname input, email input, or overlays are active
             if (document.activeElement === document.getElementById('player-name-input') ||
                 document.activeElement === document.getElementById('google-custom-email')) {
@@ -5576,7 +6359,8 @@
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
                 document.getElementById('shop-overlay').classList.contains('active') ||
                 document.getElementById('privacy-overlay').classList.contains('active') ||
-                document.getElementById('google-signin-overlay').classList.contains('active')) {
+                document.getElementById('google-signin-overlay').classList.contains('active') ||
+                document.getElementById('settings-overlay').classList.contains('active')) {
                 return;
             }
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
@@ -5588,6 +6372,11 @@
         // Touch event bindings for mobile, mousedown/up for desktop
         canvas.addEventListener('touchstart', (e) => {
             touchActive = true;
+            if (isPaused) {
+                togglePause();
+                e.preventDefault();
+                return;
+            }
             onPress();
             e.preventDefault();
         }, { passive: false });
@@ -5599,11 +6388,16 @@
 
         canvas.addEventListener('mousedown', (e) => {
             if (touchActive) return;
+            if (isPaused) {
+                togglePause();
+                return;
+            }
             onPress();
         });
 
         window.addEventListener('mouseup', (e) => {
             if (touchActive) return;
+            if (isPaused) return;
             onRelease();
         });
 
@@ -6061,6 +6855,7 @@
                 screenFlashColor = 'rgba(0, 255, 255, 0.35)';
                 screenFlashTimer = 15;
                 
+                spawnChronoWave(player.x + player.width / 2, player.y + player.height / 2);
                 Sound.playPowerup();
                 spawnScorePopup(player.x + player.width / 2, player.y - 30, "CHRONO SHIFT!", 'powerup');
                 
@@ -6143,6 +6938,7 @@
         };
 
         function updateHTMLButtons() {
+            const container = document.querySelector('.bottom-actions-container');
             const btnStart = document.getElementById('show-leaderboard-start');
             const btnShop = document.getElementById('show-shop-start');
             const btnDaily = document.getElementById('show-daily-btn');
@@ -6150,32 +6946,50 @@
             const btnDoubleChips = document.getElementById('double-chips-btn');
             const btnHelp = document.getElementById('show-help-start');
             const btnPrivacy = document.getElementById('show-privacy-start');
+            const btnPause = document.getElementById('pause-toggle-btn');
+
+
 
             if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
-                btnStart.classList.remove('hidden');
-                btnShop.classList.remove('hidden');
-                btnDaily.classList.remove('hidden');
+                if (container) container.classList.remove('hidden');
+                if (btnStart) btnStart.classList.remove('hidden');
+                if (btnShop) btnShop.classList.remove('hidden');
+                if (btnDaily) btnDaily.classList.remove('hidden');
                 if (btnHelp) btnHelp.classList.remove('hidden');
                 if (btnPrivacy) btnPrivacy.classList.remove('hidden');
             } else {
-                btnStart.classList.add('hidden');
-                btnShop.classList.add('hidden');
-                btnDaily.classList.add('hidden');
+                if (container) container.classList.add('hidden');
+                if (btnStart) btnStart.classList.add('hidden');
+                if (btnShop) btnShop.classList.add('hidden');
+                if (btnDaily) btnDaily.classList.add('hidden');
                 if (btnHelp) btnHelp.classList.add('hidden');
                 if (btnPrivacy) btnPrivacy.classList.add('hidden');
             }
 
             if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
-                btnSlowMo.classList.remove('hidden');
-                document.getElementById('slowmo-charge-badge').innerText = hourglassCharges;
+                if (btnSlowMo) btnSlowMo.classList.remove('hidden');
+                if (btnPause) btnPause.classList.remove('hidden');
+                const slowMoBadge = document.getElementById('slowmo-charge-badge');
+                if (slowMoBadge) slowMoBadge.innerText = hourglassCharges;
             } else {
-                btnSlowMo.classList.add('hidden');
+                if (btnSlowMo) btnSlowMo.classList.add('hidden');
+                if (btnPause) btnPause.classList.add('hidden');
             }
 
             if (gameState === STATE_GAMEOVER && runChipsCollected > 0) {
-                btnDoubleChips.classList.remove('hidden');
+                if (btnDoubleChips) btnDoubleChips.classList.remove('hidden');
             } else {
-                btnDoubleChips.classList.add('hidden');
+                if (btnDoubleChips) btnDoubleChips.classList.add('hidden');
+            }
+
+            // Hide top controls container (Settings Gear and Sound) during splash screen
+            const topControls = document.querySelector('.top-controls-container');
+            if (topControls) {
+                if (gameState === STATE_SPLASH) {
+                    topControls.classList.add('hidden');
+                } else {
+                    topControls.classList.remove('hidden');
+                }
             }
         }
 
@@ -6273,6 +7087,24 @@
             }
         }
 
+        function saveLocalScore(name, score) {
+            let localScores = [];
+            try {
+                localScores = JSON.parse(localStorage.getItem('ninja_local_scores')) || [];
+            } catch (e) {
+                localScores = [];
+            }
+            let existing = localScores.find(s => s.name === name);
+            if (existing) {
+                if (score > existing.score) {
+                    existing.score = score;
+                }
+            } else {
+                localScores.push({ name: name, score: score });
+            }
+            localStorage.setItem('ninja_local_scores', JSON.stringify(localScores));
+        }
+
         function fetchScores() {
             const listDiv = document.getElementById('leaderboard-list');
             listDiv.innerHTML = '<div class="leaderboard-loading">Loading scores...</div>';
@@ -6281,30 +7113,70 @@
             const targetUrl = `http://dreamlo.com/lb/${dreamloPublicCode}/json`;
             const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
             
-            fetch(proxyUrl)
+            // 2-second timeout for loading online scores
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            
+            fetch(proxyUrl, { signal: controller.signal })
                 .then(res => res.json())
                 .then(data => {
+                    clearTimeout(timeoutId);
                     renderLeaderboard(data);
                 })
                 .catch(err => {
-                    listDiv.innerHTML = '<div class="leaderboard-loading" style="color:#ff0055;">Failed to load scores.</div>';
-                    console.error('Error fetching scores:', err);
+                    clearTimeout(timeoutId);
+                    console.warn('Error fetching online scores, using local offline fallback:', err);
+                    
+                    // Offline fallback mockup data merged with player's real local scores
+                    let mockupData = {
+                        dreamlo: {
+                            leaderboard: {
+                                entry: [
+                                    { name: "NeoNinja", score: 1500 },
+                                    { name: "ChronoMaster", score: 1200 },
+                                    { name: "ShadowBlade", score: 850 },
+                                    { name: "CyberSpike", score: 600 }
+                                ]
+                            }
+                        }
+                    };
+                    renderLeaderboard(mockupData);
                 });
         }
 
         function renderLeaderboard(data) {
             const listDiv = document.getElementById('leaderboard-list');
             listDiv.innerHTML = '';
+            let isCurrentPlayerInTop10 = false;
             
             let scores = [];
             if (data && data.dreamlo && data.dreamlo.leaderboard && data.dreamlo.leaderboard.entry) {
                 let entry = data.dreamlo.leaderboard.entry;
                 if (Array.isArray(entry)) {
-                    scores = entry;
+                    scores = [...entry];
                 } else {
                     scores = [entry];
                 }
             }
+            
+            // Merge player's local/offline scores
+            let localScores = [];
+            try {
+                localScores = JSON.parse(localStorage.getItem('ninja_local_scores')) || [];
+            } catch (e) {
+                localScores = [];
+            }
+            
+            localScores.forEach(localEntry => {
+                let onlineEntry = scores.find(s => s.name === localEntry.name);
+                if (onlineEntry) {
+                    if (parseInt(localEntry.score) > parseInt(onlineEntry.score)) {
+                        onlineEntry.score = localEntry.score;
+                    }
+                } else {
+                    scores.push({ name: localEntry.name, score: localEntry.score });
+                }
+            });
             
             if (scores.length === 0) {
                 listDiv.innerHTML = '<div class="leaderboard-loading">No scores recorded yet. Be the first!</div>';
@@ -6328,6 +7200,7 @@
                 const currentSubmitNick = localStorage.getItem('ninja_nickname');
                 if (entry.name === currentSubmitNick) {
                     item.classList.add('current-player');
+                    isCurrentPlayerInTop10 = true;
                 }
                 
                 let rankEmoji = '';
@@ -6344,9 +7217,15 @@
                 `;
                 listDiv.appendChild(item);
             });
+            
+            if (justSubmittedScore && isCurrentPlayerInTop10) {
+                justSubmittedScore = false;
+                spawnLeaderboardConfetti();
+            }
         }
 
         function submitScore() {
+            justSubmittedScore = true;
             const nameInput = document.getElementById('player-name-input');
             let name = nameInput.value.trim().replace(/[^a-zA-Z0-9]/g, ''); // alphanumeric only
             if (!name) {
@@ -6360,22 +7239,37 @@
             submitBtn.disabled = true;
             submitBtn.innerText = 'SUBMITTING...';
             
+            // Save local score immediately
+            saveLocalScore(name, score);
+            
             // Submit via HTTPS/CORS proxy to avoid SSL/Mixed Content issues
             const targetUrl = `http://dreamlo.com/lb/${dreamloPrivateCode}/add-pipe/${name}/${score}`;
             const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
             
-            fetch(proxyUrl)
+            // 2-second timeout for submitting online
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            
+            fetch(proxyUrl, { signal: controller.signal })
                 .then(() => {
+                    clearTimeout(timeoutId);
                     submitBtn.innerText = 'SUBMIT';
                     submitBtn.disabled = false;
                     document.getElementById('score-submit-container').classList.add('hidden');
                     fetchScores();
                 })
                 .catch(err => {
-                    alert('Submission failed, please try again.');
-                    submitBtn.disabled = false;
+                    clearTimeout(timeoutId);
+                    console.warn('Dreamlo submission failed/timed out, saved locally:', err);
+                    
+                    // Unblock player: Hide submission row and refresh scores fallback
                     submitBtn.innerText = 'SUBMIT';
-                    console.error('Error submitting score:', err);
+                    submitBtn.disabled = false;
+                    document.getElementById('score-submit-container').classList.add('hidden');
+                    fetchScores();
+                    
+                    // Display nice game pop-up notifying of local saving
+                    spawnScorePopup(LOGICAL_WIDTH / 2, 180, "SAVED LOCALLY (OFFLINE)", 'achievement');
                 });
         }
 
@@ -6526,8 +7420,16 @@
             }, 1200);
         }
 
-        // Initialize Sound Toggle click listener
+        // Initialize Sound & Pause Toggle click listeners
         document.getElementById('sound-toggle-btn').addEventListener('click', toggleMute);
+        const pBtn = document.getElementById('pause-toggle-btn');
+        if (pBtn) {
+            pBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Avoid triggering canvas tap immediately
+                togglePause();
+            });
+        }
+        initSettings();
         updateSoundToggleButton();
 
         // Initialize daily achievements
@@ -6544,9 +7446,10 @@
             ctx.save();
 
             // Apply Screen Shake if active
-            if (shakeTime > 0) {
-                let dx = (Math.random() - 0.5) * shakeIntensity;
-                let dy = (Math.random() - 0.5) * shakeIntensity;
+            if (shakeTime > 0 && !isPaused) {
+                let mult = shakeIntensityMultiplier;
+                let dx = (Math.random() - 0.5) * shakeIntensity * mult;
+                let dy = (Math.random() - 0.5) * shakeIntensity * mult;
                 ctx.translate(dx, dy);
                 shakeTime--;
             }
@@ -6562,6 +7465,13 @@
             // Execute logic updates only when Hitstop freeze is inactive
             if (hitstopFrames > 0) {
                 hitstopFrames--;
+            } else if (deathGlitchFrames > 0) {
+                deathGlitchFrames--;
+                if (deathGlitchFrames === 0) {
+                    triggerGameOver();
+                }
+            } else if (isPaused) {
+                // Skip logic updates when paused
             } else {
                 if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
                     gameFrames++;
@@ -6584,6 +7494,7 @@
                         pressDuration++;
                         if (pressDuration === 9) {
                             Sound.playDash();
+                            spawnChronoWave(player.x + player.width / 2, player.y + player.height / 2);
                             if (selectedSkin === 'shadowstrike') {
                                 Sound.playShuriken();
                                 gameObjects.push({
@@ -6626,6 +7537,16 @@
                             bonusRoomTimer--;
                             if (bonusRoomTimer <= 0) {
                                 gameState = preBonusRoomState;
+                                
+                                // Reset inputs and time scale to prevent stuck state when warping back, returning player safely to the ground
+                                isPressing = false;
+                                pressDuration = 0;
+                                timeScale = 1.0;
+                                hourglassActiveTimer = 0;
+                                player.y = FLOOR_Y - player.height;
+                                player.vy = 0;
+                                player.isGrounded = true;
+                                
                                 screenFlashColor = 'rgba(0, 255, 255, 0.8)';
                                 screenFlashTimer = 15;
                                 Sound.playPowerup();
@@ -6648,6 +7569,21 @@
                     updateObstacleSpawning();
                     updateDashEnergy();
 
+                    // Master filter lowpass sweep as portal approaches
+                    let activePortal = gameObjects.find(obj => obj.type === 'portal' && !obj.passed);
+                    if (activePortal && BGM.masterFilter && BGM.ctx && !isMuted) {
+                        let distance = activePortal.x - player.x;
+                        if (distance > 0 && distance < 350) {
+                            let t = Math.max(0, Math.min(1, distance / 350));
+                            let freq = 180 + Math.pow(t, 2) * (20000 - 180);
+                            BGM.masterFilter.frequency.setValueAtTime(freq, BGM.ctx.currentTime);
+                        } else {
+                            BGM.masterFilter.frequency.setValueAtTime(20000, BGM.ctx.currentTime);
+                        }
+                    } else if (BGM.masterFilter && BGM.ctx) {
+                        BGM.masterFilter.frequency.setValueAtTime(20000, BGM.ctx.currentTime);
+                    }
+
                     // Check sector transitions (only in normal playing state)
                     if (gameState === STATE_PLAYING) {
                         if (score >= 400 && score < 1000 && currentSector === 1 && !transitionQueued) {
@@ -6666,12 +7602,12 @@
             }
 
             // Update obstacles, particles and text popups (processed independent of hitstop to allow smooth animations)
-            if (hitstopFrames === 0) {
+            if (hitstopFrames === 0 && !isPaused) {
                 updateAndDrawGameObjects();
                 updateAndDrawParticles();
                 updateAndDrawPopups();
             } else {
-                // Keep drawing objects static during hitstop freeze frame
+                // Keep drawing objects static during hitstop freeze frame or pause state
                 for (let obj of gameObjects) {
                     ctx.save();
                     if (obj.type === 'spike') {
@@ -6815,7 +7751,7 @@
                                 ctx.beginPath();
                                 if (obj.heightType === 'low') {
                                     ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
-                                    ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                                    ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 115);
                                 } else {
                                     ctx.moveTo(obj.x + obj.w / 2, 0);
                                     ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
@@ -6831,7 +7767,7 @@
                             ctx.beginPath();
                             if (obj.heightType === 'low') {
                                 ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
-                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 140);
+                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 115);
                             } else {
                                 ctx.moveTo(obj.x + obj.w / 2, 0);
                                 ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
@@ -6852,12 +7788,13 @@
             // Draw player and scrollable grids
             player.draw();
             drawFloorGrid();
+            updateAndDrawChronoWaves();
             
             // Restore matrix transformations from shake offsets
             ctx.restore();
 
             // HUD draws outside screen shake
-            if (gameState === STATE_PLAYING) {
+            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
                 drawHUD();
                 drawSSSFeverBorder();
                 
@@ -6868,13 +7805,42 @@
                 
                 if (tutorialAlpha > 0) {
                     ctx.save();
-                    ctx.fillStyle = `rgba(255, 255, 255, ${tutorialAlpha})`;
-                    ctx.font = '900 36px "Orbitron", sans-serif';
+                    ctx.fillStyle = `rgba(255, 255, 255, ${tutorialAlpha * (0.6 + Math.sin(gameFrames * 0.1) * 0.2)})`;
+                    ctx.font = '900 24px "Orbitron", sans-serif';
                     ctx.textAlign = 'center';
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = 'rgba(0, 255, 255, 0.4)';
-                    ctx.fillText("TAP TO JUMP", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 35);
-                    ctx.fillText("HOLD TO DASH", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 35);
+                    
+                    // Draw Spacebar box outline
+                    ctx.strokeStyle = `rgba(0, 255, 255, ${tutorialAlpha * 0.8})`;
+                    ctx.lineWidth = 2.5;
+                    let spaceW = 160;
+                    let spaceH = 40;
+                    let spaceX = LOGICAL_WIDTH / 2 - spaceW - 25;
+                    let spaceY = LOGICAL_HEIGHT / 2 - 20;
+                    ctx.beginPath();
+                    ctx.roundRect(spaceX, spaceY, spaceW, spaceH, 6);
+                    ctx.stroke();
+                    ctx.fillText("SPACE", spaceX + spaceW / 2, spaceY + 28);
+                    
+                    // Draw OR separator
+                    ctx.font = 'bold 16px "Orbitron", sans-serif';
+                    ctx.fillText("OR", LOGICAL_WIDTH / 2, spaceY + 25);
+                    
+                    // Draw TAP box outline
+                    ctx.font = '900 24px "Orbitron", sans-serif';
+                    let tapW = 160;
+                    let tapH = 40;
+                    let tapX = LOGICAL_WIDTH / 2 + 25;
+                    let tapY = LOGICAL_HEIGHT / 2 - 20;
+                    ctx.beginPath();
+                    ctx.roundRect(tapX, tapY, tapW, tapH, 6);
+                    ctx.stroke();
+                    ctx.fillText("TAP SCREEN", tapX + tapW / 2, tapY + 28);
+                    
+                    ctx.font = 'bold 18px "Orbitron", sans-serif';
+                    ctx.fillStyle = `rgba(255, 255, 255, ${tutorialAlpha * 0.7})`;
+                    ctx.fillText("TO JUMP & HOLD TO DASH", LOGICAL_WIDTH / 2, spaceY + 80);
                     ctx.restore();
                 }
 
@@ -6922,11 +7888,23 @@
                     ctx.restore();
                 }
 
+                // Draw Pause Overlay if active
+                if (isPaused) {
+                    drawPauseOverlay();
+                }
+
+            } else if (gameState === STATE_SPLASH) {
+                drawSplashScreen();
             } else if (gameState === STATE_START) {
                 drawStartScreen();
             } else if (gameState === STATE_GAMEOVER) {
                 drawHUD();
                 drawGameOverScreen();
+                if (isNewBestScore && Math.random() < 0.25) {
+                    let sx = Math.random() * LOGICAL_WIDTH;
+                    let sy = Math.random() * (LOGICAL_HEIGHT - 100);
+                    spawnGoldSparkle(sx, sy);
+                }
             }
 
             // Draw Screen Flash overlay
@@ -6938,14 +7916,19 @@
                 ctx.restore();
             }
 
+            if (deathGlitchFrames > 0) {
+                drawDeathGlitch();
+            }
+
             requestAnimationFrame(gameLoop);
         }
 
         // Helper function for slow-motion CSS filter transitions
         function updateCanvasFilter() {
-            if (gameState === STATE_PLAYING) {
+            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
                 let isDashing = isPressing && pressDuration > 8;
-                if (isDashing) {
+                let isSlowMoActive = isDashing || hourglassActiveTimer > 0;
+                if (isSlowMoActive) {
                     let t = (1.0 - timeScale) / 0.8; // 0 to 1
                     let contrastVal = 1.0 + t * 0.25;
                     let saturateVal = 1.0 + t * 0.4;
@@ -6992,12 +7975,14 @@
                         // Check for updates automatically
                         reg.addEventListener('updatefound', () => {
                             const newWorker = reg.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('[Service Worker] New update available! Please reload.');
-                                    spawnScorePopup(LOGICAL_WIDTH / 2, 150, "UPDATE DETECTED! RELOAD.", 'achieve');
-                                }
-                            });
+                            if (newWorker) {
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                        console.log('[Service Worker] New update available! Reloading...');
+                                        window.location.reload();
+                                    }
+                                });
+                            }
                         });
                     })
                     .catch(err => console.error('[Service Worker] Registration failed:', err));
