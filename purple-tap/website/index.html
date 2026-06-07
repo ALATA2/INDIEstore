@@ -2129,11 +2129,8 @@
             if (!listDiv) return;
 
             try {
-                // Fetch via HTTPS Proxy to bypass Mixed Content SSL issues
-                const targetUrl = `http://dreamlo.com/lb/${dreamloPublicCode}/json`;
-                const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
-                
-                const response = await fetch(proxyUrl);
+                // Fetch via local PHP proxy to bypass SSL/Mixed Content and proxy downtime issues
+                const response = await fetch('leaderboard-proxy.php?action=get');
                 if (!response.ok) throw new Error('Database connection failed');
                 
                 const data = await response.json();

@@ -7115,9 +7115,8 @@
             const listDiv = document.getElementById('leaderboard-list');
             listDiv.innerHTML = '<div class="leaderboard-loading">Loading scores...</div>';
             
-            // Load via HTTPS/CORS proxy to avoid SSL/Mixed Content issues
-            const targetUrl = `http://dreamlo.com/lb/${dreamloPublicCode}/json`;
-            const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
+            // Load via local PHP proxy to avoid SSL/Mixed Content and proxy downtime issues
+            const proxyUrl = `../leaderboard-proxy.php?action=get`;
             
             // 2-second timeout for loading online scores
             const controller = new AbortController();
@@ -7248,9 +7247,8 @@
             // Save local score immediately
             saveLocalScore(name, score);
             
-            // Submit via HTTPS/CORS proxy to avoid SSL/Mixed Content issues
-            const targetUrl = `http://dreamlo.com/lb/${dreamloPrivateCode}/add-pipe/${name}/${score}`;
-            const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
+            // Submit via local PHP proxy to avoid SSL/Mixed Content and proxy downtime issues
+            const proxyUrl = `../leaderboard-proxy.php?action=add&name=${encodeURIComponent(name)}&score=${score}`;
             
             // 2-second timeout for submitting online
             const controller = new AbortController();
