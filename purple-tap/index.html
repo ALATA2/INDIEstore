@@ -5981,7 +5981,7 @@
             
             ctx.font = '500 14px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.fillText("v1.5.1 - Fixed Timestep Loop Restoration", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
+            ctx.fillText("v1.5.2 - Fixed Timestep Loop Restoration", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
             ctx.restore();
 
             ctx.save();
@@ -7614,9 +7614,6 @@
             }
 
             function drawGameGraphics() {
-                // Apply canvas slow-motion CSS filter dynamically
-                updateCanvasFilter();
-
                 ctx.save();
 
                 // Apply Screen Shake if active
