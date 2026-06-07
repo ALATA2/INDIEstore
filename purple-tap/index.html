@@ -4261,7 +4261,7 @@
             ctx.restore();
         }
 
-        function updateAndDrawGameObjects() {
+        function updateAndDrawGameObjects(updateOnly = false) {
             let isDashing = isPressing && pressDuration > 8;
 
             for (let i = gameObjects.length - 1; i >= 0; i--) {
@@ -4367,6 +4367,8 @@
                         obj.y = obj.baseY + Math.sin(gameFrames * 0.07 + obj.phaseOffset) * 10;
                     }
                 }
+
+                if (updateOnly) continue;
 
                 // DRAW GAME OBJECTS
                 ctx.save();
@@ -5086,7 +5088,7 @@
             });
         }
 
-        function updateAndDrawPopups() {
+        function updateAndDrawPopups(updateOnly = false) {
             for (let i = popups.length - 1; i >= 0; i--) {
                 let p = popups[i];
                 if (!isPaused) {
@@ -5102,6 +5104,8 @@
                     popups.splice(i, 1);
                     continue;
                 }
+
+                if (updateOnly) continue;
 
                 ctx.save();
                 ctx.translate(p.x, p.y);
@@ -5282,7 +5286,7 @@
             }
         }
 
-        function updateAndDrawParticles() {
+        function updateAndDrawParticles(updateOnly = false) {
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
                 if (!isPaused) {
@@ -5296,6 +5300,8 @@
                     particles.splice(i, 1);
                     continue;
                 }
+
+                if (updateOnly) continue;
 
                 ctx.save();
                 ctx.globalAlpha = p.alpha;
@@ -5849,17 +5855,6 @@
         let splashFrames = 0;
 
         function drawSplashScreen() {
-            splashFrames++;
-            
-            if (splashFrames >= 90) {
-                gameState = STATE_START;
-                updateHTMLButtons();
-                screenFlashColor = 'rgba(189, 0, 255, 0.4)';
-                screenFlashTimer = 10;
-                lastOverlayCloseTime = Date.now();
-                return;
-            }
-
             // Draw deep space background
             ctx.fillStyle = '#080312';
             ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
@@ -5986,7 +5981,7 @@
             
             ctx.font = '500 14px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.fillText("v1.3.1 - Pause & Multiplier HUD Timer", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
+            ctx.fillText("v1.5.1 - Fixed Timestep Loop Restoration", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
             ctx.restore();
 
             ctx.save();
@@ -7426,332 +7421,389 @@
 
         // Initialize Sound & Pause Toggle click listeners
         document.getElementById('sound-toggle-btn').addEventListener('click', toggleMute);
-        const pBtn = document.getElementById('pause-toggle-btn');
-        if (pBtn) {
-            pBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Avoid triggering canvas tap immediately
-                togglePause();
-            });
-        }
-        initSettings();
-        updateSoundToggleButton();
-
-        // Initialize daily achievements
-        generateMissions(false);
-
-        // Initialize buttons visibility
-        updateHTMLButtons();
-
-        // --- MAIN CORE GAME LOOP ---
-        function gameLoop() {
-            // Apply canvas slow-motion CSS filter dynamically
-            updateCanvasFilter();
-
-            ctx.save();
-
-            // Apply Screen Shake if active
-            if (shakeTime > 0 && !isPaused) {
-                let mult = shakeIntensityMultiplier;
-                let dx = (Math.random() - 0.5) * shakeIntensity * mult;
-                let dy = (Math.random() - 0.5) * shakeIntensity * mult;
-                ctx.translate(dx, dy);
-                shakeTime--;
+            const pBtn = document.getElementById('pause-toggle-btn');
+            if (pBtn) {
+                pBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Avoid triggering canvas tap immediately
+                    togglePause();
+                });
             }
+            initSettings();
+            updateSoundToggleButton();
 
-            // Sector Color Shift overrides
-            let theme = getActiveTheme();
-            primaryColor = theme.primaryColor;
-            secondaryColor = theme.secondaryColor;
+            // Initialize daily achievements
+            generateMissions(false);
 
-            // Draw sky star backdrop
-            drawBackground();
+            // Initialize buttons visibility
+            updateHTMLButtons();
 
-            // Execute logic updates only when Hitstop freeze is inactive
-            if (hitstopFrames > 0) {
-                hitstopFrames--;
-            } else if (deathGlitchFrames > 0) {
-                deathGlitchFrames--;
-                if (deathGlitchFrames === 0) {
-                    triggerGameOver();
+            // --- MAIN CORE GAME LOOP ---
+            let lastFrameTime = performance.now();
+            let accumulator = 0.0;
+            const targetTimestep = 1000 / 60; // 16.667ms (60 FPS)
+
+            function updateGamePhysics() {
+                // Decays screen flash timer
+                if (screenFlashTimer > 0) {
+                    screenFlashTimer--;
                 }
-            } else if (isPaused) {
-                // Skip logic updates when paused
-            } else {
-                if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
-                    gameFrames++;
-                    gameTime += (1 / 60) * timeScale;
-                    scrollX += (gameState === STATE_BONUS_ROOM ? 14 : 7) * timeScale;
 
-                    // Decays style points very slowly over time
-                    if (gameFrames % 10 === 0) {
-                        comboPoints = Math.max(0, comboPoints - 1);
-                        updateComboRank();
+                if (hitstopFrames > 0) {
+                    hitstopFrames--;
+                } else if (deathGlitchFrames > 0) {
+                    deathGlitchFrames--;
+                    if (deathGlitchFrames === 0) {
+                        triggerGameOver();
                     }
+                } else if (isPaused) {
+                    // Skip logic updates when paused
+                } else {
+                    if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
+                        gameFrames++;
+                        gameTime += (1 / 60) * timeScale;
+                        scrollX += (gameState === STATE_BONUS_ROOM ? 14 : 7) * timeScale;
 
-                    // Base survival score points tick
-                    if (gameFrames % 15 === 0) {
-                        score += Math.round(1 * getComboMultiplier() * activeMultiplier);
-                    }
+                        // Decays style points very slowly over time
+                        if (gameFrames % 10 === 0) {
+                            comboPoints = Math.max(0, comboPoints - 1);
+                            updateComboRank();
+                        }
 
-                    // Dash duration increment
-                    if (isPressing) {
-                        pressDuration++;
-                        if (pressDuration === 9) {
-                            Sound.playDash();
-                            spawnChronoWave(player.x + player.width / 2, player.y + player.height / 2);
-                            if (selectedSkin === 'shadowstrike') {
-                                Sound.playShuriken();
-                                gameObjects.push({
-                                    type: 'shuriken',
-                                    x: player.x + player.width,
-                                    y: player.y + player.height / 2 - 10,
-                                    w: 24,
-                                    h: 20,
-                                    vx: 15,
-                                    vy: 0,
-                                    glowColor: '#ff3300'
-                                });
+                        // Base survival score points tick
+                        if (gameFrames % 15 === 0) {
+                            score += Math.round(1 * getComboMultiplier() * activeMultiplier);
+                        }
+
+                        // Dash duration increment
+                        if (isPressing) {
+                            pressDuration++;
+                            if (pressDuration === 9) {
+                                Sound.playDash();
+                                spawnChronoWave(player.x + player.width / 2, player.y + player.height / 2);
+                                if (selectedSkin === 'shadowstrike') {
+                                    Sound.playShuriken();
+                                    gameObjects.push({
+                                        type: 'shuriken',
+                                        x: player.x + player.width,
+                                        y: player.y + player.height / 2 - 10,
+                                        w: 24,
+                                        h: 20,
+                                        vx: 15,
+                                        vy: 0,
+                                        glowColor: '#ff3300'
+                                    });
+                                }
                             }
                         }
-                    }
 
-                    // Ticks down magnet buff duration
-                    if (magnetTimer > 0) {
-                        magnetTimer--;
-                    }
-
-                    // Ticks down multiplier star duration
-                    if (multiplierTimer > 0) {
-                        multiplierTimer--;
-                        if (multiplierTimer <= 0) {
-                            activeMultiplier = 1.0;
+                        // Ticks down magnet buff duration
+                        if (magnetTimer > 0) {
+                            magnetTimer--;
                         }
-                    }
 
-                    // Ticks down active slow-mo hourglass duration
-                    if (hourglassActiveTimer > 0) {
-                        hourglassActiveTimer--;
-                        runSlowMoTime += (1 / 60) * timeScale;
-                        runUsedSlowMo = true;
-                    }
-
-                    // Ticks down bonus room duration
-                    if (gameState === STATE_BONUS_ROOM) {
-                        if (bonusRoomTimer > 0) {
-                            bonusRoomTimer--;
-                            if (bonusRoomTimer <= 0) {
-                                gameState = preBonusRoomState;
-                                
-                                // Reset inputs and time scale to prevent stuck state when warping back, returning player safely to the ground
-                                isPressing = false;
-                                pressDuration = 0;
-                                timeScale = 1.0;
-                                hourglassActiveTimer = 0;
-                                player.y = FLOOR_Y - player.height;
-                                player.vy = 0;
-                                player.isGrounded = true;
-                                
-                                screenFlashColor = 'rgba(0, 255, 255, 0.8)';
-                                screenFlashTimer = 15;
-                                Sound.playPowerup();
-                                spawnScorePopup(player.x + player.width / 2, player.y - 30, "WARPING BACK...", 'revive');
-                                gameObjects = [];
+                        // Ticks down multiplier star duration
+                        if (multiplierTimer > 0) {
+                            multiplierTimer--;
+                            if (multiplierTimer <= 0) {
+                                activeMultiplier = 1.0;
                             }
                         }
-                    }
 
-                    // Decay consecutive chips timer
-                    if (consecutiveChipsTimer > 0) {
-                        consecutiveChipsTimer -= 1 * timeScale;
-                        if (consecutiveChipsTimer <= 0) {
-                            consecutiveChips = 0;
+                        // Ticks down active slow-mo hourglass duration
+                        if (hourglassActiveTimer > 0) {
+                            hourglassActiveTimer--;
+                            runSlowMoTime += (1 / 60) * timeScale;
+                            runUsedSlowMo = true;
                         }
-                    }
 
-                    // Entity logic ticks
-                    player.update();
-                    updateObstacleSpawning();
-                    updateDashEnergy();
+                        // Ticks down bonus room duration
+                        if (gameState === STATE_BONUS_ROOM) {
+                            if (bonusRoomTimer > 0) {
+                                bonusRoomTimer--;
+                                if (bonusRoomTimer <= 0) {
+                                    gameState = preBonusRoomState;
+                                    
+                                    // Reset inputs and time scale to prevent stuck state when warping back, returning player safely to the ground
+                                    isPressing = false;
+                                    pressDuration = 0;
+                                    timeScale = 1.0;
+                                    hourglassActiveTimer = 0;
+                                    player.y = FLOOR_Y - player.height;
+                                    player.vy = 0;
+                                    player.isGrounded = true;
+                                    
+                                    screenFlashColor = 'rgba(0, 255, 255, 0.8)';
+                                    screenFlashTimer = 15;
+                                    Sound.playPowerup();
+                                    spawnScorePopup(player.x + player.width / 2, player.y - 30, "WARPING BACK...", 'revive');
+                                    gameObjects = [];
+                                }
+                            }
+                        }
 
-                    // Master filter lowpass sweep as portal approaches
-                    let activePortal = gameObjects.find(obj => obj.type === 'portal' && !obj.passed);
-                    if (activePortal && BGM.masterFilter && BGM.ctx && !isMuted) {
-                        let distance = activePortal.x - player.x;
-                        if (distance > 0 && distance < 350) {
-                            let t = Math.max(0, Math.min(1, distance / 350));
-                            let freq = 180 + Math.pow(t, 2) * (20000 - 180);
-                            BGM.masterFilter.frequency.setValueAtTime(freq, BGM.ctx.currentTime);
-                        } else {
+                        // Decay consecutive chips timer
+                        if (consecutiveChipsTimer > 0) {
+                            consecutiveChipsTimer--;
+                            if (consecutiveChipsTimer <= 0) {
+                                consecutiveChips = 0;
+                            }
+                        }
+
+                        // Entity logic ticks
+                        player.update();
+                        updateObstacleSpawning();
+                        updateDashEnergy();
+
+                        // Master filter lowpass sweep as portal approaches
+                        let activePortal = gameObjects.find(obj => obj.type === 'portal' && !obj.passed);
+                        if (activePortal && BGM.masterFilter && BGM.ctx && !isMuted) {
+                            let distance = activePortal.x - player.x;
+                            if (distance > 0 && distance < 350) {
+                                let t = Math.max(0, Math.min(1, distance / 350));
+                                let freq = 180 + Math.pow(t, 2) * (20000 - 180);
+                                BGM.masterFilter.frequency.setValueAtTime(freq, BGM.ctx.currentTime);
+                            } else {
+                                BGM.masterFilter.frequency.setValueAtTime(20000, BGM.ctx.currentTime);
+                            }
+                        } else if (BGM.masterFilter && BGM.ctx) {
                             BGM.masterFilter.frequency.setValueAtTime(20000, BGM.ctx.currentTime);
                         }
-                    } else if (BGM.masterFilter && BGM.ctx) {
-                        BGM.masterFilter.frequency.setValueAtTime(20000, BGM.ctx.currentTime);
-                    }
 
-                    // Check sector transitions (only in normal playing state)
-                    if (gameState === STATE_PLAYING) {
-                        if (score >= 400 && score < 1000 && currentSector === 1 && !transitionQueued) {
-                            triggerSectorTransition(2);
-                        } else if (score >= 1000 && currentSector === 2 && !transitionQueued) {
-                            triggerSectorTransition(3);
+                        // Check sector transitions (only in normal playing state)
+                        if (gameState === STATE_PLAYING) {
+                            if (score >= 400 && score < 1000 && currentSector === 1 && !transitionQueued) {
+                                triggerSectorTransition(2);
+                            } else if (score >= 1000 && currentSector === 2 && !transitionQueued) {
+                                triggerSectorTransition(3);
+                            }
                         }
+                    }
+                }
+
+                // Update obstacles, particles and text popups (updateOnly = true)
+                if (hitstopFrames === 0 && !isPaused) {
+                    updateAndDrawGameObjects(true);
+                    updateAndDrawParticles(true);
+                    updateAndDrawPopups(true);
+                }
+
+                // Decays floating announcements
+                if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
+                    if (sectorAnnouncementTimer > 0) {
+                        sectorAnnouncementTimer--;
+                    }
+                    if (styleAnnouncementTimer > 0) {
+                        styleAnnouncementTimer--;
+                    }
+                    // Fade out invisible tutorial overlay
+                    if (tutorialDismissed && tutorialAlpha > 0) {
+                        tutorialAlpha -= 0.04;
+                    }
+                }
+
+                if (gameState === STATE_SPLASH) {
+                    splashFrames++;
+                    if (splashFrames >= 90) {
+                        gameState = STATE_START;
+                        updateHTMLButtons();
+                        screenFlashColor = 'rgba(189, 0, 255, 0.4)';
+                        screenFlashTimer = 10;
+                        lastOverlayCloseTime = Date.now();
                     }
                 }
             }
 
-            // Draw speeds warp lines overlay when player performs a dash scatto
-            let isDashing = isPressing && pressDuration > 8;
-            if ((gameState === STATE_PLAYING && isDashing) || gameState === STATE_BONUS_ROOM) {
-                drawSpeedWarpLines();
-            }
+            function drawGameGraphics() {
+                // Apply canvas slow-motion CSS filter dynamically
+                updateCanvasFilter();
 
-            // Update obstacles, particles and text popups (processed independent of hitstop to allow smooth animations)
-            if (hitstopFrames === 0 && !isPaused) {
-                updateAndDrawGameObjects();
-                updateAndDrawParticles();
-                updateAndDrawPopups();
-            } else {
-                // Keep drawing objects static during hitstop freeze frame or pause state
-                for (let obj of gameObjects) {
-                    ctx.save();
-                    if (obj.type === 'spike') {
-                        let spikeGlow = currentSector === 3 ? '#ff3300' : (currentSector === 2 ? '#ff8c00' : '#ff0055');
-                        ctx.shadowBlur = 18;
-                        ctx.shadowColor = spikeGlow;
-                        ctx.fillStyle = '#0f0515';
-                        ctx.strokeStyle = spikeGlow;
-                        ctx.lineWidth = 3.5;
-                        ctx.beginPath();
-                        ctx.moveTo(obj.x, obj.y + obj.h);
-                        let numSpikes = Math.max(2, Math.floor(obj.w / 20));
-                        let spikeW = obj.w / numSpikes;
-                        for (let j = 0; j < numSpikes; j++) {
-                            let sx = obj.x + j * spikeW;
-                            ctx.lineTo(sx + spikeW / 2, obj.y);
-                            ctx.lineTo(sx + spikeW, obj.y + obj.h);
-                        }
-                        ctx.closePath();
-                        ctx.fill();
-                        ctx.stroke();
-                    } else if (obj.type === 'shield') {
-                        let shieldGlow = currentSector === 3 ? '#ff3300' : (currentSector === 2 ? '#ff8c00' : '#ff0055');
-                        ctx.shadowBlur = 18;
-                        ctx.shadowColor = shieldGlow;
-                        ctx.fillStyle = '#0a0314';
-                        ctx.strokeStyle = shieldGlow;
-                        ctx.lineWidth = 3.5;
-                        ctx.beginPath();
-                        ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 6);
-                        ctx.fill();
-                        ctx.stroke();
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 1;
-                        for (let sy = obj.y + 15; sy < obj.y + obj.h; sy += 25) {
+                ctx.save();
+
+                // Apply Screen Shake if active
+                if (shakeTime > 0 && !isPaused) {
+                    let mult = shakeIntensityMultiplier;
+                    let dx = (Math.random() - 0.5) * shakeIntensity * mult;
+                    let dy = (Math.random() - 0.5) * shakeIntensity * mult;
+                    ctx.translate(dx, dy);
+                    shakeTime--;
+                }
+
+                // Sector Color Shift overrides
+                let theme = getActiveTheme();
+                primaryColor = theme.primaryColor;
+                secondaryColor = theme.secondaryColor;
+
+                // Draw sky star backdrop
+                drawBackground();
+
+                // Draw player, floor and waves
+                player.draw();
+                drawFloorGrid();
+                updateAndDrawChronoWaves();
+
+                // Draw obstacles, particles and popups (updateOnly = false)
+                if (hitstopFrames === 0 && !isPaused) {
+                    updateAndDrawGameObjects(false);
+                    updateAndDrawParticles(false);
+                    updateAndDrawPopups(false);
+                } else {
+                    // Keep drawing objects static during hitstop freeze frame or pause state
+                    for (let obj of gameObjects) {
+                        ctx.save();
+                        if (obj.type === 'spike') {
+                            let spikeGlow = theme.obstacleGlow || theme.primaryColor;
+                            ctx.shadowBlur = 18;
+                            ctx.shadowColor = spikeGlow;
+                            ctx.fillStyle = '#0f0515';
+                            ctx.strokeStyle = spikeGlow;
+                            ctx.lineWidth = 3.5;
                             ctx.beginPath();
-                            ctx.moveTo(obj.x + 5, sy);
-                            ctx.lineTo(obj.x + obj.w - 5, sy);
+                            ctx.moveTo(obj.x, obj.y + obj.h);
+                            let numSpikes = Math.max(2, Math.floor(obj.w / 20));
+                            let spikeW = obj.w / numSpikes;
+                            for (let j = 0; j < numSpikes; j++) {
+                                let sx = obj.x + j * spikeW;
+                                ctx.lineTo(sx + spikeW / 2, obj.y);
+                                ctx.lineTo(sx + spikeW, obj.y + obj.h);
+                            }
+                            ctx.closePath();
+                            ctx.fill();
                             ctx.stroke();
-                        }
-                    } else if (obj.type === 'drone') {
-                        let droneGlow = currentSector === 3 ? '#ffaa00' : '#00ffff';
-                        ctx.shadowBlur = 15;
-                        ctx.shadowColor = droneGlow;
-                        ctx.fillStyle = '#06161a';
-                        ctx.strokeStyle = droneGlow;
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.moveTo(obj.x + obj.w / 2, obj.y);
-                        ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
-                        ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
-                        ctx.lineTo(obj.x, obj.y + obj.h / 2);
-                        ctx.closePath();
-                        ctx.fill();
-                        ctx.stroke();
-                        ctx.fillStyle = '#ffffff';
-                        ctx.beginPath();
-                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 5, 0, Math.PI * 2);
-                        ctx.fill();
-                    } else if (obj.type === 'chip') {
-                        ctx.shadowBlur = 12;
-                        ctx.shadowColor = '#ffaa00';
-                        ctx.fillStyle = '#221500';
-                        ctx.strokeStyle = '#ffaa00';
-                        ctx.lineWidth = 2.5;
-                        ctx.beginPath();
-                        ctx.moveTo(obj.x + obj.w / 2, obj.y);
-                        ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
-                        ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
-                        ctx.lineTo(obj.x, obj.y + obj.h / 2);
-                        ctx.closePath();
-                        ctx.fill();
-                        ctx.stroke();
-                    } else if (obj.type === 'portal') {
-                        drawPortal(obj);
-                    } else if (obj.type === 'magnet') {
-                        ctx.shadowBlur = 15;
-                        ctx.shadowColor = '#e67e22';
-                        ctx.fillStyle = '#110500';
-                        ctx.strokeStyle = '#e67e22';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    } else if (obj.type === 'shield_pu') {
-                        ctx.shadowBlur = 15;
-                        ctx.shadowColor = '#00ffff';
-                        ctx.fillStyle = '#001a1a';
-                        ctx.strokeStyle = '#00ffff';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    } else if (obj.type === 'hourglass') {
-                        ctx.shadowBlur = 15;
-                        ctx.shadowColor = '#bd00ff';
-                        ctx.fillStyle = '#10001a';
-                        ctx.strokeStyle = '#bd00ff';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    } else if (obj.type === 'multiplier_star') {
-                        ctx.shadowBlur = 15;
-                        ctx.shadowColor = '#ffd700';
-                        ctx.fillStyle = '#1a1a00';
-                        ctx.strokeStyle = '#ffd700';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    } else if (obj.type === 'bonus_portal') {
-                        ctx.save();
-                        ctx.shadowBlur = 25;
-                        let hue = (gameFrames * 3) % 360;
-                        let pColor = `hsla(${hue}, 100%, 50%, 1)`;
-                        ctx.shadowColor = pColor;
-                        ctx.strokeStyle = pColor;
-                        ctx.lineWidth = 5;
-                        ctx.beginPath();
-                        ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, obj.h / 2, 0, 0, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.fillStyle = `rgba(0, 255, 255, 0.08)`;
-                        ctx.beginPath();
-                        ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 5, obj.h / 2 - 5, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.restore();
-                    } else if (obj.type === 'laser_barrier') {
-                        ctx.save();
-                        if (obj.warningTimer > 0) {
-                            if (Math.floor(gameFrames / 6) % 2 === 0) {
-                                ctx.strokeStyle = '#ff0000';
-                                ctx.lineWidth = 2.5;
-                                ctx.setLineDash([8, 8]);
-                                ctx.shadowBlur = 8;
-                                ctx.shadowColor = '#ff0000';
+                        } else if (obj.type === 'shield') {
+                            let shieldGlow = theme.obstacleGlow || theme.primaryColor;
+                            ctx.shadowBlur = 18;
+                            ctx.shadowColor = shieldGlow;
+                            ctx.fillStyle = '#0a0314';
+                            ctx.strokeStyle = shieldGlow;
+                            ctx.lineWidth = 3.5;
+                            ctx.beginPath();
+                            ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 6);
+                            ctx.fill();
+                            ctx.stroke();
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 1;
+                            for (let sy = obj.y + 15; sy < obj.y + obj.h; sy += 25) {
+                                ctx.beginPath();
+                                ctx.moveTo(obj.x + 5, sy);
+                                ctx.lineTo(obj.x + obj.w - 5, sy);
+                                ctx.stroke();
+                            }
+                        } else if (obj.type === 'drone') {
+                            let droneGlow = currentSector === 3 ? '#ffaa00' : '#00ffff';
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = droneGlow;
+                            ctx.fillStyle = '#06161a';
+                            ctx.strokeStyle = droneGlow;
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                            ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                            ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                            ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.stroke();
+                            ctx.fillStyle = '#ffffff';
+                            ctx.beginPath();
+                            ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 5, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (obj.type === 'chip') {
+                            ctx.shadowBlur = 12;
+                            ctx.shadowColor = '#ffaa00';
+                            ctx.fillStyle = '#221500';
+                            ctx.strokeStyle = '#ffaa00';
+                            ctx.lineWidth = 2.5;
+                            ctx.beginPath();
+                            ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                            ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                            ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                            ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.stroke();
+                        } else if (obj.type === 'portal') {
+                            drawPortal(obj);
+                        } else if (obj.type === 'magnet') {
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = '#e67e22';
+                            ctx.fillStyle = '#110500';
+                            ctx.strokeStyle = '#e67e22';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        } else if (obj.type === 'shield_pu') {
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = '#00ffff';
+                            ctx.fillStyle = '#001a1a';
+                            ctx.strokeStyle = '#00ffff';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        } else if (obj.type === 'hourglass') {
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = '#bd00ff';
+                            ctx.fillStyle = '#10001a';
+                            ctx.strokeStyle = '#bd00ff';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        } else if (obj.type === 'multiplier_star') {
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = '#ffd700';
+                            ctx.fillStyle = '#1a1a00';
+                            ctx.strokeStyle = '#ffd700';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        } else if (obj.type === 'bonus_portal') {
+                            ctx.save();
+                            ctx.shadowBlur = 25;
+                            let hue = (gameFrames * 3) % 360;
+                            let pColor = `hsla(${hue}, 100%, 50%, 1)`;
+                            ctx.shadowColor = pColor;
+                            ctx.strokeStyle = pColor;
+                            ctx.lineWidth = 5;
+                            ctx.beginPath();
+                            ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2, obj.h / 2, 0, 0, Math.PI * 2);
+                            ctx.stroke();
+                            ctx.fillStyle = `rgba(0, 255, 255, 0.08)`;
+                            ctx.beginPath();
+                            ctx.ellipse(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 5, obj.h / 2 - 5, 0, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+                        } else if (obj.type === 'laser_barrier') {
+                            ctx.save();
+                            if (obj.warningTimer > 0) {
+                                if (Math.floor(gameFrames / 6) % 2 === 0) {
+                                    ctx.strokeStyle = '#ff0000';
+                                    ctx.lineWidth = 2.5;
+                                    ctx.setLineDash([8, 8]);
+                                    ctx.shadowBlur = 8;
+                                    ctx.shadowColor = '#ff0000';
+                                    ctx.beginPath();
+                                    if (obj.heightType === 'low') {
+                                        ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
+                                        ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 115);
+                                    } else {
+                                        ctx.moveTo(obj.x + obj.w / 2, 0);
+                                        ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
+                                    }
+                                    ctx.stroke();
+                                }
+                            } else {
+                                let laserColor = '#ff0055';
+                                ctx.shadowBlur = 20;
+                                ctx.shadowColor = laserColor;
+                                ctx.strokeStyle = laserColor;
+                                ctx.lineWidth = 8 + Math.sin(gameFrames * 0.4) * 2;
                                 ctx.beginPath();
                                 if (obj.heightType === 'low') {
                                     ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
@@ -7761,214 +7813,206 @@
                                     ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
                                 }
                                 ctx.stroke();
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 2.5;
+                                ctx.stroke();
                             }
-                        } else {
-                            let laserColor = '#ff0055';
-                            ctx.shadowBlur = 20;
-                            ctx.shadowColor = laserColor;
-                            ctx.strokeStyle = laserColor;
-                            ctx.lineWidth = 8 + Math.sin(gameFrames * 0.4) * 2;
-                            ctx.beginPath();
-                            if (obj.heightType === 'low') {
-                                ctx.moveTo(obj.x + obj.w / 2, FLOOR_Y);
-                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 115);
-                            } else {
-                                ctx.moveTo(obj.x + obj.w / 2, 0);
-                                ctx.lineTo(obj.x + obj.w / 2, FLOOR_Y - 120);
-                            }
-                            ctx.stroke();
-                            ctx.strokeStyle = '#ffffff';
-                            ctx.lineWidth = 2.5;
-                            ctx.stroke();
+                            ctx.restore();
                         }
                         ctx.restore();
                     }
-                    ctx.restore();
-                }
-                updateAndDrawParticles();
-                updateAndDrawPopups();
-            }
-
-            // Draw player and scrollable grids
-            player.draw();
-            drawFloorGrid();
-            updateAndDrawChronoWaves();
-            
-            // Restore matrix transformations from shake offsets
-            ctx.restore();
-
-            // HUD draws outside screen shake
-            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
-                drawHUD();
-                drawSSSFeverBorder();
-                
-                // Fade out invisible tutorial overlay
-                if (tutorialDismissed && tutorialAlpha > 0) {
-                    tutorialAlpha -= 0.04;
-                }
-                
-                if (tutorialAlpha > 0) {
-                    ctx.save();
-                    ctx.fillStyle = `rgba(255, 255, 255, ${tutorialAlpha * (0.6 + Math.sin(gameFrames * 0.1) * 0.2)})`;
-                    ctx.font = '900 24px "Orbitron", sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = 'rgba(0, 255, 255, 0.4)';
-                    
-                    // Draw Spacebar box outline
-                    ctx.strokeStyle = `rgba(0, 255, 255, ${tutorialAlpha * 0.8})`;
-                    ctx.lineWidth = 2.5;
-                    let spaceW = 160;
-                    let spaceH = 40;
-                    let spaceX = LOGICAL_WIDTH / 2 - spaceW - 25;
-                    let spaceY = LOGICAL_HEIGHT / 2 - 20;
-                    ctx.beginPath();
-                    ctx.roundRect(spaceX, spaceY, spaceW, spaceH, 6);
-                    ctx.stroke();
-                    ctx.fillText("SPACE", spaceX + spaceW / 2, spaceY + 28);
-                    
-                    // Draw OR separator
-                    ctx.font = 'bold 16px "Orbitron", sans-serif';
-                    ctx.fillText("OR", LOGICAL_WIDTH / 2, spaceY + 25);
-                    
-                    // Draw TAP box outline
-                    ctx.font = '900 24px "Orbitron", sans-serif';
-                    let tapW = 160;
-                    let tapH = 40;
-                    let tapX = LOGICAL_WIDTH / 2 + 25;
-                    let tapY = LOGICAL_HEIGHT / 2 - 20;
-                    ctx.beginPath();
-                    ctx.roundRect(tapX, tapY, tapW, tapH, 6);
-                    ctx.stroke();
-                    ctx.fillText("TAP SCREEN", tapX + tapW / 2, tapY + 28);
-                    
-                    ctx.font = 'bold 18px "Orbitron", sans-serif';
-                    ctx.fillStyle = `rgba(255, 255, 255, ${tutorialAlpha * 0.7})`;
-                    ctx.fillText("TO JUMP & HOLD TO DASH", LOGICAL_WIDTH / 2, spaceY + 80);
-                    ctx.restore();
+                    updateAndDrawParticles(false);
+                    updateAndDrawPopups(false);
                 }
 
-                // Draw Sector Transition Announcements center overlay
-                if (sectorAnnouncementTimer > 0) {
-                    sectorAnnouncementTimer--;
-                    ctx.save();
-                    ctx.textAlign = 'center';
-                    ctx.font = '900 48px "Orbitron", sans-serif';
-                    let scaleVal = 1.0 + Math.sin(sectorAnnouncementTimer * 0.05) * 0.05;
-                    ctx.translate(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 100);
-                    ctx.scale(scaleVal, scaleVal);
-                    
-                    let textColor = currentSector === 1 ? '#ff8c00' : '#ff0055';
-                    if (sectorAnnouncementText.includes("SECTOR 3")) textColor = '#ff0055';
-                    
-                    ctx.shadowBlur = 25;
-                    ctx.shadowColor = textColor;
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillText(sectorAnnouncementText, 0, 0);
-                    
-                    ctx.font = 'bold 20px "Orbitron", sans-serif';
-                    ctx.fillStyle = textColor;
-                    ctx.fillText("PREPARE FOR WARP...", 0, 40);
-                    ctx.restore();
-                }
-
-                // Draw Style Announcement floating alert
-                if (styleAnnouncementTimer > 0) {
-                    styleAnnouncementTimer--;
-                    ctx.save();
-                    ctx.font = '900 28px "Orbitron", sans-serif';
-                    ctx.textAlign = 'center';
-                    let yOffset = (90 - styleAnnouncementTimer) * 0.4;
-                    let alpha = Math.min(1.0, styleAnnouncementTimer / 15);
-                    
-                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-                    ctx.strokeStyle = `rgba(${hexToRgb(styleAnnouncementColor)}, ${alpha})`;
-                    ctx.lineWidth = 1.5;
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = styleAnnouncementColor;
-                    
-                    ctx.fillText(styleAnnouncementText, LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 150 - yOffset);
-                    ctx.strokeText(styleAnnouncementText, LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 150 - yOffset);
-                    ctx.restore();
-                }
-
-                // Draw Pause Overlay if active
-                if (isPaused) {
-                    drawPauseOverlay();
-                }
-
-            } else if (gameState === STATE_SPLASH) {
-                drawSplashScreen();
-            } else if (gameState === STATE_START) {
-                drawStartScreen();
-            } else if (gameState === STATE_GAMEOVER) {
-                drawHUD();
-                drawGameOverScreen();
-                if (isNewBestScore && Math.random() < 0.25) {
-                    let sx = Math.random() * LOGICAL_WIDTH;
-                    let sy = Math.random() * (LOGICAL_HEIGHT - 100);
-                    spawnGoldSparkle(sx, sy);
-                }
-            }
-
-            // Draw Screen Flash overlay
-            if (screenFlashTimer > 0) {
-                screenFlashTimer--;
-                ctx.save();
-                ctx.fillStyle = screenFlashColor;
-                ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+                // Restore matrix transformations from shake offsets
                 ctx.restore();
-            }
 
-            if (deathGlitchFrames > 0) {
-                drawDeathGlitch();
-            }
+                // HUD draws outside screen shake
+                if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
+                    drawHUD();
+                    drawSSSFeverBorder();
+                    
+                    if (tutorialAlpha > 0) {
+                        ctx.save();
+                        ctx.fillStyle = `rgba(255, 255, 255, ${tutorialAlpha * (0.6 + Math.sin(gameFrames * 0.1) * 0.2)})`;
+                        ctx.font = '900 24px "Orbitron", sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = 'rgba(0, 255, 255, 0.4)';
+                        
+                        // Draw Spacebar box outline
+                        ctx.strokeStyle = `rgba(0, 255, 255, ${tutorialAlpha * 0.8})`;
+                        ctx.lineWidth = 2.5;
+                        let spaceW = 160;
+                        let spaceH = 40;
+                        let spaceX = LOGICAL_WIDTH / 2 - spaceW - 25;
+                        let spaceY = LOGICAL_HEIGHT / 2 - 20;
+                        ctx.beginPath();
+                        ctx.roundRect(spaceX, spaceY, spaceW, spaceH, 6);
+                        ctx.stroke();
+                        ctx.fillText("SPACE", spaceX + spaceW / 2, spaceY + 28);
+                        
+                        // Draw OR separator
+                        ctx.font = 'bold 16px "Orbitron", sans-serif';
+                        ctx.fillText("OR", LOGICAL_WIDTH / 2, spaceY + 25);
+                        
+                        // Draw TAP box outline
+                        ctx.font = '900 24px "Orbitron", sans-serif';
+                        let tapW = 160;
+                        let tapH = 40;
+                        let tapX = LOGICAL_WIDTH / 2 + 25;
+                        let tapY = LOGICAL_HEIGHT / 2 - 20;
+                        ctx.beginPath();
+                        ctx.roundRect(tapX, tapY, tapW, tapH, 6);
+                        ctx.stroke();
+                        ctx.fillText("TAP SCREEN", tapX + tapW / 2, tapY + 28);
+                        
+                        ctx.font = 'bold 18px "Orbitron", sans-serif';
+                        ctx.fillStyle = `rgba(255, 255, 255, ${tutorialAlpha * 0.7})`;
+                        ctx.fillText("TO JUMP & HOLD TO DASH", LOGICAL_WIDTH / 2, spaceY + 80);
+                        ctx.restore();
+                    }
 
-            requestAnimationFrame(gameLoop);
-        }
+                    // Draw Sector Transition Announcements center overlay
+                    if (sectorAnnouncementTimer > 0) {
+                        ctx.save();
+                        ctx.textAlign = 'center';
+                        ctx.font = '900 48px "Orbitron", sans-serif';
+                        let scaleVal = 1.0 + Math.sin(sectorAnnouncementTimer * 0.05) * 0.05;
+                        ctx.translate(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 100);
+                        ctx.scale(scaleVal, scaleVal);
+                        
+                        let textColor = currentSector === 1 ? '#ff8c00' : '#ff0055';
+                        if (sectorAnnouncementText.includes("SECTOR 3")) textColor = '#ff0055';
+                        
+                        ctx.shadowBlur = 25;
+                        ctx.shadowColor = textColor;
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(sectorAnnouncementText, 0, 0);
+                        
+                        ctx.font = 'bold 20px "Orbitron", sans-serif';
+                        ctx.fillStyle = textColor;
+                        ctx.fillText("PREPARE FOR WARP...", 0, 40);
+                        ctx.restore();
+                    }
 
-        // Helper function for slow-motion CSS filter transitions
-        function updateCanvasFilter() {
-            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
-                let isDashing = isPressing && pressDuration > 8;
-                let isSlowMoActive = isDashing || hourglassActiveTimer > 0;
-                if (isSlowMoActive) {
-                    let t = (1.0 - timeScale) / 0.8; // 0 to 1
-                    let contrastVal = 1.0 + t * 0.25;
-                    let saturateVal = 1.0 + t * 0.4;
-                    let hueRotateVal = -t * 15;
-                    canvas.style.filter = `contrast(${contrastVal}) saturate(${saturateVal}) hue-rotate(${hueRotateVal}deg)`;
+                    // Draw Style Announcement floating alert
+                    if (styleAnnouncementTimer > 0) {
+                        ctx.save();
+                        ctx.font = '900 28px "Orbitron", sans-serif';
+                        ctx.textAlign = 'center';
+                        let yOffset = (90 - styleAnnouncementTimer) * 0.4;
+                        let alpha = Math.min(1.0, styleAnnouncementTimer / 15);
+                        
+                        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.strokeStyle = `rgba(${hexToRgb(styleAnnouncementColor)}, ${alpha})`;
+                        ctx.lineWidth = 1.5;
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = styleAnnouncementColor;
+                        
+                        ctx.fillText(styleAnnouncementText, LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 150 - yOffset);
+                        ctx.strokeText(styleAnnouncementText, LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 + 150 - yOffset);
+                        ctx.restore();
+                    }
+
+                    // Draw Pause Overlay if active
+                    if (isPaused) {
+                        drawPauseOverlay();
+                    }
+
+                } else if (gameState === STATE_SPLASH) {
+                    drawSplashScreen();
+                } else if (gameState === STATE_START) {
+                    drawStartScreen();
+                } else if (gameState === STATE_GAMEOVER) {
+                    drawHUD();
+                    drawGameOverScreen();
+                    if (isNewBestScore && Math.random() < 0.25) {
+                        let sx = Math.random() * LOGICAL_WIDTH;
+                        let sy = Math.random() * (LOGICAL_HEIGHT - 100);
+                        spawnGoldSparkle(sx, sy);
+                    }
+                }
+
+                // Draw Screen Flash overlay
+                if (screenFlashTimer > 0) {
+                    ctx.save();
+                    ctx.fillStyle = screenFlashColor;
+                    ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+                    ctx.restore();
+                }
+
+                if (deathGlitchFrames > 0) {
+                    drawDeathGlitch();
+                }
+
+                // Apply canvas slow-motion CSS filter dynamically based on slow-mo state
+                if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
+                    let isDashing = isPressing && pressDuration > 8;
+                    let isSlowMoActive = isDashing || hourglassActiveTimer > 0;
+                    if (isSlowMoActive) {
+                        let t = (1.0 - timeScale) / 0.8; // 0 to 1
+                        let contrastVal = 1.0 + t * 0.25;
+                        let saturateVal = 1.0 + t * 0.4;
+                        let hueRotateVal = -t * 15;
+                        canvas.style.filter = `contrast(${contrastVal}) saturate(${saturateVal}) hue-rotate(${hueRotateVal}deg)`;
+                    } else {
+                        canvas.style.filter = 'none';
+                    }
                 } else {
                     canvas.style.filter = 'none';
                 }
-            } else {
-                canvas.style.filter = 'none';
             }
-        }
 
-        // Helper function to trigger sector transitions
-        function triggerSectorTransition(targetSector) {
-            transitionQueued = true;
-            sectorAnnouncementTimer = 180;
-            let nextTheme = activeRunThemes[targetSector - 1] || SYSTEM_THEMES[0];
-            sectorAnnouncementText = `WARPING TO SECTOR ${targetSector}: ${nextTheme.name}`;
-            
-            setTimeout(() => {
-                if (gameState === STATE_PLAYING) {
-                    gameObjects.push({
-                        type: 'portal',
-                        x: LOGICAL_WIDTH + 100,
-                        y: 0,
-                        w: 80,
-                        h: FLOOR_Y,
-                        passed: false,
-                        sectorTarget: targetSector
-                    });
+            // Helper function to trigger sector transitions
+            function triggerSectorTransition(targetSector) {
+                transitionQueued = true;
+                sectorAnnouncementTimer = 180;
+                let nextTheme = activeRunThemes[targetSector - 1] || SYSTEM_THEMES[0];
+                sectorAnnouncementText = `WARPING TO SECTOR ${targetSector}: ${nextTheme.name}`;
+                
+                setTimeout(() => {
+                    if (gameState === STATE_PLAYING) {
+                        gameObjects.push({
+                            type: 'portal',
+                            x: LOGICAL_WIDTH + 100,
+                            y: 0,
+                            w: 80,
+                            h: FLOOR_Y,
+                            passed: false,
+                            sectorTarget: targetSector
+                        });
+                    }
+                }, 500);
+            }
+
+            function gameLoop(currentTime) {
+                // Calculate time elapsed since last frame
+                let deltaTime = currentTime - lastFrameTime;
+                lastFrameTime = currentTime;
+
+                // Cap maximum delta time to prevent spiral of death
+                if (deltaTime > 100) {
+                    deltaTime = 100;
                 }
-            }, 500);
-        }
 
-        requestAnimationFrame(gameLoop);
+                accumulator += deltaTime;
+
+                // Run physics updates in fixed timesteps
+                while (accumulator >= targetTimestep) {
+                    updateGamePhysics();
+                    accumulator -= targetTimestep;
+                }
+
+                // Draw game graphics
+                drawGameGraphics();
+
+                // Request next frame
+                requestAnimationFrame(gameLoop);
+            }
+
+            requestAnimationFrame(gameLoop);
 
         // Register Service Worker for offline play and automatic updates
         if ('serviceWorker' in navigator) {
