@@ -4062,6 +4062,11 @@
             isGrounded: true,
             doubleJumpAvailable: false,
             
+            // Sonic Loop state variables
+            isLooping: false,
+            loopObject: null,
+            loopAngle: 0,
+            
             // Squash and Stretch parameters for movement juice
             scaleX: 1,
             scaleY: 1,
@@ -4083,6 +4088,9 @@
                 this.runCycle = 0;
                 this.trail = [];
                 this.doubleJumpAvailable = false;
+                this.isLooping = false;
+                this.loopObject = null;
+                this.loopAngle = 0;
             },
 
             jump() {
@@ -4111,6 +4119,55 @@
             },
 
             update() {
+                if (this.isLooping) {
+                    // Keep invulnerable and draw dash trail effects
+                    this.trail.push({ x: this.x, y: this.y, scaleX: this.scaleX, scaleY: this.scaleY });
+                    if (this.trail.length > this.maxTrailLength) this.trail.shift();
+                    
+                    let loopObj = this.loopObject;
+                    let centerX = loopObj.x + loopObj.w / 2;
+                    let centerY = FLOOR_Y - loopObj.radius;
+                    
+                    // Rotate and advance counter-clockwise
+                    let loopSpeed = 0.08 * timeScale;
+                    this.loopAngle -= loopSpeed;
+                    
+                    // Calculate circular coordinates
+                    this.x = centerX - this.width / 2 + loopObj.radius * Math.cos(this.loopAngle);
+                    this.y = centerY - this.height / 2 + loopObj.radius * Math.sin(this.loopAngle);
+                    
+                    // Spawn cyberpunk trail sparks
+                    if (Math.random() < 0.3) {
+                        spawnCosmeticSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
+                    
+                    // Exit check: complete the 360-degree rotation (reaching angle -1.5 * PI)
+                    if (this.loopAngle <= -Math.PI * 1.5) {
+                        this.isLooping = false;
+                        this.loopObject = null;
+                        
+                        // Launch Ninja high into the sky!
+                        this.vy = -20;
+                        this.isGrounded = false;
+                        this.doubleJumpAvailable = (selectedSkin === 'platinum');
+                        
+                        Sound.playPowerup();
+                        shakeTime = 25;
+                        shakeIntensity = 10;
+                        screenFlashColor = 'rgba(0, 255, 255, 0.35)';
+                        screenFlashTimer = 15;
+                        spawnScorePopup(this.x + this.width / 2, this.y, "SONIC LAUNCH!", 'revive');
+                        
+                        addComboPoints(25);
+                    }
+                    
+                    // Decrement platinum alchemist invincibility timer if active
+                    if (platinumInvincibilityTimer > 0) {
+                        platinumInvincibilityTimer -= 1 * timeScale;
+                    }
+                    return; // Bypass normal physics
+                }
+
                 // Decrement platinum alchemist invincibility timer
                 if (platinumInvincibilityTimer > 0) {
                     platinumInvincibilityTimer -= 1 * timeScale;
@@ -4271,6 +4328,9 @@
                 // Draw main player body with neon glow
                 ctx.save();
                 ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                if (this.isLooping) {
+                    ctx.rotate(this.loopAngle - Math.PI / 2);
+                }
                 ctx.scale(this.scaleX, this.scaleY);
 
                 if (selectedSkin === 'holo') {
@@ -4391,10 +4451,18 @@
             }
 
             let effSector = Math.min(12, currentSector);
-            baseObstacleSpeed = (2.8 + effSector * 0.5) * speedFactor;
+            if (currentSector === 1) {
+                baseObstacleSpeed = 2.8 * speedFactor;
+            } else {
+                baseObstacleSpeed = (2.8 + effSector * 0.5) * speedFactor;
+            }
 
             let baseMinDelay = Math.max(160 - effSector * 8, 60);
             let baseMaxDelay = Math.max(220 - effSector * 10, 85);
+            if (currentSector === 1) {
+                baseMinDelay = 195;
+                baseMaxDelay = 255;
+            }
             minSpawnDelay = Math.max(50, Math.floor(baseMinDelay / speedFactor));
             maxSpawnDelay = Math.max(70, Math.floor(baseMaxDelay / speedFactor));
 
@@ -4472,6 +4540,12 @@
             // Check Bonus Room Portal spawn chance (2%)
             if (gameState !== STATE_BONUS_ROOM && Math.random() < 0.02) {
                 spawnBonusPortal();
+                return;
+            }
+
+            // Check Sonic Loop spawn chance (8%) - only starting from Sector 3
+            if (gameState !== STATE_BONUS_ROOM && currentSector >= 3 && Math.random() < 0.08) {
+                spawnSonicLoop();
                 return;
             }
 
@@ -4619,6 +4693,45 @@
                     phaseOffset: Math.random() * Math.PI * 2,
                     passed: false
                 });
+            }
+        }
+
+        function spawnSonicLoop() {
+            let width = 320;
+            let height = 320;
+            let radius = 150;
+            let y = FLOOR_Y - height;
+            
+            let loopObj = {
+                type: 'sonic_loop',
+                x: LOGICAL_WIDTH + 100,
+                y: y,
+                w: width,
+                h: height,
+                radius: radius,
+                passed: false
+            };
+            gameObjects.push(loopObj);
+
+            // Distribute 8 platinum chips inside the loop in a circular pattern
+            let centerX = LOGICAL_WIDTH + 100 + width / 2;
+            let centerY = FLOOR_Y - radius;
+            
+            for (let j = 0; j < 8; j++) {
+                let angle = Math.PI / 2 - (j / 8) * (Math.PI * 2);
+                let cx = centerX + radius * Math.cos(angle);
+                let cy = centerY + radius * Math.sin(angle);
+                spawnChip(cx - 13, cy - 13, true);
+            }
+
+            // Spawn a parabolic trail of 6 chips in the sky launched from the exit
+            let launchX = centerX + radius;
+            for (let k = 1; k <= 6; k++) {
+                let t = k / 7;
+                let chipX = launchX + t * 450;
+                let peakHeight = 350;
+                let chipY = FLOOR_Y - 80 - Math.sin(t * Math.PI) * peakHeight;
+                spawnChip(chipX, chipY, true);
             }
         }
 
@@ -5295,6 +5408,50 @@
                         ctx.stroke();
                         ctx.restore();
                     }
+                } else if (obj.type === 'sonic_loop') {
+                    ctx.save();
+                    let centerX = obj.x + obj.w / 2;
+                    let centerY = FLOOR_Y - obj.radius;
+                    
+                    // Draw backing loop glow
+                    ctx.shadowBlur = 35;
+                    ctx.shadowColor = primaryColor;
+                    ctx.strokeStyle = `rgba(${hexToRgb(primaryColor)}, 0.45)`;
+                    ctx.lineWidth = 26;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, obj.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Draw foreground neon track
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = secondaryColor;
+                    ctx.strokeStyle = secondaryColor;
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, obj.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Draw white inner core line
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, obj.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Draw tech arrow markers showing clockwise/counter-clockwise travel direction
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '900 12px "Orbitron", sans-serif';
+                    ctx.textAlign = 'center';
+                    for (let j = 0; j < 8; j++) {
+                        let angle = Math.PI / 2 - (j / 8) * (Math.PI * 2);
+                        ctx.save();
+                        ctx.translate(centerX + obj.radius * Math.cos(angle), centerY + obj.radius * Math.sin(angle));
+                        ctx.rotate(angle - Math.PI / 2);
+                        ctx.fillText("▲", 0, -15);
+                        ctx.restore();
+                    }
+                    ctx.restore();
                 }
 
                 ctx.restore();
@@ -5316,7 +5473,21 @@
                                 }
                             }
                         }
-                    } else if (obj.type !== 'portal' && obj.type !== 'shuriken' && obj.type !== 'platform') {
+                    } else if (obj.type === 'sonic_loop') {
+                        if (!player.isLooping && !obj.passed) {
+                            let playerRight = player.x + player.width;
+                            if (playerRight >= obj.x + 10 && player.x <= obj.x + 80) {
+                                if (player.y + player.height >= FLOOR_Y - 160) {
+                                    player.isLooping = true;
+                                    player.loopObject = obj;
+                                    player.loopAngle = Math.PI / 2; // Start at bottom-center
+                                    player.vy = 0;
+                                    Sound.playLevelUp();
+                                    spawnScorePopup(player.x + player.width / 2, player.y - 20, "CYBER LOOP!", 'revive');
+                                }
+                            }
+                        }
+                    } else if (obj.type !== 'portal' && obj.type !== 'shuriken' && obj.type !== 'platform' && obj.type !== 'sonic_loop') {
                         isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal');
                     }
                 }
@@ -8618,11 +8789,11 @@
 
                         // Check sector transitions (only in normal playing state)
                         if (gameState === STATE_PLAYING && !transitionQueued && !isBossActive) {
-                            if (currentSector === 1 && score >= 300) {
+                            if (currentSector === 1 && score >= 450) {
                                 triggerSectorTransition(2);
-                            } else if (currentSector === 2 && score >= 650) {
+                            } else if (currentSector === 2 && score >= 850) {
                                 triggerSectorTransition(3);
-                            } else if (currentSector === 3 && score >= 1050) {
+                            } else if (currentSector === 3 && score >= 1250) {
                                 triggerSectorTransition(4);
                             } else if (currentSector === 4 && score >= 1500) {
                                 triggerBossFight(1);
@@ -9084,7 +9255,7 @@
             }
 
             function triggerPlayerDamage() {
-                if (platinumInvincibilityTimer > 0) return;
+                if (platinumInvincibilityTimer > 0 || player.isLooping) return;
                 if (hasShield) {
                     shieldHP--;
                     recoveryDampeningTimer = 90;
