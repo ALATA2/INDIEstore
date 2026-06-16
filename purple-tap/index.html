@@ -7163,16 +7163,37 @@
             return { x: x, y: y };
         }
 
-        // Tap directly on boss to deal 1 HP damage (without jumping)
-        function checkBossTap(e) {
-            if (isBossActive && boss.active && boss.phase !== 'defeat' && boss.phase !== 'intro') {
+        // Tap directly on boss or projectiles to handle them actively (without jumping)
+        function checkActiveTaps(e) {
+            if (isBossActive && boss.active) {
                 let pos = getLogicalClickPos(e);
-                let padding = 35; // tap hit zone padding
-                if (pos.x >= boss.x - padding && pos.x <= boss.x + boss.w + padding &&
-                    pos.y >= boss.y - padding && pos.y <= boss.y + boss.h + padding) {
-                    
-                    damageBoss(1);
-                    return true; // Tapped on boss, event is handled
+                
+                // 1. Check if clicked on any active boss projectiles (reflector_orb or boss_mine)
+                for (let i = 0; i < gameObjects.length; i++) {
+                    let obj = gameObjects[i];
+                    if ((obj.type === 'reflector_orb' || obj.type === 'boss_mine') && !obj.deflected) {
+                        let padding = 35; // tap hit zone padding
+                        if (pos.x >= obj.x - padding && pos.x <= obj.x + obj.w + padding &&
+                            pos.y >= obj.y - padding && pos.y <= obj.y + obj.h + padding) {
+                            
+                            obj.deflected = true;
+                            Sound.playNearMiss();
+                            spawnScorePopup(obj.x, obj.y - 15, "REFLECT!", 'score');
+                            score += Math.round((obj.type === 'boss_mine' ? 15 : 10) * getComboMultiplier() * activeMultiplier);
+                            return true; // Tapped projectile, event handled
+                        }
+                    }
+                }
+
+                // 2. Check if clicked on the boss itself
+                if (boss.phase !== 'defeat' && boss.phase !== 'intro') {
+                    let padding = 35; // tap hit zone padding
+                    if (pos.x >= boss.x - padding && pos.x <= boss.x + boss.w + padding &&
+                        pos.y >= boss.y - padding && pos.y <= boss.y + boss.h + padding) {
+                        
+                        damageBoss(1);
+                        return true; // Tapped boss, event handled
+                    }
                 }
             }
             return false;
@@ -7186,7 +7207,7 @@
                 e.preventDefault();
                 return;
             }
-            if (checkBossTap(e)) {
+            if (checkActiveTaps(e)) {
                 e.preventDefault();
                 return;
             }
@@ -7205,7 +7226,7 @@
                 togglePause();
                 return;
             }
-            if (checkBossTap(e)) {
+            if (checkActiveTaps(e)) {
                 return;
             }
             onPress();
