@@ -1871,7 +1871,6 @@
     </style>
 </head>
 <body>
-    <button id="test-boss-btn" style="position: fixed; top: 15px; left: 15px; z-index: 999999; padding: 12px 20px; background: #ff0055; color: white; border: 2px solid white; border-radius: 8px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 14px; cursor: pointer; text-shadow: 0 0 5px black; box-shadow: 0 0 15px #ff0055;">SPAWN BOSS FIGHT</button>
 
     <!-- Orientation warning overlay for mobile portrait viewports -->
     <div id="orientation-warning">
@@ -8221,15 +8220,6 @@
         document.getElementById('show-leaderboard-start').addEventListener('click', showLeaderboard);
         document.getElementById('close-leaderboard-btn').addEventListener('click', hideLeaderboard);
         document.getElementById('submit-score-btn').addEventListener('click', submitScore);
-        
-        document.getElementById('test-boss-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
-                triggerBossFight(1);
-            } else {
-                alert("Avvia una partita (clicca per giocare) per far apparire il boss!");
-            }
-        });
         
         document.getElementById('show-shop-start').addEventListener('click', showShop);
         document.getElementById('close-shop-btn').addEventListener('click', hideShop);
