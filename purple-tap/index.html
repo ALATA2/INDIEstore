@@ -5604,11 +5604,10 @@
                         addComboPoints(25);
                         addXP(25);
                         spawnScorePopup(player.x + player.width / 2, player.y - 30, "BONUS DIMENSION!", 'revive');
-                        gameObjects = []; // Clear other hazards
+                        gameObjects.length = 0; // Clear all hazards in-place
                         shakeTime = 15;
                         shakeIntensity = 6;
-                        gameObjects.splice(i, 1);
-                        continue;
+                        break; // Exit loop immediately
 
                     } else if (obj.type === 'reflector_orb') {
                         if (!obj.deflected) {
@@ -8754,7 +8753,7 @@
                                     screenFlashTimer = 15;
                                     Sound.playPowerup();
                                     spawnScorePopup(player.x + player.width / 2, player.y - 30, "WARPING BACK...", 'revive');
-                                    gameObjects = [];
+                                    gameObjects.length = 0;
                                 }
                             }
                         }
