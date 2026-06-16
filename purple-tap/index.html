@@ -5442,18 +5442,28 @@
 
                     } else if (obj.type === 'reflector_orb') {
                         if (!obj.deflected) {
-                            obj.deflected = true;
-                            Sound.playNearMiss();
-                            spawnScorePopup(obj.x, obj.y - 15, "REFLECT!", 'score');
-                            score += Math.round(10 * getComboMultiplier() * activeMultiplier);
+                            if (!player.isGrounded || isDashing || platinumInvincibilityTimer > 0) {
+                                obj.deflected = true;
+                                Sound.playNearMiss();
+                                spawnScorePopup(obj.x, obj.y - 15, "REFLECT!", 'score');
+                                score += Math.round(10 * getComboMultiplier() * activeMultiplier);
+                            } else {
+                                triggerPlayerDamage();
+                                gameObjects.splice(i, 1);
+                            }
                         }
                         continue;
                     } else if (obj.type === 'boss_mine') {
                         if (!obj.deflected) {
-                            obj.deflected = true;
-                            Sound.playNearMiss();
-                            spawnScorePopup(obj.x, obj.y - 15, "REFLECT!", 'score');
-                            score += Math.round(15 * getComboMultiplier() * activeMultiplier);
+                            if (!player.isGrounded || isDashing || platinumInvincibilityTimer > 0) {
+                                obj.deflected = true;
+                                Sound.playNearMiss();
+                                spawnScorePopup(obj.x, obj.y - 15, "REFLECT!", 'score');
+                                score += Math.round(15 * getComboMultiplier() * activeMultiplier);
+                            } else {
+                                triggerPlayerDamage();
+                                gameObjects.splice(i, 1);
+                            }
                         }
                         continue;
                     } else if (obj.type === 'drone' && isDashing) {
