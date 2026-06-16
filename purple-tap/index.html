@@ -944,6 +944,103 @@
             box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
         }
 
+        /* Start Sector Selector styling */
+        /* Drawer-style Sector Selector sticking to the left edge */
+        .start-sector-container {
+            position: absolute;
+            bottom: 120px;
+            left: 60px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            pointer-events: auto;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .sector-drawer-btn {
+            background: rgba(16, 6, 36, 0.9);
+            border: 1px solid #bd00ff;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 8px rgba(189, 0, 255, 0.2);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .sector-drawer-btn:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+        }
+        .sector-drawer-btn .arrow {
+            transition: transform 0.2s ease;
+            font-size: 10px;
+            display: inline-block;
+        }
+        .sector-drawer-btn.open .arrow {
+            transform: rotate(180deg);
+        }
+        .sector-drawer-content {
+            margin-top: 6px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            width: 320px;
+            background: rgba(16, 6, 36, 0.95);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+        .sector-drawer-content.hidden {
+            display: none !important;
+        }
+        .sector-option-item {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 800;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 8px 4px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            outline: none;
+        }
+        .sector-option-item:hover:not(:disabled) {
+            background: rgba(189, 0, 255, 0.15);
+            border-color: rgba(189, 0, 255, 0.5);
+            color: #ffffff;
+        }
+        .sector-option-item.active {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+        }
+        .sector-option-item:disabled {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+        }
+
         /* Flexbox wrapper to align and scale start buttons nicely */
         /* Flexbox wrapper to align and scale start buttons nicely (Dock style) */
         .bottom-actions-container {
@@ -1423,8 +1520,8 @@
         /* Top Right Controls Container (Settings & Sound) */
         .top-controls-container {
             position: absolute;
-            top: 25px;
-            right: 30px;
+            top: 15px;
+            left: 30px;
             display: flex;
             gap: 10px;
             z-index: 120;
@@ -1675,8 +1772,8 @@
         /* Mobile height adjustments for sound toggle and help overlay */
         @media (max-height: 480px) {
             .top-controls-container {
-                top: 25px;
-                right: 35px;
+                top: 10px;
+                left: 35px;
                 gap: 8px;
             }
             .top-controls-container .control-btn {
@@ -1753,10 +1850,28 @@
                 padding: 4px 8px;
                 font-size: 10px;
             }
+            .start-sector-container {
+                bottom: 55px;
+                left: 35px;
+            }
+            .sector-drawer-btn {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+            .sector-drawer-content {
+                width: 250px;
+                padding: 6px;
+                gap: 4px;
+            }
+            .sector-option-item {
+                padding: 6px 2px;
+                font-size: 9px;
+            }
         }
     </style>
 </head>
 <body>
+    <button id="test-boss-btn" style="position: fixed; top: 15px; left: 15px; z-index: 999999; padding: 12px 20px; background: #ff0055; color: white; border: 2px solid white; border-radius: 8px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 14px; cursor: pointer; text-shadow: 0 0 5px black; box-shadow: 0 0 15px #ff0055;">SPAWN BOSS FIGHT</button>
 
     <!-- Orientation warning overlay for mobile portrait viewports -->
     <div id="orientation-warning">
@@ -1800,6 +1915,7 @@
                 <!-- Shop Tabs -->
                 <div class="shop-tabs">
                     <button id="tab-skins-btn" class="shop-tab-btn active">🛡️ GEAR</button>
+                    <button id="tab-upgrades-btn" class="shop-tab-btn">⚡ UPGRADES</button>
                     <button id="tab-iap-btn" class="shop-tab-btn">🪙 BUY CHIPS</button>
                 </div>
                 
@@ -1933,6 +2049,28 @@
                 <div class="revive-timer" id="revive-timer-val">5</div>
                 <button id="revive-ad-btn" class="revive-btn-ad">🎬 WATCH AD TO REVIVE</button>
                 <button id="revive-skip-btn" class="revive-btn-skip">NO THANKS</button>
+            </div>
+        </div>
+
+        <!-- Sector Selector Drawer -->
+        <div id="start-sector-container" class="start-sector-container hidden">
+            <button id="sector-drawer-toggle" class="sector-drawer-btn">
+                <span>🚀 SECTOR: 1</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div id="sector-drawer-content" class="sector-drawer-content hidden">
+                <button id="start-sector-1-btn" class="sector-option-item active"><span>S1</span></button>
+                <button id="start-sector-2-btn" class="sector-option-item" disabled><span>S2</span><span>🔒</span></button>
+                <button id="start-sector-3-btn" class="sector-option-item" disabled><span>S3</span><span>🔒</span></button>
+                <button id="start-sector-4-btn" class="sector-option-item" disabled><span>S4</span><span>🔒</span></button>
+                <button id="start-sector-5-btn" class="sector-option-item" disabled><span>S5</span><span>🔒</span></button>
+                <button id="start-sector-6-btn" class="sector-option-item" disabled><span>S6</span><span>🔒</span></button>
+                <button id="start-sector-7-btn" class="sector-option-item" disabled><span>S7</span><span>🔒</span></button>
+                <button id="start-sector-8-btn" class="sector-option-item" disabled><span>S8</span><span>🔒</span></button>
+                <button id="start-sector-9-btn" class="sector-option-item" disabled><span>S9</span><span>🔒</span></button>
+                <button id="start-sector-10-btn" class="sector-option-item" disabled><span>S10</span><span>🔒</span></button>
+                <button id="start-sector-11-btn" class="sector-option-item" disabled><span>S11</span><span>🔒</span></button>
+                <button id="start-sector-12-btn" class="sector-option-item" disabled><span>S12</span><span>🔒</span></button>
             </div>
         </div>
 
@@ -2153,22 +2291,105 @@
                 this.text = document.getElementById('cloud-sync-text');
             },
             
+            getAllSaveData() {
+                const keys = [
+                    'ninja_nickname',
+                    'ninja_best_score',
+                    'ninja_total_chips',
+                    'ninja_total_chips_collected_all_time',
+                    'ninja_total_drones_destroyed_all_time',
+                    'ninja_completed_missions',
+                    'ninja_active_missions',
+                    'ninja_level',
+                    'ninja_xp',
+                    'ninja_owned_skins',
+                    'ninja_selected_skin',
+                    'ninja_daily_streak',
+                    'ninja_last_claim_time',
+                    'ninja_last_mission_reset',
+                    'ninja_total_runs_played',
+                    'ninja_highest_sector_all_time',
+                    'ninja_upgrade_magnet',
+                    'ninja_upgrade_shield',
+                    'ninja_upgrade_hourglass',
+                    'ninja_upgrade_chrono',
+                    'ninja_upgrade_alchemist'
+                ];
+                let data = {};
+                keys.forEach(k => {
+                    data[k] = localStorage.getItem(k);
+                });
+                return data;
+            },
+            
+            loadAllSaveData(data) {
+                if (!data) return;
+                Object.keys(data).forEach(k => {
+                    if (data[k] !== null && data[k] !== undefined) {
+                        if (originalSetItem) {
+                            originalSetItem.call(localStorage, k, data[k]);
+                        } else {
+                            localStorage.setItem(k, data[k]);
+                        }
+                    }
+                });
+            },
+            
             saveProfile(key, val) {
                 if (!this.toast) this.init();
+                const email = localStorage.getItem('ninja_linked_email');
+                
                 if (this.toast) {
                     this.toast.classList.add('active');
                     this.icon.classList.add('spin');
-                    this.text.innerText = "Backup Syncing...";
                     
-                    if (this.timer) clearTimeout(this.timer);
-                    this.timer = setTimeout(() => {
-                        this.icon.classList.remove('spin');
-                        this.text.innerText = "Backup Complete! ☁️";
+                    if (email) {
+                        this.text.innerText = "Cloud Syncing...";
                         
+                        const saveData = this.getAllSaveData();
+                        
+                        fetch(`../cloud-save.php?action=save&email=${encodeURIComponent(email)}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(saveData)
+                        })
+                        .then(res => {
+                            if (!res.ok) throw new Error("Server error");
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (this.timer) clearTimeout(this.timer);
+                            this.icon.classList.remove('spin');
+                            this.text.innerText = "Backup Complete! ☁️";
+                            
+                            this.timer = setTimeout(() => {
+                                this.toast.classList.remove('active');
+                            }, 1200);
+                        })
+                        .catch(err => {
+                            console.warn("Cloud save failed:", err);
+                            if (this.timer) clearTimeout(this.timer);
+                            this.icon.classList.remove('spin');
+                            this.text.innerText = "Saved Locally (Offline) 💾";
+                            
+                            this.timer = setTimeout(() => {
+                                this.toast.classList.remove('active');
+                            }, 1500);
+                        });
+                    } else {
+                        this.text.innerText = "Saving Locally...";
+                        if (this.timer) clearTimeout(this.timer);
                         this.timer = setTimeout(() => {
-                            this.toast.classList.remove('active');
-                        }, 1200);
-                    }, 1000);
+                            this.icon.classList.remove('spin');
+                            this.text.innerText = "Saved Locally! 💾";
+                            
+                            this.timer = setTimeout(() => {
+                                this.toast.classList.remove('active');
+                            }, 1200);
+                        }, 500);
+                    }
                 }
             }
         };
@@ -2551,6 +2772,25 @@
                     osc.start(startTime + idx * 0.1);
                     osc.stop(startTime + idx * 0.1 + 0.45);
                 });
+            },
+            playLaser() {
+                if (isMuted) return;
+                this.init();
+                if (!this.ctx) return;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(880, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.3);
+                
+                gain.gain.setValueAtTime(0.08 * sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001 * sfxVolume, this.ctx.currentTime + 0.3);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
             }
         };
 
@@ -3034,6 +3274,7 @@
         let totalDronesDestroyedAllTime = parseInt(localStorage.getItem('ninja_total_drones_destroyed_all_time')) || 0;
         let totalRunsPlayed = parseInt(localStorage.getItem('ninja_total_runs_played')) || 0;
         let highestSectorReachedAllTime = parseInt(localStorage.getItem('ninja_highest_sector_all_time')) || 1;
+        let selectedStartSector = 1;
 
         // --- NEW STATS & TIMERS ---
         let hourglassCharges = 0;
@@ -3073,12 +3314,33 @@
         let selectedSkin = localStorage.getItem('ninja_selected_skin') || 'classic';
         let ownedSkins = JSON.parse(localStorage.getItem('ninja_owned_skins')) || ['classic'];
 
+        // --- UPGRADE SHOP VARIABLES ---
+        let upgradeMagnet = localStorage.getItem('ninja_upgrade_magnet') === 'true';
+        let upgradeShield = localStorage.getItem('ninja_upgrade_shield') === 'true';
+        let upgradeHourglass = localStorage.getItem('ninja_upgrade_hourglass') === 'true';
+        let upgradeChrono = localStorage.getItem('ninja_upgrade_chrono') === 'true';
+        let upgradeAlchemist = localStorage.getItem('ninja_upgrade_alchemist') === 'true';
+
+        const SHOP_UPGRADES = [
+            { id: 'magnet', name: 'Magnete Esteso', desc: 'Aumenta permanentemente il raggio del magnete del 25%', price: 800, isBought: () => upgradeMagnet, setBought: () => { upgradeMagnet = true; localStorage.setItem('ninja_upgrade_magnet', 'true'); } },
+            { id: 'shield', name: 'Scudo Rinforzato', desc: 'Lo scudo raccoglibile resiste a 2 colpi prima di rompersi', price: 1200, isBought: () => upgradeShield, setBought: () => { upgradeShield = true; localStorage.setItem('ninja_upgrade_shield', 'true'); } },
+            { id: 'hourglass', name: 'Batteria Slow-Mo', desc: 'Consente di accumulare fino a 4 cariche di rallentamento', price: 1000, isBought: () => upgradeHourglass, setBought: () => { upgradeHourglass = true; localStorage.setItem('ninja_upgrade_hourglass', 'true'); } },
+            { id: 'chrono', name: 'Chrono Overdrive', desc: 'Tempo rallentato del 90% in slow-mo e +1 carica a ogni Near-Miss', price: 6000, isBought: () => upgradeChrono, setBought: () => { upgradeChrono = true; localStorage.setItem('ninja_upgrade_chrono', 'true'); } },
+            { id: 'alchemist', name: 'Alchimista del Platino', desc: 'Converte il 10% di chip in Platino (5x) e dà 1.5s invincibilità ciano', price: 9999, isBought: () => upgradeAlchemist, setBought: () => { upgradeAlchemist = true; localStorage.setItem('ninja_upgrade_alchemist', 'true'); } }
+        ];
+
+        let shopActiveTab = 'skins'; // 'skins', 'upgrades', or 'iap'
+
+        let platinumInvincibilityTimer = 0;
+        let shieldHP = 0;
+        let recoveryDampeningTimer = 0;
+
         const SHOP_SKINS = [
             { id: 'classic', name: 'Classic Purple', desc: 'Standard cyber ninja suit (No Buffs)', price: 0, color: '#bd00ff', trailColor: '#00ffff' },
             { id: 'holo', name: 'Holo Cyan', desc: 'Hologram suit: permanent 220px passive magnet (+570px when buff is active)', price: 150, color: '#00ffff', trailColor: '#00c3ff' },
             { id: 'gold', name: 'Gold Overlord', desc: 'Legendary gold suit (1x Revive per run)', price: 300, color: '#ffd700', trailColor: '#ffaa00' },
             { id: 'shadowstrike', name: 'Shadow Strike', desc: 'Specialized crimson suit: fires plasma shurikens when dashing to destroy hazards', price: 500, color: '#ff003c', trailColor: '#ff3300' },
-            { id: 'platinum', name: 'Platinum Lord', desc: 'Divine platinum armor (Double Jump ability)', price: 9999, color: '#e5e8e8', trailColor: '#95a5a6' },
+            { id: 'platinum', name: 'Windrunner', desc: 'Divine platinum armor (Double Jump ability)', price: 1500, color: '#e5e8e8', trailColor: '#95a5a6' },
             { id: 'chronomaster', name: 'Chrono Master', desc: 'Day 7 Reward: 50% slow-mo cost & 2x powerup time', price: -1, color: '#ff00aa', trailColor: '#ff0055' }
         ];
 
@@ -3577,18 +3839,123 @@
                     }
                     ctx.restore();
                 }
+            },
+            {
+                id: 'sesia_valley_super_vulcano',
+                name: 'SESIA VALLEY',
+                primaryColor: '#ff2a00',
+                secondaryColor: '#ffbb00',
+                skyCenterColor: '#1d0505',
+                mountainColor1: '#120202',
+                mountainColor2: '#280606',
+                cityFarColor: 'rgba(45, 10, 10, 0.5)',
+                cityMidColor: 'rgba(65, 15, 15, 0.75)',
+                cityNearColor: 'rgba(85, 20, 20, 0.95)',
+                obstacleGlow: '#ff4800',
+                droneGlow: '#ffbb00',
+                oscType: 'sawtooth',
+                bassNotes: [32.70, 32.70, 65.41, 32.70, 36.71, 36.71, 73.42, 36.71, 41.20, 41.20, 82.41, 41.20, 32.70, 36.71, 41.20, 48.99],
+                drawCustom: function(ctx, scrollX, gameFrames) {
+                    ctx.save();
+                    
+                    // Stylized volcano background
+                    let vx = LOGICAL_WIDTH - 300 - (scrollX * 0.15) % LOGICAL_WIDTH;
+                    if (vx < -250) vx += LOGICAL_WIDTH + 500;
+                    let vy = FLOOR_Y;
+                    
+                    // Draw smoke / ash cloud
+                    ctx.fillStyle = 'rgba(110, 80, 80, 0.22)';
+                    for (let i = 0; i < 6; i++) {
+                        let seed = i * 273.41;
+                        let t = (gameFrames * 0.4 + seed) % 150;
+                        let progress = t / 150;
+                        let px = vx + (pseudoRandom(seed) - 0.5) * 60;
+                        let py = (vy - 130) - progress * 140;
+                        let size = 18 + progress * 30;
+                        ctx.beginPath();
+                        ctx.arc(px, py, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // Draw Volcano Silhouette
+                    ctx.fillStyle = '#1c0606';
+                    ctx.strokeStyle = 'rgba(255, 42, 0, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(vx - 140, vy);
+                    ctx.lineTo(vx - 30, vy - 130);
+                    ctx.lineTo(vx + 30, vy - 130);
+                    ctx.lineTo(vx + 140, vy);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Draw glowing lava pool inside crater
+                    ctx.fillStyle = '#ff2a00';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ff2a00';
+                    ctx.beginPath();
+                    ctx.ellipse(vx, vy - 130, 30, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Lava flows down the sides
+                    ctx.strokeStyle = '#ffbb00';
+                    ctx.lineWidth = 3;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ffbb00';
+                    // Flow 1
+                    ctx.beginPath();
+                    ctx.moveTo(vx - 15, vy - 130);
+                    ctx.lineTo(vx - 35, vy - 80);
+                    ctx.lineTo(vx - 55, vy);
+                    ctx.stroke();
+                    // Flow 2
+                    ctx.beginPath();
+                    ctx.moveTo(vx + 10, vy - 130);
+                    ctx.lineTo(vx + 25, vy - 90);
+                    ctx.lineTo(vx + 40, vy);
+                    ctx.stroke();
+                    
+                    ctx.shadowBlur = 0; // reset
+                    
+                    // Erupting lava particles
+                    ctx.fillStyle = '#ffdd00';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = '#ffdd00';
+                    for (let i = 0; i < 18; i++) {
+                        let seed = i * 193.84;
+                        let t = (gameFrames + seed) % 80;
+                        let progress = t / 80;
+                        let angle = -Math.PI / 2 + (pseudoRandom(seed) - 0.6) * 0.6;
+                        let speed = 3.5 + pseudoRandom(seed + 1) * 3.5;
+                        let vx0 = Math.cos(angle) * speed;
+                        let vy0 = Math.sin(angle) * speed;
+                        let dx = vx0 * t;
+                        let dy = vy0 * t + 0.07 * t * t; // gravity
+                        let px = vx + dx;
+                        let py = (vy - 130) + dy;
+                        if (py < vy) {
+                            let pSize = 1.5 + pseudoRandom(seed + 2) * 3;
+                            ctx.beginPath();
+                            ctx.arc(px, py, pSize, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    
+                    ctx.restore();
+                }
             }
         ];
 
         let activeRunThemes = [];
         function chooseRunThemes() {
             let pool = [...SYSTEM_THEMES];
-            activeRunThemes = [];
-            for (let i = 0; i < 3; i++) {
-                let idx = Math.floor(Math.random() * pool.length);
-                activeRunThemes.push(pool[idx]);
-                pool.splice(idx, 1);
+            // Fisher-Yates shuffle
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
             }
+            activeRunThemes = pool;
         }
         
         function getActiveTheme() {
@@ -3597,7 +3964,9 @@
             }
             let idx = currentSector - 1;
             if (idx < 0) idx = 0;
-            if (idx > 2) idx = 2;
+            if (idx >= activeRunThemes.length) {
+                idx = idx % activeRunThemes.length;
+            }
             return activeRunThemes[idx] || SYSTEM_THEMES[0];
         }
 
@@ -3640,6 +4009,25 @@
         let transitionQueued = false;
         let sectorAnnouncementTimer = 0;
         let sectorAnnouncementText = '';
+
+        // --- BOSS FIGHT VARIABLES ---
+        let isBossActive = false;
+        let boss = {
+            active: false,
+            id: 1,
+            x: 0,
+            y: 0,
+            w: 120,
+            h: 120,
+            hp: 0,
+            maxHp: 0,
+            phase: 'intro', // 'intro', 'hover', 'laser_charge', 'laser_fire', 'charge', 'defeat'
+            phaseTimer: 0,
+            laserTargetY: 0,
+            chargeTargetY: 0,
+            hitFlashTimer: 0,
+            sineOffset: 0
+        };
 
         // --- STYLE ANNOUNCER VARIABLES ---
         let styleAnnouncementTimer = 0;
@@ -3712,7 +4100,7 @@
                     // Increment style points slightly on jump
                     addComboPoints(1);
                     // Spawn jump puff particles
-                    spawnJumpParticles(this.x + this.width / 2, FLOOR_Y);
+                    spawnJumpParticles(this.x + this.width / 2, this.y + this.height);
                     this.doubleJumpAvailable = selectedSkin === 'platinum';
                 } else if (selectedSkin === 'platinum' && this.doubleJumpAvailable) {
                     this.vy = -this.jumpStrength * 0.95; // Strong mid-air double jump
@@ -3724,6 +4112,14 @@
             },
 
             update() {
+                // Decrement platinum alchemist invincibility timer
+                if (platinumInvincibilityTimer > 0) {
+                    platinumInvincibilityTimer -= 1 * timeScale;
+                    if (Math.random() < 0.25) {
+                        spawnPlatinumSpark(this.x + Math.random() * this.width, this.y + Math.random() * this.height);
+                    }
+                }
+
                 let isDashing = isPressing && pressDuration > 8;
                 let isSlowMoActive = isDashing || hourglassActiveTimer > 0;
 
@@ -3735,7 +4131,9 @@
                     } else {
                         this.x += (200 - this.x) * 0.08;
                     }
-                    timeScale = Math.max(0.2, timeScale - 0.15);
+                    // Chrono Overdrive: slows down time to 90% (timeScale = 0.1) instead of 80% (0.2)
+                    let minTimeScale = upgradeChrono ? 0.1 : 0.2;
+                    timeScale = Math.max(minTimeScale, timeScale - 0.15);
                 } else {
                     timeScale = Math.min(1.0, timeScale + 0.15);
                     this.x += (200 - this.x) * 0.08;
@@ -3745,8 +4143,35 @@
                 this.vy += currentGravity;
                 this.y += this.vy * timeScale;
 
+                // Collision with floating platforms (one-way platform behavior)
+                let onPlatform = false;
+                if (this.vy >= 0) {
+                    for (let obj of gameObjects) {
+                        if (obj.type === 'platform') {
+                            // Check horizontal overlap
+                            if (this.x + this.width > obj.x && this.x < obj.x + obj.w) {
+                                let playerBottom = this.y + this.height;
+                                let prevPlayerBottom = playerBottom - this.vy * timeScale;
+                                // If player bottom is passing through the platform top surface
+                                if (playerBottom >= obj.y && prevPlayerBottom <= obj.y + 12) {
+                                    this.y = obj.y - this.height;
+                                    this.vy = 0;
+                                    onPlatform = true;
+                                    if (!this.isGrounded) {
+                                        this.isGrounded = true;
+                                        this.doubleJumpAvailable = selectedSkin === 'platinum';
+                                        this.landSquash = 1.0;
+                                        spawnLandingPuff(this.x + this.width / 2, obj.y);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Collide with the floor
-                if (this.y >= FLOOR_Y - this.height) {
+                if (!onPlatform && this.y >= FLOOR_Y - this.height) {
                     this.y = FLOOR_Y - this.height;
                     this.vy = 0;
                     if (!this.isGrounded) {
@@ -3754,6 +4179,9 @@
                         this.landSquash = 1.0; // Trigger landing impact squash
                         spawnLandingPuff(this.x + this.width / 2, FLOOR_Y);
                     }
+                } else if (!onPlatform && this.y < FLOOR_Y - this.height) {
+                    // If player is mid-air and not on any platform, they are not grounded
+                    this.isGrounded = false;
                 }
 
                 // Run cycle oscillation
@@ -3761,7 +4189,7 @@
                     this.runCycle += 0.35 * timeScale;
                     // Spawn ground dust particles while running
                     if (gameFrames % 6 === 0 && Math.abs(this.x - 200) < 50) {
-                        spawnRunParticles(this.x, FLOOR_Y);
+                        spawnRunParticles(this.x, this.y + this.height);
                     }
                     // Skin cosmetic sparks
                     if (Math.random() < 0.15) {
@@ -3821,6 +4249,9 @@
                 // Get active skin
                 let activeSkinObj = SHOP_SKINS.find(s => s.id === selectedSkin) || SHOP_SKINS[0];
                 let bodyColor = selectedSkin === 'classic' ? primaryColor : activeSkinObj.color;
+                if (platinumInvincibilityTimer > 0) {
+                    bodyColor = '#00ffff'; // Neon cyan body during invincibility
+                }
                 let glowColor = bodyColor;
                 let trailColorHex = selectedSkin === 'classic' ? primaryColor : activeSkinObj.trailColor;
 
@@ -3848,8 +4279,8 @@
                 }
 
                 // Neon glow outline
-                ctx.shadowBlur = 22;
-                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = platinumInvincibilityTimer > 0 ? 32 : 22;
+                ctx.shadowColor = platinumInvincibilityTimer > 0 ? '#00ffff' : glowColor;
                 ctx.fillStyle = bodyColor;
                 ctx.beginPath();
                 ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 8);
@@ -3872,19 +4303,19 @@
 
                 ctx.restore();
 
-                // Draw Shield Bubble around player if active
+                // Draw Shield Bubble around player if active (shows green-cyan if reinforced)
                 if (hasShield) {
                     ctx.save();
-                    ctx.strokeStyle = '#00ffff';
+                    ctx.strokeStyle = shieldHP > 1 ? '#00ff55' : '#00ffff';
                     ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#00ffff';
-                    ctx.lineWidth = 3;
+                    ctx.shadowColor = shieldHP > 1 ? '#00ff55' : '#00ffff';
+                    ctx.lineWidth = shieldHP > 1 ? 4.5 : 3;
                     ctx.beginPath();
                     ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.85, 0, Math.PI * 2);
                     ctx.stroke();
                     
                     // Subtle shield center shimmer
-                    ctx.fillStyle = 'rgba(0, 255, 255, 0.08)';
+                    ctx.fillStyle = shieldHP > 1 ? 'rgba(0, 255, 85, 0.08)' : 'rgba(0, 255, 255, 0.08)';
                     ctx.fill();
                     ctx.restore();
                 }
@@ -3934,6 +4365,16 @@
         let maxSpawnDelay = 220;
 
         function updateObstacleSpawning() {
+            // Decrement recovery dampening timer
+            if (recoveryDampeningTimer > 0) {
+                recoveryDampeningTimer -= 1 * timeScale;
+            }
+
+            // If a boss is active or transition is queued, pause all obstacle spawning!
+            if (isBossActive || transitionQueued) {
+                return;
+            }
+
             // Wait until tutorial phase finishes
             if (gameState === STATE_PLAYING && gameTime < 3.0) {
                 return;
@@ -3943,21 +4384,27 @@
             let speedFactor = 1.0 + (gameTime / 100) * 0.12;
             speedFactor = Math.min(1.5, speedFactor);
 
+            // Endless mode (Sector 13+) features exponential difficulty scaling
+            if (currentSector >= 13) {
+                let endlessTime = Math.max(0, gameTime - 450); // average transition time to endless is around 450s of survival
+                speedFactor = 1.5 + Math.pow(endlessTime / 60, 1.4) * 0.15;
+                speedFactor = Math.min(3.5, speedFactor); // Human limit cap
+            }
+
+            let effSector = Math.min(12, currentSector);
+            baseObstacleSpeed = (2.8 + effSector * 0.5) * speedFactor;
+
+            let baseMinDelay = Math.max(160 - effSector * 8, 60);
+            let baseMaxDelay = Math.max(220 - effSector * 10, 85);
+            minSpawnDelay = Math.max(50, Math.floor(baseMinDelay / speedFactor));
+            maxSpawnDelay = Math.max(70, Math.floor(baseMaxDelay / speedFactor));
+
             if (currentSector === 1) {
                 currentPhase = 1;
-                baseObstacleSpeed = 6.0 * speedFactor;
-                minSpawnDelay = Math.max(100, Math.floor(160 / speedFactor));
-                maxSpawnDelay = Math.max(140, Math.floor(220 / speedFactor));
             } else if (currentSector === 2) {
                 currentPhase = 2;
-                baseObstacleSpeed = 9.0 * speedFactor;
-                minSpawnDelay = Math.max(70, Math.floor(100 / speedFactor));
-                maxSpawnDelay = Math.max(90, Math.floor(140 / speedFactor));
             } else {
                 currentPhase = 3;
-                baseObstacleSpeed = 12.0 * speedFactor;
-                minSpawnDelay = Math.max(50, Math.floor(65 / speedFactor));
-                maxSpawnDelay = Math.max(65, Math.floor(85 / speedFactor));
             }
 
             // If a portal gateway is currently scrolling on screen, pause obstacle spawns
@@ -4003,6 +4450,16 @@
 
             let rand = Math.random();
             
+            // Phase-in: for the first 20 seconds of the game (Sector 1), only spawn simple spikes & chips to let the player warm up
+            if (currentPhase === 1 && gameTime < 20.0) {
+                if (Math.random() < 0.7) {
+                    spawnObstacle('spike');
+                } else {
+                    spawnChip(LOGICAL_WIDTH + 50, FLOOR_Y - 35);
+                }
+                return;
+            }
+
             // Check powerups spawn chance (12%)
             if (Math.random() < 0.12) {
                 let r = Math.random();
@@ -4020,21 +4477,24 @@
             }
 
             if (currentPhase === 1) {
-                // Phase 1: Ground Spikes and floating force shields
-                if (rand < 0.7) spawnObstacle('spike');
-                else spawnObstacle('shield');
+                // Phase 1: Ground Spikes and floating force shields, platforms
+                if (rand < 0.55) spawnObstacle('spike');
+                else if (rand < 0.8) spawnObstacle('shield');
+                else spawnPlatform();
             } else if (currentPhase === 2) {
-                // Phase 2: Spike, Shield, Drone, and Laser Barrier
-                if (rand < 0.4) spawnObstacle('spike');
-                else if (rand < 0.65) spawnObstacle('shield');
-                else if (rand < 0.85) spawnDrone();
-                else spawnLaserBarrier();
-            } else {
-                // Phase 3: Higher chance of laser barriers and drones
-                if (rand < 0.3) spawnObstacle('spike');
+                // Phase 2: Spike, Shield, Drone, Laser Barrier, platforms
+                if (rand < 0.35) spawnObstacle('spike');
                 else if (rand < 0.55) spawnObstacle('shield');
-                else if (rand < 0.75) spawnDrone();
-                else spawnLaserBarrier();
+                else if (rand < 0.7) spawnDrone();
+                else if (rand < 0.85) spawnLaserBarrier();
+                else spawnPlatform();
+            } else {
+                // Phase 3: Higher chance of laser barriers, drones, platforms
+                if (rand < 0.25) spawnObstacle('spike');
+                else if (rand < 0.45) spawnObstacle('shield');
+                else if (rand < 0.6) spawnDrone();
+                else if (rand < 0.8) spawnLaserBarrier();
+                else spawnPlatform();
             }
         }
 
@@ -4124,14 +4584,57 @@
             });
         }
 
-        function spawnChip(x, y) {
+        function spawnPlatform() {
+            let width = Math.floor(Math.random() * 400) + 800; // Large platform (800 to 1200 pixels)
+            let height = 22;
+            let y = FLOOR_Y - 145 - Math.random() * 45; // 145 to 190 px above ground
+            gameObjects.push({
+                type: 'platform',
+                x: LOGICAL_WIDTH + 50,
+                y: y,
+                w: width,
+                h: height,
+                passed: false
+            });
+
+            // Distribute 4 to 5 high-value platinum chips along the platform length
+            let numChips = Math.random() < 0.5 ? 4 : 5;
+            let segment = width / (numChips + 1);
+            for (let j = 1; j <= numChips; j++) {
+                spawnChip(LOGICAL_WIDTH + 50 + segment * j - 13, y - 35, true);
+            }
+
+            // Spawn a drone hazard on top of the long platform at half-length to add gameplay challenge
+            if (Math.random() < 0.6) {
+                let droneSize = 36;
+                let isShielded = Math.random() < 0.3;
+                gameObjects.push({
+                    type: 'drone',
+                    subtype: isShielded ? 'shielded' : (Math.random() < 0.6 ? 'standard' : 'chaser'),
+                    hp: isShielded ? 2 : 1,
+                    x: LOGICAL_WIDTH + 50 + width / 2 - droneSize / 2,
+                    y: y - 65,
+                    baseY: y - 65,
+                    w: droneSize,
+                    h: droneSize,
+                    phaseOffset: Math.random() * Math.PI * 2,
+                    passed: false
+                });
+            }
+        }
+
+        function spawnChip(x, y, isPlatinum = false) {
+            if (upgradeAlchemist && !isPlatinum && Math.random() < 0.10) {
+                isPlatinum = true;
+            }
             gameObjects.push({
                 type: 'chip',
+                isPlatinum: isPlatinum,
                 x: x,
                 y: y,
                 baseY: y,
-                w: 20,
-                h: 20,
+                w: isPlatinum ? 26 : 20,
+                h: isPlatinum ? 26 : 20,
                 phaseOffset: Math.random() * Math.PI * 2,
                 passed: false
             });
@@ -4327,6 +4830,18 @@
                             }
                         }
                         
+                        // Collision check with Boss
+                        if (gameObjects[i] === obj && isBossActive && boss.active && boss.phase !== 'defeat' && boss.phase !== 'intro') {
+                            let bossBox = { x: boss.x + 10, y: boss.y + 10, w: boss.w - 20, h: boss.h - 20 };
+                            if (obj.x < bossBox.x + bossBox.w && obj.x + obj.w > bossBox.x &&
+                                obj.y < bossBox.y + bossBox.h && obj.y + obj.h > bossBox.y) {
+                                damageBoss(1);
+                                spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                                gameObjects.splice(i, 1);
+                                continue;
+                            }
+                        }
+
                         // If shuriken is out of bounds or already deleted, skip further updates
                         if (gameObjects[i] !== obj) continue;
                         if (obj.x > LOGICAL_WIDTH + 50) {
@@ -4336,20 +4851,43 @@
                     } else {
                         let isHolo = (selectedSkin === 'holo');
                         let hasMagnet = magnetTimer > 0 || isHolo;
-                        if (obj.type === 'chip' && hasMagnet) {
+                        let speedMultiplier = recoveryDampeningTimer > 0 ? 0.65 : 1.0;
+                        let currentScrollSpeed = baseObstacleSpeed * speedMultiplier;
+
+                        if ((obj.type === 'reflector_orb' || obj.type === 'boss_mine') && obj.deflected) {
+                            let dx = (boss.x + boss.w / 2) - (obj.x + obj.w / 2);
+                            let dy = (boss.y + boss.h / 2) - (obj.y + obj.h / 2);
+                            let dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist > 12) {
+                                obj.x += (dx / dist) * 18 * timeScale;
+                                obj.y += (dy / dist) * 18 * timeScale;
+                            } else {
+                                damageBoss(1);
+                                spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                                gameObjects.splice(i, 1);
+                                continue;
+                            }
+                        } else if (obj.type === 'reflector_orb') {
+                            obj.x -= currentScrollSpeed * 0.8 * timeScale;
+                            let targetY = player.y + player.height / 2 - obj.h / 2;
+                            obj.y += (targetY - obj.y) * 0.02 * timeScale;
+                        } else if (obj.type === 'boss_mine') {
+                            obj.x -= currentScrollSpeed * 0.9 * timeScale;
+                        } else if (obj.type === 'chip' && hasMagnet) {
                             let dx = (player.x + player.width / 2) - (obj.x + obj.w / 2);
                             let dy = (player.y + player.height / 2) - (obj.y + obj.h / 2);
                             let dist = Math.sqrt(dx * dx + dy * dy);
-                            let magnetRadius = isHolo ? (magnetTimer > 0 ? 570 : 220) : 380;
+                            let baseRadius = isHolo ? (magnetTimer > 0 ? 570 : 220) : 380;
+                            let magnetRadius = upgradeMagnet ? baseRadius * 1.25 : baseRadius;
                             if (dist < magnetRadius) {
                                 obj.x += (dx / dist) * 14 * timeScale;
                                 obj.y += (dy / dist) * 14 * timeScale;
                                 obj.baseY = obj.y; // Damp normal oscillation during attraction
                             } else {
-                                obj.x -= baseObstacleSpeed * timeScale;
+                                obj.x -= currentScrollSpeed * timeScale;
                             }
                         } else {
-                            obj.x -= baseObstacleSpeed * timeScale;
+                            obj.x -= currentScrollSpeed * timeScale;
                         }
                     }
 
@@ -4422,6 +4960,47 @@
                         ctx.stroke();
                     }
 
+                } else if (obj.type === 'boss_mine') {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ff003c';
+                    ctx.fillStyle = '#1c0207';
+                    ctx.strokeStyle = '#ff003c';
+                    ctx.lineWidth = 2.5;
+                    
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    let cx = obj.x + obj.w / 2;
+                    let cy = obj.y + obj.h / 2;
+                    let numSpikes = 6;
+                    for (let j = 0; j < numSpikes; j++) {
+                        let angle = (j * Math.PI * 2) / numSpikes + gameFrames * 0.05;
+                        ctx.moveTo(cx + Math.cos(angle) * (obj.w / 2 - 4), cy + Math.sin(angle) * (obj.h / 2 - 4));
+                        ctx.lineTo(cx + Math.cos(angle) * (obj.w / 2 + 4), cy + Math.sin(angle) * (obj.h / 2 + 4));
+                    }
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = gameFrames % 10 < 5 ? '#ff003c' : '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                } else if (obj.type === 'reflector_orb') {
+                    let glowColor = obj.deflected ? '#ffaa00' : '#00ffff';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = glowColor;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = glowColor;
+                    ctx.lineWidth = 2;
+                    
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
                 } else if (obj.type === 'drone') {
                     // --- CYBER DRONES (Diamond glow shape) ---
                     let theme = getActiveTheme();
@@ -4491,27 +5070,72 @@
                     ctx.restore();
 
                 } else if (obj.type === 'chip') {
-                    // --- NEON GOLD COLLECTIBLE ENERGY CHIPS ---
-                    ctx.shadowBlur = 12;
-                    ctx.shadowColor = '#ffaa00';
-                    ctx.fillStyle = '#221500';
-                    ctx.strokeStyle = '#ffaa00';
-                    ctx.lineWidth = 2.5;
+                    // --- NEON GOLD COLLECTIBLE ENERGY CHIPS / CYAN PLATINUM CHIPS ---
+                    if (obj.isPlatinum) {
+                        ctx.shadowBlur = 18;
+                        ctx.shadowColor = '#00ffff';
+                        ctx.fillStyle = '#002222';
+                        ctx.strokeStyle = '#00ffff';
+                        ctx.lineWidth = 3;
+
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                        ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                        ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                        ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 4.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        ctx.shadowBlur = 12;
+                        ctx.shadowColor = '#ffaa00';
+                        ctx.fillStyle = '#221500';
+                        ctx.strokeStyle = '#ffaa00';
+                        ctx.lineWidth = 2.5;
+
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x + obj.w / 2, obj.y);
+                        ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
+                        ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
+                        ctx.lineTo(obj.x, obj.y + obj.h / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                } else if (obj.type === 'platform') {
+                    let theme = getActiveTheme();
+                    let platformGlow = theme.primaryColor;
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = platformGlow;
+                    ctx.fillStyle = '#0f0515';
+                    ctx.strokeStyle = platformGlow;
+                    ctx.lineWidth = 3.5;
 
                     ctx.beginPath();
-                    ctx.moveTo(obj.x + obj.w / 2, obj.y);
-                    ctx.lineTo(obj.x + obj.w, obj.y + obj.h / 2);
-                    ctx.lineTo(obj.x + obj.w / 2, obj.y + obj.h);
-                    ctx.lineTo(obj.x, obj.y + obj.h / 2);
-                    ctx.closePath();
+                    ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 6);
                     ctx.fill();
                     ctx.stroke();
 
-                    ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 0;
+                    // Tech style details inside the platform
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.lineWidth = 1.5;
                     ctx.beginPath();
-                    ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, 3, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.moveTo(obj.x + 10, obj.y + obj.h / 2);
+                    ctx.lineTo(obj.x + obj.w - 10, obj.y + obj.h / 2);
+                    ctx.stroke();
 
                 } else if (obj.type === 'magnet') {
                     // --- MAGNET POWER-UP ITEM ---
@@ -4693,7 +5317,7 @@
                                 }
                             }
                         }
-                    } else if (obj.type !== 'portal' && obj.type !== 'shuriken') {
+                    } else if (obj.type !== 'portal' && obj.type !== 'shuriken' && obj.type !== 'platform') {
                         isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal');
                     }
                 }
@@ -4704,19 +5328,36 @@
                         consecutiveChips++;
                         consecutiveChipsTimer = 120; // 2 seconds combo window
                         
-                        let chipVal = Math.round(20 * getComboMultiplier() * activeMultiplier);
+                        let isPlat = !!obj.isPlatinum;
+                        let multiplierFactor = isPlat ? 5 : 1;
+                        let chipVal = Math.round(20 * getComboMultiplier() * activeMultiplier) * multiplierFactor;
                         score += chipVal;
-                        dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 15);
-                        totalChips++;
-                        runChipsCollected++;
-                        totalChipsCollectedAllTime++;
+                        dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 15 * multiplierFactor);
+                        totalChips += multiplierFactor;
+                        runChipsCollected += multiplierFactor;
+                        totalChipsCollectedAllTime += multiplierFactor;
                         localStorage.setItem('ninja_total_chips', totalChips);
                         localStorage.setItem('ninja_total_chips_collected_all_time', totalChipsCollectedAllTime);
-                        Sound.playChip();
-                        addComboPoints(5);
-                        addXP(5);
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `+${chipVal}`, 'chip');
-                        spawnChipCollectParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                        
+                        if (isPlat) {
+                            Sound.playPowerup();
+                            spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `PLATINUM +${chipVal}`, 'revive');
+                            // Platinum Alchemist invincibility
+                            if (upgradeAlchemist) {
+                                platinumInvincibilityTimer = 90; // 1.5 seconds invincibility
+                            }
+                            // Spawn platinum sparks
+                            for (let k = 0; k < 8; k++) {
+                                spawnPlatinumSpark(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                            }
+                        } else {
+                            Sound.playChip();
+                            spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, `+${chipVal}`, 'chip');
+                            spawnChipCollectParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                        }
+                        
+                        addComboPoints(5 * multiplierFactor);
+                        addXP(5 * multiplierFactor);
                         
                         // Screen kick on high combos
                         if (consecutiveChips > 3) {
@@ -4741,16 +5382,18 @@
                     } else if (obj.type === 'shield_pu') {
                         // Shield Powerup Active
                         hasShield = true;
+                        shieldHP = upgradeShield ? 2 : 1;
                         Sound.playPowerup();
                         addComboPoints(10);
                         addXP(10);
-                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "SHIELD ACTIVE", 'powerup');
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, upgradeShield ? "REINFORCED SHIELD ACTIVE" : "SHIELD ACTIVE", 'powerup');
                         gameObjects.splice(i, 1);
                         continue;
 
                     } else if (obj.type === 'hourglass') {
                         // Chrono Hourglass Powerup Active (gives activatable slow-mo charge)
-                        hourglassCharges = Math.min(3, hourglassCharges + 1);
+                        let maxCharges = upgradeHourglass ? 4 : 3;
+                        hourglassCharges = Math.min(maxCharges, hourglassCharges + 1);
                         document.getElementById('slowmo-charge-badge').innerText = hourglassCharges;
                         Sound.playPowerup();
                         addComboPoints(10);
@@ -4797,6 +5440,22 @@
                         gameObjects.splice(i, 1);
                         continue;
 
+                    } else if (obj.type === 'reflector_orb') {
+                        if (!obj.deflected) {
+                            obj.deflected = true;
+                            Sound.playNearMiss();
+                            spawnScorePopup(obj.x, obj.y - 15, "REFLECT!", 'score');
+                            score += Math.round(10 * getComboMultiplier() * activeMultiplier);
+                        }
+                        continue;
+                    } else if (obj.type === 'boss_mine') {
+                        if (!obj.deflected) {
+                            obj.deflected = true;
+                            Sound.playNearMiss();
+                            spawnScorePopup(obj.x, obj.y - 15, "REFLECT!", 'score');
+                            score += Math.round(15 * getComboMultiplier() * activeMultiplier);
+                        }
+                        continue;
                     } else if (obj.type === 'drone' && isDashing) {
                         // --- DASH ATTACK (Destroys Flying Drones) ---
                         if (obj.subtype === 'shielded' && obj.hp > 1) {
@@ -4836,13 +5495,47 @@
 
                     } else {
                         // Collision hazard
+                        if (platinumInvincibilityTimer > 0) {
+                            if (obj.type === 'drone') {
+                                let killVal = Math.round(50 * getComboMultiplier() * activeMultiplier);
+                                score += killVal;
+                                dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 25);
+                                runDronesDestroyed++;
+                                Sound.playKill();
+                                addComboPoints(20);
+                                addXP(10);
+                                spawnScorePopup(obj.x + obj.w / 2, obj.y - 15, `ALCHEMIST SMASH +${killVal}`, 'kill');
+                                spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                                hitstopFrames = 3;
+                                shakeTime = 8;
+                                shakeIntensity = 4;
+                                gameObjects.splice(i, 1);
+                                continue;
+                            } else {
+                                Sound.playShatter();
+                                spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                                spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, "PHASED", 'near_miss');
+                                gameObjects.splice(i, 1);
+                                continue;
+                            }
+                        }
+
                         if (hasShield) {
-                            // Shatter shield bubble, absorb hit
-                            hasShield = false;
-                            Sound.playShatter();
-                            spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
-                            shakeTime = 12;
-                            shakeIntensity = 6;
+                            shieldHP--;
+                            recoveryDampeningTimer = 90; // 1.5s recovery speed dampening on shield hit
+                            if (shieldHP <= 0) {
+                                hasShield = false;
+                                Sound.playShatter();
+                                spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                                shakeTime = 12;
+                                shakeIntensity = 6;
+                            } else {
+                                Sound.playNearMiss(); // play a deflection sound
+                                spawnScorePopup(player.x + player.width / 2, player.y - 35, "SHIELD DEFLECT!", 'score');
+                                spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
+                                shakeTime = 6;
+                                shakeIntensity = 3;
+                            }
                             
                             // Splice the barrier object so it doesn't double-trigger
                             gameObjects.splice(i, 1);
@@ -4851,6 +5544,8 @@
                             // Gold Overlord revive ability
                             goldReviveUsed = true;
                             hasShield = true;
+                            shieldHP = upgradeShield ? 2 : 1;
+                            recoveryDampeningTimer = 90; // 1.5s recovery speed dampening on gold revive
                             Sound.playPowerup();
                             hitstopFrames = 40; // Freeze frame impact
                             shakeTime = 20;
@@ -4867,9 +5562,14 @@
                 }
 
                 // Portal crossing event
-                if (obj.type === 'portal' && !obj.passed && obj.x < player.x) {
+                if (obj.type === 'portal' && !obj.passed && obj.x < player.x && gameState === STATE_PLAYING) {
                     obj.passed = true;
                     currentSector = obj.sectorTarget;
+                    if (currentSector > highestSectorReachedAllTime) {
+                        highestSectorReachedAllTime = currentSector;
+                        localStorage.setItem('ninja_highest_sector_all_time', highestSectorReachedAllTime);
+                        updateSectorButtonsUI();
+                    }
                     transitionQueued = false;
                     
                     // Reset input and time scale to ensure clean player control in the new sector
@@ -4925,6 +5625,14 @@
                                 Sound.playNearMiss();
                                 addComboPoints(15);
                                 spawnScorePopup(player.x + player.width / 2, player.y - 45, `NEAR MISS +${nearMissVal}`, 'near_miss');
+                                
+                                // Chrono Overdrive: +1 slowmo charge on Near-Miss
+                                if (upgradeChrono) {
+                                    let maxCharges = upgradeHourglass ? 4 : 3;
+                                    hourglassCharges = Math.min(maxCharges, hourglassCharges + 1);
+                                    document.getElementById('slowmo-charge-badge').innerText = hourglassCharges;
+                                    spawnScorePopup(player.x + player.width / 2, player.y - 65, "+1 SLOWMO", 'powerup');
+                                }
                                 
                                 // Tactile screen shake and hitstop for near miss
                                 shakeTime = 6;
@@ -5636,6 +6344,44 @@
             ctx.fillText("DASH ENERGY", LOGICAL_WIDTH / 2, barY - 8);
             ctx.restore();
 
+            if (isBossActive && boss.active) {
+                ctx.save();
+                let bW = 380;
+                let bH = 16;
+                let bX = LOGICAL_WIDTH / 2 - bW / 2;
+                let bY = 70;
+
+                ctx.fillStyle = 'rgba(16, 6, 36, 0.75)';
+                ctx.strokeStyle = '#ff003c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(bX, bY, bW, bH, 4);
+                ctx.fill();
+                ctx.stroke();
+
+                let hpRatio = boss.hp / boss.maxHp;
+                let fillW = bW * hpRatio;
+                if (fillW > 0) {
+                    let grad = ctx.createLinearGradient(bX, 0, bX + bW, 0);
+                    grad.addColorStop(0, '#ff003c');
+                    grad.addColorStop(1, '#ffaa00');
+                    ctx.fillStyle = grad;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ff003c';
+                    ctx.beginPath();
+                    ctx.roundRect(bX, bY, fillW, bH, 4);
+                    ctx.fill();
+                }
+
+                ctx.font = '900 11px "Orbitron", sans-serif';
+                ctx.fillStyle = '#ff003c';
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#ff003c';
+                ctx.fillText(`CHRONO OVERLORD HP: ${boss.hp} / ${boss.maxHp}`, LOGICAL_WIDTH / 2, bY + 12);
+                ctx.restore();
+            }
+
             // Permanent location label in the top-right corner
             ctx.save();
             ctx.font = 'bold 18px "Orbitron", sans-serif';
@@ -6184,13 +6930,40 @@
 
         function restartGame() {
             chooseRunThemes();
-            score = 0;
-            gameFrames = 0;
-            gameTime = 0;
+            
+            currentSector = selectedStartSector;
+            const sectorStartMap = {
+                1: { score: 0, time: 0 },
+                2: { score: 300, time: 30 },
+                3: { score: 650, time: 65 },
+                4: { score: 1050, time: 105 },
+                5: { score: 1500, time: 150 },
+                6: { score: 2000, time: 200 },
+                7: { score: 2550, time: 255 },
+                8: { score: 3150, time: 315 },
+                9: { score: 3800, time: 380 },
+                10: { score: 4500, time: 450 },
+                11: { score: 5250, time: 525 },
+                12: { score: 6050, time: 605 }
+            };
+            let startParams = sectorStartMap[currentSector] || { score: 0, time: 0 };
+            score = startParams.score;
+            gameTime = startParams.time;
+
+            // Reset Boss Fight state variables
+            isBossActive = false;
+            boss.active = false;
+            boss.hp = 0;
+            boss.phase = 'intro';
+            gameFrames = Math.floor(gameTime * 60);
+
             timeScale = 1.0;
             dashEnergy = 100;
             magnetTimer = 0;
             hasShield = false;
+            shieldHP = 0;
+            platinumInvincibilityTimer = 0;
+            recoveryDampeningTimer = 0;
             hitstopFrames = 0;
             comboPoints = 0;
             comboRank = 'D';
@@ -6203,8 +6976,6 @@
             popups = [];
             obstacleTimer = 100;
             doubleObstacleQueued = false;
-            
-            currentSector = 1;
             transitionQueued = false;
             sectorAnnouncementTimer = 0;
             styleAnnouncementTimer = 0;
@@ -6273,6 +7044,7 @@
                 return; // Prevent accidental click-throughs right after closing overlays
             }
             if (gameState === STATE_SPLASH) {
+                goFullscreen();
                 gameState = STATE_START;
                 updateHTMLButtons();
                 screenFlashColor = 'rgba(189, 0, 255, 0.4)';
@@ -6281,12 +7053,7 @@
                 return;
             }
             if (gameState === STATE_START) {
-                // Try to go fullscreen on mobile devices to hide browser navigation/address bars
-                const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-                if (isMobileDevice) {
-                    goFullscreen();
-                }
-
+                goFullscreen();
                 restartGame();
                 tutorialDismissed = firstJumpOccurred;
                 obstacleTimer = 180;
@@ -6370,11 +7137,46 @@
             }
         });
 
+        // Helper to convert client coordinates to canvas logical coordinates
+        function getLogicalClickPos(e) {
+            let rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            let x = ((clientX - rect.left) / rect.width) * LOGICAL_WIDTH;
+            let y = ((clientY - rect.top) / rect.height) * LOGICAL_HEIGHT;
+            return { x: x, y: y };
+        }
+
+        // Tap directly on boss to deal 1 HP damage (without jumping)
+        function checkBossTap(e) {
+            if (isBossActive && boss.active && boss.phase !== 'defeat' && boss.phase !== 'intro') {
+                let pos = getLogicalClickPos(e);
+                let padding = 35; // tap hit zone padding
+                if (pos.x >= boss.x - padding && pos.x <= boss.x + boss.w + padding &&
+                    pos.y >= boss.y - padding && pos.y <= boss.y + boss.h + padding) {
+                    
+                    damageBoss(1);
+                    return true; // Tapped on boss, event is handled
+                }
+            }
+            return false;
+        }
+
         // Touch event bindings for mobile, mousedown/up for desktop
         canvas.addEventListener('touchstart', (e) => {
             touchActive = true;
             if (isPaused) {
                 togglePause();
+                e.preventDefault();
+                return;
+            }
+            if (checkBossTap(e)) {
                 e.preventDefault();
                 return;
             }
@@ -6391,6 +7193,9 @@
             if (touchActive) return;
             if (isPaused) {
                 togglePause();
+                return;
+            }
+            if (checkBossTap(e)) {
                 return;
             }
             onPress();
@@ -6664,6 +7469,8 @@
             playSimulatedAd('revive', () => {
                 adRevivesUsed++;
                 hasShield = true;
+                shieldHP = upgradeShield ? 2 : 1;
+                recoveryDampeningTimer = 90; // 1.5s recovery speed dampening on revive
                 player.vy = 0;
                 player.y = FLOOR_Y - player.height;
                 player.isGrounded = true;
@@ -6799,25 +7606,50 @@
         };
 
         window.switchShopTab = function(tabName) {
+            shopActiveTab = tabName;
+            
             const tabSkins = document.getElementById('tab-skins-btn');
+            const tabUpgrades = document.getElementById('tab-upgrades-btn');
             const tabIap = document.getElementById('tab-iap-btn');
             const skinsList = document.getElementById('shop-items-list');
             const iapList = document.getElementById('shop-iap-list');
             
+            tabSkins.classList.remove('active');
+            tabUpgrades.classList.remove('active');
+            tabIap.classList.remove('active');
+            
             if (tabName === 'skins') {
                 tabSkins.classList.add('active');
-                tabIap.classList.remove('active');
+                skinsList.classList.remove('hidden');
+                iapList.classList.add('hidden');
+                renderShop();
+            } else if (tabName === 'upgrades') {
+                tabUpgrades.classList.add('active');
                 skinsList.classList.remove('hidden');
                 iapList.classList.add('hidden');
                 renderShop();
             } else {
-                tabSkins.classList.remove('active');
                 tabIap.classList.add('active');
                 skinsList.classList.add('hidden');
                 iapList.classList.remove('hidden');
                 renderIAPShop();
             }
             Sound.playChip();
+        };
+
+        window.buyUpgrade = function(id, price) {
+            if (totalChips >= price) {
+                totalChips -= price;
+                localStorage.setItem('ninja_total_chips', totalChips);
+                
+                const upg = SHOP_UPGRADES.find(u => u.id === id);
+                if (upg) {
+                    upg.setBought();
+                }
+                
+                Sound.playPowerup();
+                renderShop();
+            }
         };
 
         function renderIAPShop() {
@@ -6885,37 +7717,75 @@
             const listDiv = document.getElementById('shop-items-list');
             listDiv.innerHTML = '';
 
-            SHOP_SKINS.forEach(skin => {
-                const card = document.createElement('div');
-                card.className = 'shop-item-card';
-                if (selectedSkin === skin.id) {
-                    card.classList.add('selected');
-                }
+            if (shopActiveTab === 'skins') {
+                SHOP_SKINS.forEach(skin => {
+                    const card = document.createElement('div');
+                    card.className = 'shop-item-card';
+                    if (selectedSkin === skin.id) {
+                        card.classList.add('selected');
+                    }
 
-                const isOwned = ownedSkins.includes(skin.id);
-                let btnHtml = '';
+                    const isOwned = ownedSkins.includes(skin.id);
+                    let btnHtml = '';
 
-                if (selectedSkin === skin.id) {
-                    btnHtml = `<button class="shop-item-btn equipped" disabled>EQUIPPED</button>`;
-                } else if (isOwned) {
-                    btnHtml = `<button class="shop-item-btn" onclick="equipSkin('${skin.id}')">EQUIP</button>`;
-                } else {
-                    const canAfford = totalChips >= skin.price;
-                    btnHtml = `<button class="shop-item-btn" ${canAfford ? '' : 'disabled'} onclick="buySkin('${skin.id}', ${skin.price})">BUY 🪙 ${skin.price}</button>`;
-                }
+                    if (selectedSkin === skin.id) {
+                        btnHtml = `<button class="shop-item-btn equipped" disabled>EQUIPPED</button>`;
+                    } else if (isOwned) {
+                        btnHtml = `<button class="shop-item-btn" onclick="equipSkin('${skin.id}')">EQUIP</button>`;
+                    } else {
+                        const canAfford = totalChips >= skin.price;
+                        btnHtml = `<button class="shop-item-btn" ${canAfford ? '' : 'disabled'} onclick="buySkin('${skin.id}', ${skin.price})">BUY 🪙 ${skin.price}</button>`;
+                    }
 
-                card.innerHTML = `
-                    <div class="shop-item-info">
-                        <div class="shop-item-preview" style="background-color: ${skin.color}; box-shadow: 0 0 8px ${skin.color}; color: ${skin.color}; border-color: ${skin.trailColor};"></div>
-                        <div class="shop-item-details">
-                            <span class="shop-item-name">${skin.name}</span>
-                            <span class="shop-item-desc">${skin.desc}</span>
+                    card.innerHTML = `
+                        <div class="shop-item-info">
+                            <div class="shop-item-preview" style="background-color: ${skin.color}; box-shadow: 0 0 8px ${skin.color}; color: ${skin.color}; border-color: ${skin.trailColor};"></div>
+                            <div class="shop-item-details">
+                                <span class="shop-item-name">${skin.name}</span>
+                                <span class="shop-item-desc">${skin.desc}</span>
+                            </div>
                         </div>
-                    </div>
-                    ${btnHtml}
-                `;
-                listDiv.appendChild(card);
-            });
+                        ${btnHtml}
+                    `;
+                    listDiv.appendChild(card);
+                });
+            } else if (shopActiveTab === 'upgrades') {
+                SHOP_UPGRADES.forEach(upgrade => {
+                    const card = document.createElement('div');
+                    card.className = 'shop-item-card';
+                    
+                    const bought = upgrade.isBought();
+                    let btnHtml = '';
+                    if (bought) {
+                        card.classList.add('selected');
+                        btnHtml = `<button class="shop-item-btn equipped" disabled>ACQUIRED</button>`;
+                    } else {
+                        const canAfford = totalChips >= upgrade.price;
+                        btnHtml = `<button class="shop-item-btn" ${canAfford ? '' : 'disabled'} onclick="buyUpgrade('${upgrade.id}', ${upgrade.price})">BUY 🪙 ${upgrade.price}</button>`;
+                    }
+
+                    let iconColor = '#00ffff';
+                    if (upgrade.id === 'magnet') iconColor = '#e67e22';
+                    else if (upgrade.id === 'shield') iconColor = '#00ffff';
+                    else if (upgrade.id === 'hourglass') iconColor = '#bd00ff';
+                    else if (upgrade.id === 'chrono') iconColor = '#ff0055';
+                    else if (upgrade.id === 'alchemist') iconColor = '#ffd700';
+
+                    card.innerHTML = `
+                        <div class="shop-item-info">
+                            <div class="shop-item-preview" style="background-color: ${iconColor}; box-shadow: 0 0 8px ${iconColor}; color: #ffffff; border-color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">
+                                ${upgrade.id === 'magnet' ? '🧲' : upgrade.id === 'shield' ? '🛡️' : upgrade.id === 'hourglass' ? '⏳' : upgrade.id === 'chrono' ? '⚡' : '⚗️'}
+                            </div>
+                            <div class="shop-item-details">
+                                <span class="shop-item-name">${upgrade.name}</span>
+                                <span class="shop-item-desc">${upgrade.desc}</span>
+                            </div>
+                        </div>
+                        ${btnHtml}
+                    `;
+                    listDiv.appendChild(card);
+                });
+            }
         }
 
         window.buySkin = function(id, price) {
@@ -6948,8 +7818,7 @@
             const btnHelp = document.getElementById('show-help-start');
             const btnPrivacy = document.getElementById('show-privacy-start');
             const btnPause = document.getElementById('pause-toggle-btn');
-
-
+            const sectorContainer = document.getElementById('start-sector-container');
 
             if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
                 if (container) container.classList.remove('hidden');
@@ -6958,6 +7827,10 @@
                 if (btnDaily) btnDaily.classList.remove('hidden');
                 if (btnHelp) btnHelp.classList.remove('hidden');
                 if (btnPrivacy) btnPrivacy.classList.remove('hidden');
+                if (sectorContainer) {
+                    sectorContainer.classList.remove('hidden');
+                    updateSectorButtonsUI();
+                }
             } else {
                 if (container) container.classList.add('hidden');
                 if (btnStart) btnStart.classList.add('hidden');
@@ -6965,6 +7838,7 @@
                 if (btnDaily) btnDaily.classList.add('hidden');
                 if (btnHelp) btnHelp.classList.add('hidden');
                 if (btnPrivacy) btnPrivacy.classList.add('hidden');
+                if (sectorContainer) sectorContainer.classList.add('hidden');
             }
 
             if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
@@ -6990,6 +7864,46 @@
                     topControls.classList.add('hidden');
                 } else {
                     topControls.classList.remove('hidden');
+                }
+            }
+        }
+        function updateSectorButtonsUI() {
+            const toggleBtn = document.getElementById('sector-drawer-toggle');
+
+            // Update main toggle button label
+            if (toggleBtn) {
+                const labelSpan = toggleBtn.querySelector('span');
+                if (labelSpan) labelSpan.innerText = `🚀 SECTOR: ${selectedStartSector}`;
+            }
+
+            for (let i = 1; i <= 12; i++) {
+                const btn = document.getElementById(`start-sector-${i}-btn`);
+                if (!btn) continue;
+
+                // Update active state
+                if (selectedStartSector === i) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+
+                // Sector 1 is always unlocked
+                if (i === 1) {
+                    btn.removeAttribute('disabled');
+                    btn.classList.remove('locked');
+                    btn.innerHTML = '<span>S1</span>';
+                    continue;
+                }
+
+                // Unlock others based on highestSectorReachedAllTime
+                if (highestSectorReachedAllTime >= i) {
+                    btn.removeAttribute('disabled');
+                    btn.classList.remove('locked');
+                    btn.innerHTML = `<span>S${i}</span>`;
+                } else {
+                    btn.setAttribute('disabled', 'true');
+                    btn.classList.add('locked');
+                    btn.innerHTML = `<span>S${i}</span><span>🔒</span>`;
                 }
             }
         }
@@ -7277,8 +8191,63 @@
         document.getElementById('close-leaderboard-btn').addEventListener('click', hideLeaderboard);
         document.getElementById('submit-score-btn').addEventListener('click', submitScore);
         
+        document.getElementById('test-boss-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
+                triggerBossFight(1);
+            } else {
+                alert("Avvia una partita (clicca per giocare) per far apparire il boss!");
+            }
+        });
+        
         document.getElementById('show-shop-start').addEventListener('click', showShop);
         document.getElementById('close-shop-btn').addEventListener('click', hideShop);
+
+        // Initialize Sector Selector click listeners
+        document.getElementById('sector-drawer-toggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const content = document.getElementById('sector-drawer-content');
+            const toggle = document.getElementById('sector-drawer-toggle');
+            if (content && toggle) {
+                if (content.classList.contains('hidden')) {
+                    content.classList.remove('hidden');
+                    toggle.classList.add('open');
+                } else {
+                    content.classList.add('hidden');
+                    toggle.classList.remove('open');
+                }
+            }
+        });
+
+        document.getElementById('start-sector-1-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedStartSector = 1;
+            updateSectorButtonsUI();
+            const content = document.getElementById('sector-drawer-content');
+            const toggle = document.getElementById('sector-drawer-toggle');
+            if (content) content.classList.add('hidden');
+            if (toggle) toggle.classList.remove('open');
+        });
+
+        document.getElementById('start-sector-2-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedStartSector = 2;
+            updateSectorButtonsUI();
+            const content = document.getElementById('sector-drawer-content');
+            const toggle = document.getElementById('sector-drawer-toggle');
+            if (content) content.classList.add('hidden');
+            if (toggle) toggle.classList.remove('open');
+        });
+
+        document.getElementById('start-sector-3-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedStartSector = 3;
+            updateSectorButtonsUI();
+            const content = document.getElementById('sector-drawer-content');
+            const toggle = document.getElementById('sector-drawer-toggle');
+            if (content) content.classList.add('hidden');
+            if (toggle) toggle.classList.remove('open');
+        });
 
         // Initialize Daily Rewards click listeners
         document.getElementById('show-daily-btn').addEventListener('click', showDailyRewards);
@@ -7286,6 +8255,7 @@
 
         // Initialize Shop Tabs click listeners
         document.getElementById('tab-skins-btn').addEventListener('click', () => switchShopTab('skins'));
+        document.getElementById('tab-upgrades-btn').addEventListener('click', () => switchShopTab('upgrades'));
         document.getElementById('tab-iap-btn').addEventListener('click', () => switchShopTab('iap'));
 
         // Initialize Ad Revive Overlay click listeners
@@ -7407,16 +8377,45 @@
             document.getElementById('google-main-container').style.display = 'none';
             document.getElementById('google-loading-container').style.display = 'flex';
             
-            setTimeout(() => {
-                // Save to localStorage (which triggers CloudSave.saveProfile automatically)
-                localStorage.setItem('ninja_linked_email', email);
-                
-                // Play sound chime
-                Sound.playPowerup();
-                
-                // Done! Close Google overlay and reopen Help panel with updated status
-                hideGoogleSignIn(true);
-            }, 1200);
+            fetch(`../cloud-save.php?action=load&email=${encodeURIComponent(email)}`)
+                .then(res => {
+                    if (res.status === 404) {
+                        localStorage.setItem('ninja_linked_email', email);
+                        CloudSave.saveProfile();
+                        return null;
+                    }
+                    if (!res.ok) throw new Error("Failed to load save from cloud");
+                    return res.json();
+                })
+                .then(data => {
+                    if (data) {
+                        CloudSave.loadAllSaveData(data);
+                        localStorage.setItem('ninja_linked_email', email);
+                        
+                        totalChips = localStorage.getItem('ninja_total_chips') !== null ? parseInt(localStorage.getItem('ninja_total_chips')) : 0;
+                        playerLevel = localStorage.getItem('ninja_level') !== null ? parseInt(localStorage.getItem('ninja_level')) : 1;
+                        playerXP = localStorage.getItem('ninja_xp') !== null ? parseInt(localStorage.getItem('ninja_xp')) : 0;
+                        bestScore = localStorage.getItem('ninja_best_score') !== null ? parseInt(localStorage.getItem('ninja_best_score')) : 0;
+                        selectedSkin = localStorage.getItem('ninja_selected_skin') || 'neon';
+                        ownedSkins = JSON.parse(localStorage.getItem('ninja_owned_skins')) || ['neon'];
+                        
+                        const chipCountBadge = document.getElementById('hud-chip-count');
+                        if (chipCountBadge) chipCountBadge.innerText = totalChips;
+                        const shopChipsBadge = document.getElementById('shop-chips-total');
+                        if (shopChipsBadge) shopChipsBadge.innerText = totalChips;
+                        
+                        generateMissions(false);
+                    }
+                    
+                    Sound.playPowerup();
+                    hideGoogleSignIn(true);
+                })
+                .catch(err => {
+                    console.error("Cloud load error:", err);
+                    localStorage.setItem('ninja_linked_email', email);
+                    Sound.playPowerup();
+                    hideGoogleSignIn(true);
+                });
         }
 
         // Initialize Sound & Pause Toggle click listeners
@@ -7436,6 +8435,33 @@
 
             // Initialize buttons visibility
             updateHTMLButtons();
+
+            // Startup Cloud Sync
+            const startupEmail = localStorage.getItem('ninja_linked_email');
+            if (startupEmail) {
+                fetch(`../cloud-save.php?action=load&email=${encodeURIComponent(startupEmail)}`)
+                    .then(res => {
+                        if (res.ok) return res.json();
+                        return null;
+                    })
+                    .then(data => {
+                        if (data) {
+                            CloudSave.loadAllSaveData(data);
+                            totalChips = localStorage.getItem('ninja_total_chips') !== null ? parseInt(localStorage.getItem('ninja_total_chips')) : 0;
+                            playerLevel = localStorage.getItem('ninja_level') !== null ? parseInt(localStorage.getItem('ninja_level')) : 1;
+                            playerXP = localStorage.getItem('ninja_xp') !== null ? parseInt(localStorage.getItem('ninja_xp')) : 0;
+                            bestScore = localStorage.getItem('ninja_best_score') !== null ? parseInt(localStorage.getItem('ninja_best_score')) : 0;
+                            selectedSkin = localStorage.getItem('ninja_selected_skin') || 'neon';
+                            ownedSkins = JSON.parse(localStorage.getItem('ninja_owned_skins')) || ['neon'];
+                            
+                            const chipCountBadge = document.getElementById('hud-chip-count');
+                            if (chipCountBadge) chipCountBadge.innerText = totalChips;
+                            const shopChipsBadge = document.getElementById('shop-chips-total');
+                            if (shopChipsBadge) shopChipsBadge.innerText = totalChips;
+                        }
+                    })
+                    .catch(err => console.warn("Startup cloud sync failed:", err));
+            }
 
             // --- MAIN CORE GAME LOOP ---
             let lastFrameTime = performance.now();
@@ -7570,11 +8596,31 @@
                         }
 
                         // Check sector transitions (only in normal playing state)
-                        if (gameState === STATE_PLAYING) {
-                            if (score >= 400 && score < 1000 && currentSector === 1 && !transitionQueued) {
+                        if (gameState === STATE_PLAYING && !transitionQueued && !isBossActive) {
+                            if (currentSector === 1 && score >= 300) {
                                 triggerSectorTransition(2);
-                            } else if (score >= 1000 && currentSector === 2 && !transitionQueued) {
+                            } else if (currentSector === 2 && score >= 650) {
                                 triggerSectorTransition(3);
+                            } else if (currentSector === 3 && score >= 1050) {
+                                triggerSectorTransition(4);
+                            } else if (currentSector === 4 && score >= 1500) {
+                                triggerBossFight(1);
+                            } else if (currentSector === 5 && score >= 2000) {
+                                triggerSectorTransition(6);
+                            } else if (currentSector === 6 && score >= 2550) {
+                                triggerSectorTransition(7);
+                            } else if (currentSector === 7 && score >= 3150) {
+                                triggerSectorTransition(8);
+                            } else if (currentSector === 8 && score >= 3800) {
+                                triggerBossFight(2);
+                            } else if (currentSector === 9 && score >= 4500) {
+                                triggerSectorTransition(10);
+                            } else if (currentSector === 10 && score >= 5250) {
+                                triggerSectorTransition(11);
+                            } else if (currentSector === 11 && score >= 6050) {
+                                triggerSectorTransition(12);
+                            } else if (currentSector === 12 && score >= 7000) {
+                                triggerBossFight(3);
                             }
                         }
                     }
@@ -7641,6 +8687,7 @@
                 // Draw obstacles, particles and popups (updateOnly = false)
                 if (hitstopFrames === 0 && !isPaused) {
                     updateAndDrawGameObjects(false);
+                    updateAndDrawBoss(ctx);
                     updateAndDrawParticles(false);
                     updateAndDrawPopups(false);
                 } else {
@@ -7815,7 +8862,53 @@
                                 ctx.stroke();
                             }
                             ctx.restore();
+                        } else if (obj.type === 'boss_mine') {
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = '#ff003c';
+                            ctx.fillStyle = '#1c0207';
+                            ctx.strokeStyle = '#ff003c';
+                            ctx.lineWidth = 2.5;
+                            ctx.beginPath();
+                            ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 4, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        } else if (obj.type === 'reflector_orb') {
+                            let glowColor = obj.deflected ? '#ffaa00' : '#00ffff';
+                            ctx.shadowBlur = 12;
+                            ctx.shadowColor = glowColor;
+                            ctx.fillStyle = '#ffffff';
+                            ctx.strokeStyle = glowColor;
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.arc(obj.x + obj.w / 2, obj.y + obj.h / 2, obj.w / 2 - 2, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
                         }
+                        ctx.restore();
+                    }
+                    if (isBossActive && boss.active) {
+                        ctx.save();
+                        let colorGlow = boss.id === 1 ? '#00ffff' : (boss.id === 2 ? '#ff00b0' : '#ffd700');
+                        ctx.shadowBlur = 25;
+                        ctx.shadowColor = colorGlow;
+                        ctx.strokeStyle = colorGlow;
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, boss.w / 2 - 10, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = '#0a0515';
+                        ctx.beginPath();
+                        ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, 22, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = colorGlow;
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = colorGlow;
+                        ctx.beginPath();
+                        ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, 10, 0, Math.PI * 2);
+                        ctx.fill();
                         ctx.restore();
                     }
                     updateAndDrawParticles(false);
@@ -7959,6 +9052,345 @@
                     }
                 } else {
                     canvas.style.filter = 'none';
+                }
+            }
+
+            function rectIntersect(r1, r2) {
+                return r1.x < r2.x + r2.w &&
+                       r1.x + r1.w > r2.x &&
+                       r1.y < r2.y + r2.h &&
+                       r1.y + r1.h > r2.y;
+            }
+
+            function triggerPlayerDamage() {
+                if (platinumInvincibilityTimer > 0) return;
+                if (hasShield) {
+                    shieldHP--;
+                    recoveryDampeningTimer = 90;
+                    if (shieldHP <= 0) {
+                        hasShield = false;
+                        Sound.playShatter();
+                        spawnDroneExplosionParticles(player.x + player.width / 2, player.y + player.height / 2);
+                        shakeTime = 12;
+                        shakeIntensity = 6;
+                    } else {
+                        Sound.playNearMiss();
+                        spawnScorePopup(player.x + player.width / 2, player.y - 35, "SHIELD DEFLECT!", 'score');
+                        spawnDroneExplosionParticles(player.x + player.width / 2, player.y + player.height / 2);
+                        shakeTime = 6;
+                        shakeIntensity = 3;
+                    }
+                } else if (selectedSkin === 'gold' && !goldReviveUsed) {
+                    goldReviveUsed = true;
+                    hasShield = true;
+                    shieldHP = upgradeShield ? 2 : 1;
+                    recoveryDampeningTimer = 90;
+                    Sound.playPowerup();
+                    hitstopFrames = 40;
+                    shakeTime = 20;
+                    shakeIntensity = 12;
+                    spawnScorePopup(player.x + player.width / 2, player.y - 30, "GOLDEN REVIVE!", 'revive');
+                    spawnDroneExplosionParticles(player.x + player.width / 2, player.y + player.height / 2);
+                } else {
+                    triggerGameOver();
+                }
+            }
+
+            function damageBoss(amount) {
+                if (boss.phase === 'defeat' || boss.phase === 'intro') return;
+                boss.hp -= amount;
+                boss.hitFlashTimer = 10;
+                Sound.playShatter();
+                spawnDroneExplosionParticles(boss.x + boss.w / 2, boss.y + boss.h / 2);
+                shakeTime = 12;
+                shakeIntensity = 6;
+                score += Math.round(50 * getComboMultiplier() * activeMultiplier);
+                spawnScorePopup(boss.x + boss.w / 2, boss.y - 15, `BOSS HIT! -${amount} HP`, 'score');
+                hitstopFrames = 5;
+                if (boss.hp <= 0) {
+                    boss.hp = 0;
+                    boss.phase = 'defeat';
+                    boss.phaseTimer = 90;
+                    Sound.playKill();
+                    sectorAnnouncementText = "CHRONO OVERLORD DEFEATED!";
+                    sectorAnnouncementTimer = 120;
+                }
+            }
+
+            function triggerBossFight(bossId) {
+                isBossActive = true;
+                boss.active = true;
+                boss.id = bossId;
+                boss.maxHp = bossId === 1 ? 15 : (bossId === 2 ? 30 : 50);
+                boss.hp = boss.maxHp;
+                boss.x = LOGICAL_WIDTH + 150;
+                boss.y = 150;
+                boss.w = 120;
+                boss.h = 120;
+                boss.phase = 'intro';
+                boss.phaseTimer = 120;
+                boss.hitFlashTimer = 0;
+                boss.sineOffset = 0;
+                gameObjects = gameObjects.filter(obj => obj.type === 'chip' || obj.type === 'shield' || obj.type === 'magnet');
+                sectorAnnouncementText = "WARNING: CHRONO OVERLORD DETECTED!";
+                sectorAnnouncementTimer = 120;
+                Sound.playLevelUp();
+            }
+
+            function updateAndDrawBoss(ctx) {
+                if (!boss.active) return;
+                
+                if (gameState !== STATE_PLAYING || isReviveOverlayActive) {
+                    ctx.save();
+                    let colorGlow = boss.hitFlashTimer > 0 ? '#ff0000' : (boss.id === 1 ? '#00ffff' : (boss.id === 2 ? '#ff00b0' : '#ffd700'));
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = colorGlow;
+                    ctx.strokeStyle = colorGlow;
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, boss.w / 2 - 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#0a0515';
+                    ctx.beginPath();
+                    ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, 22, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = colorGlow;
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = colorGlow;
+                    ctx.beginPath();
+                    ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                    return;
+                }
+                
+                let isDashing = isPressing && pressDuration > 8;
+                boss.phaseTimer -= 1 * timeScale;
+                
+                if (boss.phase === 'intro') {
+                    let targetX = LOGICAL_WIDTH - 200;
+                    if (boss.x > targetX) {
+                        boss.x -= 3 * timeScale;
+                    } else {
+                        boss.x = targetX;
+                    }
+                    if (boss.phaseTimer <= 0) {
+                        boss.phase = 'hover';
+                        boss.phaseTimer = 90 + Math.random() * 60;
+                    }
+                }
+                else if (boss.phase === 'hover') {
+                    boss.sineOffset += 0.05 * timeScale;
+                    boss.y = 150 + Math.sin(boss.sineOffset) * 35;
+                    if (boss.phaseTimer <= 0) {
+                        let r = Math.random();
+                        if (r < 0.35) {
+                            boss.phase = 'laser_charge';
+                            boss.phaseTimer = 65;
+                            boss.laserTargetY = player.y + player.height / 2;
+                            Sound.playLevelUp();
+                        } else if (r < 0.7) {
+                            boss.phase = 'spawn_mines';
+                            boss.phaseTimer = 45;
+                        } else {
+                            boss.phase = 'charge';
+                            boss.phaseTimer = 100;
+                            boss.laserTargetY = boss.y;
+                            boss.chargeTargetY = 0;
+                        }
+                    }
+                }
+                else if (boss.phase === 'laser_charge') {
+                    boss.sineOffset += 0.02 * timeScale;
+                    boss.y = 150 + Math.sin(boss.sineOffset) * 20;
+                    if (boss.phaseTimer <= 0) {
+                        boss.phase = 'laser_fire';
+                        boss.phaseTimer = 30;
+                        Sound.playLaser();
+                    }
+                }
+                else if (boss.phase === 'laser_fire') {
+                    if (boss.phaseTimer <= 0) {
+                        boss.phase = 'hover';
+                        boss.phaseTimer = 120 + Math.random() * 60;
+                    }
+                }
+                else if (boss.phase === 'spawn_mines') {
+                    for (let i = 0; i < 3; i++) {
+                        let mineY;
+                        if (i === 0) mineY = FLOOR_Y - 45; // low (ground obstacle - forces jump or dash)
+                        else if (i === 1) mineY = FLOOR_Y - 125; // mid-air
+                        else mineY = boss.y + 40; // high
+                        
+                        gameObjects.push({
+                            type: 'boss_mine',
+                            x: boss.x - 20,
+                            y: mineY,
+                            w: 30,
+                            h: 30,
+                            passed: false
+                        });
+                    }
+                    let numOrbs = Math.random() < 0.5 ? 1 : 2;
+                    for (let i = 0; i < numOrbs; i++) {
+                        gameObjects.push({
+                            type: 'reflector_orb',
+                            x: boss.x - 40,
+                            y: boss.y + 50 + (Math.random() - 0.5) * 80,
+                            w: 24,
+                            h: 24,
+                            passed: false
+                        });
+                    }
+                    boss.phase = 'hover';
+                    boss.phaseTimer = 120 + Math.random() * 60;
+                }
+                else if (boss.phase === 'charge') {
+                    if (boss.chargeTargetY === 0) {
+                        boss.chargeTargetY = player.y + player.height / 2 - boss.h / 2;
+                    }
+                    
+                    if (boss.phaseTimer > 50) {
+                        boss.x -= 12 * timeScale;
+                        boss.y += (boss.chargeTargetY - boss.y) * 0.15 * timeScale;
+                    } else if (boss.phaseTimer > 0) {
+                        let targetX = LOGICAL_WIDTH - 200;
+                        boss.x += (targetX - boss.x) * 0.1 * timeScale;
+                        boss.y += (150 - boss.y) * 0.08 * timeScale;
+                    } else {
+                        boss.phase = 'hover';
+                        boss.phaseTimer = 120 + Math.random() * 60;
+                    }
+                }
+                else if (boss.phase === 'defeat') {
+                    if (gameFrames % 4 === 0) {
+                        spawnDroneExplosionParticles(boss.x + boss.w * Math.random(), boss.y + boss.h * Math.random());
+                        Sound.playShatter();
+                    }
+                    if (boss.phaseTimer <= 0) {
+                        boss.active = false;
+                        isBossActive = false;
+                        for (let i = 0; i < 20; i++) {
+                            spawnChip(boss.x + (Math.random() - 0.5) * 80, boss.y + (Math.random() - 0.5) * 80);
+                        }
+                        spawnPowerup('multiplier_star');
+                        triggerSectorTransition(currentSector + 1);
+                    }
+                }
+                
+                if (boss.hitFlashTimer > 0) {
+                    boss.hitFlashTimer -= 1;
+                }
+                
+                if (boss.phase !== 'defeat' && boss.phase !== 'intro') {
+                    let bossBox = { x: boss.x + 10, y: boss.y + 10, w: boss.w - 20, h: boss.h - 20 };
+                    let playerBox = { x: player.x, y: player.y, w: player.width, h: player.height };
+                    if (rectIntersect(bossBox, playerBox)) {
+                        damageBoss(1);
+                        Sound.playShatter();
+                        spawnDroneExplosionParticles(boss.x + boss.w / 2, boss.y + boss.h / 2);
+                        
+                        if (boss.phase === 'charge') {
+                            boss.phaseTimer = 50;
+                        }
+                        
+                        // Bounce the player up for satisfying feedback
+                        player.vy = -7.5;
+                        player.isGrounded = false;
+                        isPressing = false;
+                    }
+                }
+                
+                ctx.save();
+                let colorGlow = boss.hitFlashTimer > 0 ? '#ff0000' : (boss.id === 1 ? '#00ffff' : (boss.id === 2 ? '#ff00b0' : '#ffd700'));
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = colorGlow;
+                ctx.strokeStyle = colorGlow;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, boss.w / 2 - 10, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(boss.x + boss.w / 2, boss.y + boss.h / 2);
+                ctx.rotate(gameFrames * 0.04);
+                ctx.strokeStyle = colorGlow;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(-boss.w / 2 + 20, -boss.h / 2 + 20, boss.w - 40, boss.h - 40, 8);
+                ctx.stroke();
+                ctx.restore();
+                
+                ctx.fillStyle = '#0a0515';
+                ctx.beginPath();
+                ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, 22, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = colorGlow;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                
+                ctx.fillStyle = boss.phase === 'laser_charge' || boss.phase === 'laser_fire' ? '#ff003c' : colorGlow;
+                ctx.beginPath();
+                ctx.arc(boss.x + boss.w / 2, boss.y + boss.h / 2, 10 + Math.sin(gameFrames * 0.15) * 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#ff7700';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff7700';
+                if (boss.phase === 'charge') {
+                    ctx.fillStyle = '#ff003c';
+                    ctx.shadowColor = '#ff003c';
+                }
+                if (gameFrames % 3 !== 0) {
+                    ctx.beginPath();
+                    ctx.arc(boss.x + boss.w - 20, boss.y + 35, 10 + Math.random() * 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(boss.x + boss.w - 20, boss.y + boss.h - 35, 10 + Math.random() * 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+                
+                if (boss.phase === 'laser_charge') {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(255, 0, 60, ' + (0.4 + Math.abs(Math.sin(gameFrames * 0.2)) * 0.6) + ')';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([8, 6]);
+                    ctx.beginPath();
+                    ctx.moveTo(boss.x + 20, boss.y + boss.h / 2);
+                    ctx.lineTo(0, boss.laserTargetY);
+                    ctx.stroke();
+                    ctx.strokeStyle = '#ff003c';
+                    ctx.beginPath();
+                    ctx.arc(player.x + player.width / 2, boss.laserTargetY, 20, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                else if (boss.phase === 'laser_fire') {
+                    ctx.save();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#ff003c';
+                    ctx.lineWidth = 10;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = '#ff003c';
+                    ctx.beginPath();
+                    ctx.moveTo(boss.x + 20, boss.y + boss.h / 2);
+                    ctx.lineTo(0, boss.laserTargetY - 10);
+                    ctx.lineTo(0, boss.laserTargetY + 10);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    let playerCenterY = player.y + player.height / 2;
+                    let playerCenterX = player.x + player.width / 2;
+                    let laserYAtPlayer = boss.y + boss.h / 2 + ((boss.laserTargetY - (boss.y + boss.h / 2)) * (boss.x - playerCenterX)) / boss.x;
+                    if (Math.abs(playerCenterY - laserYAtPlayer) < 25 && playerCenterX < boss.x) {
+                        triggerPlayerDamage();
+                    }
                 }
             }
 
