@@ -6931,7 +6931,16 @@
             
             ctx.font = '500 14px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.fillText("v1.5.2 - Fixed Timestep Loop Restoration", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
+            ctx.fillText("v1.5.4 - Perfect Sonic Loop Launch Update", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
+            ctx.restore();
+
+            // Draw version string in bottom-left corner of homepage
+            ctx.save();
+            ctx.textAlign = 'left';
+            ctx.font = '900 14px "Orbitron", sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+            ctx.shadowBlur = 0;
+            ctx.fillText("VERSION v1.5.4", 35, LOGICAL_HEIGHT - 35);
             ctx.restore();
 
             ctx.save();
