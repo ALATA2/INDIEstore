@@ -4429,8 +4429,8 @@
                 recoveryDampeningTimer -= 1 * timeScale;
             }
 
-            // If a boss is active or transition is queued, pause all obstacle spawning!
-            if (isBossActive || transitionQueued) {
+            // If a boss is active, transition is queued, or player is looping, pause all obstacle spawning!
+            if (isBossActive || transitionQueued || player.isLooping) {
                 return;
             }
 
@@ -4964,7 +4964,7 @@
                         let isHolo = (selectedSkin === 'holo');
                         let hasMagnet = magnetTimer > 0 || isHolo;
                         let speedMultiplier = recoveryDampeningTimer > 0 ? 0.65 : 1.0;
-                        let currentScrollSpeed = baseObstacleSpeed * speedMultiplier;
+                        let currentScrollSpeed = player.isLooping ? 0 : baseObstacleSpeed * speedMultiplier;
 
                         if ((obj.type === 'reflector_orb' || obj.type === 'boss_mine') && obj.deflected) {
                             let dx = (boss.x + boss.w / 2) - (obj.x + obj.w / 2);
@@ -8678,7 +8678,9 @@
                     if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
                         gameFrames++;
                         gameTime += (1 / 60) * timeScale;
-                        scrollX += (gameState === STATE_BONUS_ROOM ? 14 : 7) * timeScale;
+                        if (!player.isLooping) {
+                            scrollX += (gameState === STATE_BONUS_ROOM ? 14 : 7) * timeScale;
+                        }
 
                         // Decays style points very slowly over time
                         if (gameFrames % 10 === 0) {
