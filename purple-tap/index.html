@@ -4067,6 +4067,7 @@
             isLooping: false,
             loopObject: null,
             loopAngle: 0,
+            launchTimer: 0,
             
             // Squash and Stretch parameters for movement juice
             scaleX: 1,
@@ -4092,6 +4093,7 @@
                 this.isLooping = false;
                 this.loopObject = null;
                 this.loopAngle = 0;
+                this.launchTimer = 0;
             },
 
             jump() {
@@ -4148,8 +4150,9 @@
                         this.loopObject = null;
                         
                         // Launch Ninja high into the sky!
-                        this.vy = -20;
+                        this.vy = -25;
                         this.isGrounded = false;
+                        this.launchTimer = 35; // Shield launch velocity from immediate dash damping
                         this.doubleJumpAvailable = (selectedSkin === 'platinum');
                         
                         Sound.playPowerup();
@@ -4169,6 +4172,11 @@
                     return; // Bypass normal physics
                 }
 
+                // Decrement launch control dampening timer
+                if (this.launchTimer > 0) {
+                    this.launchTimer -= 1 * timeScale;
+                }
+
                 // Decrement platinum alchemist invincibility timer
                 if (platinumInvincibilityTimer > 0) {
                     platinumInvincibilityTimer -= 1 * timeScale;
@@ -4183,7 +4191,9 @@
                 if (isSlowMoActive) {
                     if (isDashing) {
                         runUsedDash = true;
-                        this.vy *= 0.88;
+                        if (this.launchTimer <= 0) {
+                            this.vy *= 0.88;
+                        }
                         this.x += (520 - this.x) * 0.15;
                     } else {
                         this.x += (200 - this.x) * 0.08;
@@ -4730,7 +4740,7 @@
             for (let k = 1; k <= 6; k++) {
                 let t = k / 7;
                 let chipX = launchX + t * 450;
-                let peakHeight = 350;
+                let peakHeight = 200;
                 let chipY = FLOOR_Y - 80 - Math.sin(t * Math.PI) * peakHeight;
                 spawnChip(chipX, chipY, true);
             }
