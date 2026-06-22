@@ -4152,6 +4152,7 @@
                         
                         if (isPressing) {
                             // Perfect Launch Ninja high into the sky!
+                            this.y = FLOOR_Y - this.height - 15; // Move slightly above the ground to prevent instant floor collision snap
                             this.vy = -25;
                             this.isGrounded = false;
                             this.launchTimer = 35; // Shield launch velocity from immediate dash damping
