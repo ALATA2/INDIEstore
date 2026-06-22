@@ -2091,6 +2091,7 @@
         <!-- Top Right Controls (Settings & Sound Toggle) -->
         <div class="top-controls-container">
             <button id="pause-toggle-btn" class="control-btn pause-toggle-btn hidden">⏸️</button>
+            <button id="debug-loop-btn" class="control-btn hidden" style="border-color: #ff0055; color: #ff0055; font-size: 14px; font-weight: bold; width: auto; border-radius: 8px; padding: 0 10px;">🌀 LOOP</button>
             <button id="settings-toggle-btn" class="control-btn settings-toggle-btn">⚙️</button>
             <button id="sound-toggle-btn" class="control-btn sound-toggle-btn">🔊</button>
         </div>
@@ -7272,6 +7273,15 @@
                 return;
             }
             
+            // Test loop trigger on L key (if in STATE_PLAYING)
+            if (e.code === 'KeyL' || e.key === 'l' || e.key === 'L') {
+                e.preventDefault();
+                if (gameState === STATE_PLAYING) {
+                    spawnSonicLoop();
+                }
+                return;
+            }
+            
             if (isPaused) return; // Prevent actions when paused
 
             if (document.getElementById('leaderboard-overlay').classList.contains('active') ||
@@ -8018,6 +8028,7 @@
             const btnHelp = document.getElementById('show-help-start');
             const btnPrivacy = document.getElementById('show-privacy-start');
             const btnPause = document.getElementById('pause-toggle-btn');
+            const btnDebugLoop = document.getElementById('debug-loop-btn');
             const sectorContainer = document.getElementById('start-sector-container');
 
             if (gameState === STATE_START || gameState === STATE_GAMEOVER) {
@@ -8044,11 +8055,13 @@
             if (gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) {
                 if (btnSlowMo) btnSlowMo.classList.remove('hidden');
                 if (btnPause) btnPause.classList.remove('hidden');
+                if (btnDebugLoop) btnDebugLoop.classList.remove('hidden');
                 const slowMoBadge = document.getElementById('slowmo-charge-badge');
                 if (slowMoBadge) slowMoBadge.innerText = hourglassCharges;
             } else {
                 if (btnSlowMo) btnSlowMo.classList.add('hidden');
                 if (btnPause) btnPause.classList.add('hidden');
+                if (btnDebugLoop) btnDebugLoop.classList.add('hidden');
             }
 
             if (gameState === STATE_GAMEOVER && runChipsCollected > 0) {
@@ -8616,6 +8629,16 @@
                 pBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); // Avoid triggering canvas tap immediately
                     togglePause();
+                });
+            }
+
+            const debugLoopBtn = document.getElementById('debug-loop-btn');
+            if (debugLoopBtn) {
+                debugLoopBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Avoid triggering canvas tap immediately
+                    if (gameState === STATE_PLAYING) {
+                        spawnSonicLoop();
+                    }
                 });
             }
             initSettings();
