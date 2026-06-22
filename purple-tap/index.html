@@ -4149,20 +4149,28 @@
                         this.isLooping = false;
                         this.loopObject = null;
                         
-                        // Launch Ninja high into the sky!
-                        this.vy = -25;
-                        this.isGrounded = false;
-                        this.launchTimer = 35; // Shield launch velocity from immediate dash damping
-                        this.doubleJumpAvailable = (selectedSkin === 'platinum');
-                        
-                        Sound.playPowerup();
-                        shakeTime = 25;
-                        shakeIntensity = 10;
-                        screenFlashColor = 'rgba(0, 255, 255, 0.35)';
-                        screenFlashTimer = 15;
-                        spawnScorePopup(this.x + this.width / 2, this.y, "SONIC LAUNCH!", 'revive');
-                        
-                        addComboPoints(25);
+                        if (isPressing) {
+                            // Perfect Launch Ninja high into the sky!
+                            this.vy = -25;
+                            this.isGrounded = false;
+                            this.launchTimer = 35; // Shield launch velocity from immediate dash damping
+                            this.doubleJumpAvailable = (selectedSkin === 'platinum');
+                            
+                            Sound.playPowerup();
+                            shakeTime = 25;
+                            shakeIntensity = 10;
+                            screenFlashColor = 'rgba(0, 255, 255, 0.35)';
+                            screenFlashTimer = 15;
+                            spawnScorePopup(this.x + this.width / 2, this.y, "PERFECT LAUNCH!", 'revive');
+                            
+                            addComboPoints(25);
+                        } else {
+                            // Exit normally to the ground
+                            this.vy = 0;
+                            this.isGrounded = true;
+                            this.y = FLOOR_Y - this.height;
+                            spawnScorePopup(this.x + this.width / 2, this.y, "LOOP EXIT", 'score');
+                        }
                     }
                     
                     // Decrement platinum alchemist invincibility timer if active
