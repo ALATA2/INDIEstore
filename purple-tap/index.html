@@ -4097,6 +4097,7 @@
             },
 
             jump() {
+                if (this.isLooping) return;
                 if (!firstJumpOccurred) {
                     firstJumpOccurred = true;
                     localStorage.setItem('ninja_first_jump_occurred', 'true');
@@ -6239,6 +6240,10 @@
 
         // --- DASH ENERGY CAPACITOR (Stamina Bar) ---
         function updateDashEnergy() {
+            if (player.isLooping) {
+                dashEnergy = Math.min(MAX_ENERGY, dashEnergy + 0.65);
+                return;
+            }
             let isDashing = isPressing && pressDuration > 8;
             if (isDashing) {
                 dashEnergy = Math.max(0, dashEnergy - 1.25);
@@ -8736,22 +8741,26 @@
 
                         // Dash duration increment
                         if (isPressing) {
-                            pressDuration++;
-                            if (pressDuration === 9) {
-                                Sound.playDash();
-                                spawnChronoWave(player.x + player.width / 2, player.y + player.height / 2);
-                                if (selectedSkin === 'shadowstrike') {
-                                    Sound.playShuriken();
-                                    gameObjects.push({
-                                        type: 'shuriken',
-                                        x: player.x + player.width,
-                                        y: player.y + player.height / 2 - 10,
-                                        w: 24,
-                                        h: 20,
-                                        vx: 15,
-                                        vy: 0,
-                                        glowColor: '#ff3300'
-                                    });
+                            if (player.isLooping) {
+                                pressDuration = 0;
+                            } else {
+                                pressDuration++;
+                                if (pressDuration === 9) {
+                                    Sound.playDash();
+                                    spawnChronoWave(player.x + player.width / 2, player.y + player.height / 2);
+                                    if (selectedSkin === 'shadowstrike') {
+                                        Sound.playShuriken();
+                                        gameObjects.push({
+                                            type: 'shuriken',
+                                            x: player.x + player.width,
+                                            y: player.y + player.height / 2 - 10,
+                                            w: 24,
+                                            h: 20,
+                                            vx: 15,
+                                            vy: 0,
+                                            glowColor: '#ff3300'
+                                        });
+                                    }
                                 }
                             }
                         }
