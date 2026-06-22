@@ -6933,7 +6933,7 @@
             
             ctx.font = '500 14px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.fillText("v1.5.6 - Spacing and Transition Balance Update", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
+            ctx.fillText("v1.5.7 - Elongated Sector Duration Balance Update", LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - 45);
             ctx.restore();
 
             // Draw version string in bottom-left corner of homepage
@@ -6942,7 +6942,7 @@
             ctx.font = '900 14px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
             ctx.shadowBlur = 0;
-            ctx.fillText("VERSION v1.5.6", 35, LOGICAL_HEIGHT - 35);
+            ctx.fillText("VERSION v1.5.7", 35, LOGICAL_HEIGHT - 35);
             ctx.restore();
 
             ctx.save();
@@ -7149,17 +7149,17 @@
             currentSector = selectedStartSector;
             const sectorStartMap = {
                 1: { score: 0, time: 0 },
-                2: { score: 300, time: 30 },
-                3: { score: 650, time: 65 },
-                4: { score: 1050, time: 105 },
-                5: { score: 1500, time: 150 },
-                6: { score: 2000, time: 200 },
-                7: { score: 2550, time: 255 },
-                8: { score: 3150, time: 315 },
-                9: { score: 3800, time: 380 },
-                10: { score: 4500, time: 450 },
-                11: { score: 5250, time: 525 },
-                12: { score: 6050, time: 605 }
+                2: { score: 600, time: 60 },
+                3: { score: 1280, time: 128 },
+                4: { score: 2030, time: 203 },
+                5: { score: 2850, time: 285 },
+                6: { score: 3730, time: 373 },
+                7: { score: 4680, time: 468 },
+                8: { score: 5700, time: 570 },
+                9: { score: 6800, time: 680 },
+                10: { score: 7950, time: 795 },
+                11: { score: 9170, time: 917 },
+                12: { score: 10470, time: 1047 }
             };
             let startParams = sectorStartMap[currentSector] || { score: 0, time: 0 };
             score = startParams.score;
@@ -8854,29 +8854,29 @@
                         // Check sector transitions (only in normal playing state based on score earned in current sector)
                         if (gameState === STATE_PLAYING && !transitionQueued && !isBossActive) {
                             let sectorScore = score - sectorStartScore;
-                            if (currentSector === 1 && sectorScore >= 450) {
+                            if (currentSector === 1 && sectorScore >= 600) {
                                 triggerSectorTransition(2);
-                            } else if (currentSector === 2 && sectorScore >= 500) {
+                            } else if (currentSector === 2 && sectorScore >= 680) {
                                 triggerSectorTransition(3);
-                            } else if (currentSector === 3 && sectorScore >= 550) {
+                            } else if (currentSector === 3 && sectorScore >= 750) {
                                 triggerSectorTransition(4);
-                            } else if (currentSector === 4 && sectorScore >= 600) {
+                            } else if (currentSector === 4 && sectorScore >= 820) {
                                 triggerBossFight(1);
-                            } else if (currentSector === 5 && sectorScore >= 650) {
+                            } else if (currentSector === 5 && sectorScore >= 880) {
                                 triggerSectorTransition(6);
-                            } else if (currentSector === 6 && sectorScore >= 700) {
+                            } else if (currentSector === 6 && sectorScore >= 950) {
                                 triggerSectorTransition(7);
-                            } else if (currentSector === 7 && sectorScore >= 750) {
+                            } else if (currentSector === 7 && sectorScore >= 1020) {
                                 triggerSectorTransition(8);
-                            } else if (currentSector === 8 && sectorScore >= 800) {
+                            } else if (currentSector === 8 && sectorScore >= 1100) {
                                 triggerBossFight(2);
-                            } else if (currentSector === 9 && sectorScore >= 850) {
+                            } else if (currentSector === 9 && sectorScore >= 1150) {
                                 triggerSectorTransition(10);
-                            } else if (currentSector === 10 && sectorScore >= 900) {
+                            } else if (currentSector === 10 && sectorScore >= 1220) {
                                 triggerSectorTransition(11);
-                            } else if (currentSector === 11 && sectorScore >= 950) {
+                            } else if (currentSector === 11 && sectorScore >= 1300) {
                                 triggerSectorTransition(12);
-                            } else if (currentSector === 12 && sectorScore >= 1000) {
+                            } else if (currentSector === 12 && sectorScore >= 1380) {
                                 triggerBossFight(3);
                             }
                         }
