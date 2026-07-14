@@ -7368,7 +7368,7 @@
             ctx.strokeStyle = `rgba(${hexToRgb(primaryColor)}, 0.35)`;
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.roundRect(30, 25, 220, 75, 8);
+            ctx.roundRect(30, 75, 220, 75, 8);
             ctx.fill();
             ctx.stroke();
 
@@ -7376,12 +7376,12 @@
             ctx.fillStyle = secondaryColor;
             ctx.shadowBlur = 5;
             ctx.shadowColor = secondaryColor;
-            ctx.fillText(`SCORE: ${score}`, 50, 58);
+            ctx.fillText(`SCORE: ${score}`, 50, 108);
 
             ctx.font = '600 14px "Outfit", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.shadowBlur = 0;
-            ctx.fillText(`BEST: ${bestScore}`, 50, 82);
+            ctx.fillText(`BEST: ${bestScore}`, 50, 132);
             ctx.restore();
 
             // Style Rank Combo Board (Adjacent to Score panel)
@@ -7390,7 +7390,7 @@
             ctx.strokeStyle = `rgba(${hexToRgb(getComboRankColor())}, 0.5)`;
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.roundRect(265, 25, 110, 75, 8);
+            ctx.roundRect(265, 75, 110, 75, 8);
             ctx.fill();
             ctx.stroke();
 
@@ -7398,7 +7398,7 @@
             ctx.font = '900 10px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.textAlign = 'center';
-            ctx.fillText("STYLE", 320, 42);
+            ctx.fillText("STYLE", 320, 92);
 
             // Combo rank letter
             ctx.font = '900 32px "Orbitron", sans-serif';
@@ -7406,7 +7406,7 @@
             ctx.shadowBlur = 10;
             ctx.shadowColor = getComboRankColor();
             ctx.textAlign = 'center';
-            ctx.fillText(comboRank, 320, 75);
+            ctx.fillText(comboRank, 320, 125);
             ctx.restore();
 
             // Dash Stamina energy bar (Top-center panel)
