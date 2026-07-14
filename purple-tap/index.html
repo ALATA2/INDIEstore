@@ -5010,12 +5010,15 @@
         }
 
         function spawnBonusPortal() {
+            let y = FLOOR_Y - 200;
             gameObjects.push({
                 type: 'bonus_portal',
                 x: LOGICAL_WIDTH + 50,
-                y: FLOOR_Y - 200,
+                y: y,
+                baseY: y,
                 w: 90,
                 h: 200,
+                phaseOffset: Math.random() * Math.PI * 2,
                 passed: false
             });
         }
