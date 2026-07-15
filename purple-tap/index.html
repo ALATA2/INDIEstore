@@ -4799,12 +4799,35 @@
 
             let rand = Math.random();
             
-            // Phase-in: for the first 20 seconds of the game (Sector 1), only spawn simple spikes & chips to let the player warm up
-            if (currentPhase === 1 && gameTime < 20.0) {
-                if (Math.random() < 0.7) {
-                    spawnObstacle('spike');
+            // Sector 1 Progressive Gameplay (starts simple but increases in depth and challenge as time passes)
+            if (currentSector === 1) {
+                let pType = Math.random() < 0.6 ? 'classic' : (Math.random() < 0.6 ? 'bouncy' : 'crumbling');
+                if (gameTime < 15.0) {
+                    // Phase A (0-15s): Spikes and chips
+                    if (Math.random() < 0.7) {
+                        spawnObstacle('spike');
+                    } else {
+                        spawnChip(LOGICAL_WIDTH + 50, FLOOR_Y - 35);
+                    }
+                } else if (gameTime < 45.0) {
+                    // Phase B (15-45s): Add shields and classic platforms
+                    if (rand < 0.45) spawnObstacle('spike');
+                    else if (rand < 0.75) spawnObstacle('shield');
+                    else spawnPlatform(pType);
+                } else if (gameTime < 80.0) {
+                    // Phase C (45-80s): Add basic flying drones (gives player first active target to hit with shurikens!)
+                    if (rand < 0.35) spawnObstacle('spike');
+                    else if (rand < 0.60) spawnObstacle('shield');
+                    else if (rand < 0.78) spawnDrone('standard');
+                    else spawnPlatform(pType);
                 } else {
-                    spawnChip(LOGICAL_WIDTH + 50, FLOOR_Y - 35);
+                    // Phase D (80s+): Add warnings of glitch spikes (forces attention before warping!)
+                    if (rand < 0.30) {
+                        let type = Math.random() < 0.25 ? 'glitch_spike' : 'spike';
+                        spawnObstacle(type);
+                    } else if (rand < 0.55) spawnObstacle('shield');
+                    else if (rand < 0.75) spawnDrone('standard');
+                    else spawnPlatform(pType);
                 }
                 return;
             }
@@ -4964,7 +4987,7 @@
             }
         }
 
-        function spawnDrone() {
+        function spawnDrone(forceType = null) {
             let size = 36;
             let baseY = FLOOR_Y - size - (Math.random() * 110 + 60);
 
@@ -4973,13 +4996,18 @@
             let subtype = 'standard';
             let hp = 1;
             
-            if (r < 0.6) {
-                subtype = 'standard';
-            } else if (r < 0.85) {
-                subtype = 'chaser';
+            if (forceType) {
+                subtype = forceType;
+                hp = forceType === 'shielded' ? 2 : 1;
             } else {
-                subtype = 'shielded';
-                hp = 2; // Shielded drone has 2 HP
+                if (r < 0.6) {
+                    subtype = 'standard';
+                } else if (r < 0.85) {
+                    subtype = 'chaser';
+                } else {
+                    subtype = 'shielded';
+                    hp = 2; // Shielded drone has 2 HP
+                }
             }
 
             gameObjects.push({
