@@ -50,6 +50,18 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes spin-shuriken {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .shuriken-btn-icon {
+            display: inline-block;
+            animation: spin-shuriken 3.0s linear infinite;
+            font-size: 24px;
+        }
+        #shoot-shuriken-btn:active {
+            transform: scale(0.9) !important;
+        }
         /* Cookie Banner styling */
         .cookie-banner {
             position: absolute;
@@ -2086,6 +2098,9 @@
         <!-- Hourglass Activating Button (Gameplay overlay HUD) -->
         <button id="activate-slowmo-btn" class="hud-action-btn hidden" style="bottom: 25px; left: 50%; transform: translateX(-50%); border-color: #00ffff; color: #00ffff; font-size: 14px; font-weight: 800; background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; z-index: 85;">⏳<span id="slowmo-charge-badge" style="position: absolute; top: -5px; right: -5px; background: #ff0055; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 1.5px solid white;">0</span></button>
 
+        <!-- Shuriken Throwing Button (Gameplay overlay HUD, visible only if Shadow Strike skin is selected) -->
+        <button id="shoot-shuriken-btn" class="hud-action-btn hidden" style="bottom: 25px; right: 30px; border-color: #ff003c; color: #ff003c; background: rgba(255, 0, 60, 0.15); box-shadow: 0 0 12px rgba(255, 0, 60, 0.4); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 85; cursor: pointer; transition: transform 0.1s;"><span class="shuriken-btn-icon">❂</span></button>
+
         <!-- Double Chips Button (Game Over overlay HUD) -->
         <button id="double-chips-btn" class="hud-action-btn hidden" style="bottom: 95px; left: 50%; transform: translateX(-50%); border-color: #ffd700; color: #ffd700; font-size: 14px; font-weight: 800; background: rgba(30, 20, 0, 0.85); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); z-index: 80;">🎬 DOUBLE CHIPS (WATCH AD)</button>
         
@@ -2515,7 +2530,7 @@
                 
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(200, this.ctx.currentTime);
-                osc.frequency.quadraticRampToValueAtTime(700, this.ctx.currentTime + 0.25);
+                osc.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime + 0.25);
                 
                 gain.gain.setValueAtTime(0.18 * sfxVolume, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01 * sfxVolume, this.ctx.currentTime + 0.25);
@@ -4057,6 +4072,9 @@
         // Magnet Power-Up Timer
         let magnetTimer = 0;
 
+        // Shuriken Manual Fire Cooldown Timer
+        let shurikenCooldownTimer = 0;
+
         // Shield Power-Up Active State
         let hasShield = false;
 
@@ -5048,6 +5066,26 @@
                 h: 200,
                 phaseOffset: Math.random() * Math.PI * 2,
                 passed: false
+            });
+        }
+
+        function throwShuriken() {
+            if (gameState !== STATE_PLAYING && gameState !== STATE_BONUS_ROOM) return;
+            if (isPaused || isReviveOverlayActive) return;
+            if (selectedSkin !== 'shadowstrike') return;
+            if (shurikenCooldownTimer > 0) return;
+
+            shurikenCooldownTimer = 15; // 0.25s cooldown to prevent spamming
+            Sound.playShuriken();
+            gameObjects.push({
+                type: 'shuriken',
+                x: player.x + player.width,
+                y: player.y + player.height / 2 - 10,
+                w: 24,
+                h: 20,
+                vx: 15,
+                vy: 0,
+                glowColor: '#ff3300'
             });
         }
 
@@ -8272,6 +8310,10 @@
                 e.preventDefault();
                 activateSlowMo();
             }
+            if (e.code === 'KeyX' || e.key === 'x' || e.key === 'X' || e.code === 'KeyF' || e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                throwShuriken();
+            }
         });
 
         window.addEventListener('keyup', (e) => {
@@ -8374,6 +8416,11 @@
                 return;
             }
             if (checkActiveTaps(e)) {
+                return;
+            }
+            if (e.button === 2) {
+                // Right click throws shuriken
+                throwShuriken();
                 return;
             }
             onPress();
@@ -8992,6 +9039,7 @@
             const btnShop = document.getElementById('show-shop-start');
             const btnDaily = document.getElementById('show-daily-btn');
             const btnSlowMo = document.getElementById('activate-slowmo-btn');
+            const btnShuriken = document.getElementById('shoot-shuriken-btn');
             const btnDoubleChips = document.getElementById('double-chips-btn');
             const btnHelp = document.getElementById('show-help-start');
             const btnPrivacy = document.getElementById('show-privacy-start');
@@ -9026,10 +9074,19 @@
                 if (btnDebugLoop) btnDebugLoop.classList.add('hidden'); // Nascondi temporaneamente il pulsante loop
                 const slowMoBadge = document.getElementById('slowmo-charge-badge');
                 if (slowMoBadge) slowMoBadge.innerText = hourglassCharges;
+
+                if (btnShuriken) {
+                    if (selectedSkin === 'shadowstrike') {
+                        btnShuriken.classList.remove('hidden');
+                    } else {
+                        btnShuriken.classList.add('hidden');
+                    }
+                }
             } else {
                 if (btnSlowMo) btnSlowMo.classList.add('hidden');
                 if (btnPause) btnPause.classList.add('hidden');
                 if (btnDebugLoop) btnDebugLoop.classList.add('hidden');
+                if (btnShuriken) btnShuriken.classList.add('hidden');
             }
 
             if (gameState === STATE_GAMEOVER && runChipsCollected > 0) {
@@ -9440,6 +9497,21 @@
         // Initialize Hourglass Activator click listener
         document.getElementById('activate-slowmo-btn').addEventListener('click', activateSlowMo);
 
+        // Initialize Shuriken Activator click/touch listener
+        const shurikenBtn = document.getElementById('shoot-shuriken-btn');
+        if (shurikenBtn) {
+            shurikenBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                throwShuriken();
+            });
+            shurikenBtn.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                throwShuriken();
+            });
+        }
+
         // Setup name submission keyboard shortcut (Enter key)
         document.getElementById('player-name-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -9669,6 +9741,9 @@
                     if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
                         gameFrames++;
                         gameTime += (1 / 60) * timeScale;
+                        if (shurikenCooldownTimer > 0) {
+                            shurikenCooldownTimer -= 1 * timeScale;
+                        }
                         if (!player.isLooping) {
                             scrollX += (gameState === STATE_BONUS_ROOM ? 14 : 7) * timeScale;
                         }
