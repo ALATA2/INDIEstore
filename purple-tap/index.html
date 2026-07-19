@@ -5069,24 +5069,99 @@
             });
         }
 
+        function fireShurikenFromPlayer() {
+            Sound.playShuriken();
+            
+            if (comboRank === 'S') {
+                // Double narrow spread
+                gameObjects.push({
+                    type: 'shuriken',
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2 - 14,
+                    w: 24,
+                    h: 20,
+                    vx: 15,
+                    vy: -1.5,
+                    glowColor: '#ff3300'
+                });
+                gameObjects.push({
+                    type: 'shuriken',
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2 - 6,
+                    w: 24,
+                    h: 20,
+                    vx: 15,
+                    vy: 1.5,
+                    glowColor: '#ff3300'
+                });
+            } else if (comboRank === 'SS') {
+                // Triple spread
+                gameObjects.push({
+                    type: 'shuriken',
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2 - 16,
+                    w: 24,
+                    h: 20,
+                    vx: 15,
+                    vy: -3.0,
+                    glowColor: '#ff00aa'
+                });
+                gameObjects.push({
+                    type: 'shuriken',
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2 - 10,
+                    w: 24,
+                    h: 20,
+                    vx: 15,
+                    vy: 0,
+                    glowColor: '#ff00aa'
+                });
+                gameObjects.push({
+                    type: 'shuriken',
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2 - 4,
+                    w: 24,
+                    h: 20,
+                    vx: 15,
+                    vy: 3.0,
+                    glowColor: '#ff00aa'
+                });
+            } else if (comboRank === 'SSS') {
+                // Giant piercing shuriken
+                gameObjects.push({
+                    type: 'shuriken',
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2 - 20,
+                    w: 48,
+                    h: 40,
+                    vx: 17,
+                    vy: 0,
+                    isPiercing: true,
+                    glowColor: '#00ffff'
+                });
+            } else {
+                // Standard single shuriken
+                gameObjects.push({
+                    type: 'shuriken',
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2 - 10,
+                    w: 24,
+                    h: 20,
+                    vx: 15,
+                    vy: 0,
+                    glowColor: '#ff3300'
+                });
+            }
+        }
+
         function throwShuriken() {
             if (gameState !== STATE_PLAYING && gameState !== STATE_BONUS_ROOM) return;
             if (isPaused || isReviveOverlayActive) return;
             if (selectedSkin !== 'shadowstrike') return;
             if (shurikenCooldownTimer > 0) return;
 
-            shurikenCooldownTimer = 15; // 0.25s cooldown to prevent spamming
-            Sound.playShuriken();
-            gameObjects.push({
-                type: 'shuriken',
-                x: player.x + player.width,
-                y: player.y + player.height / 2 - 10,
-                w: 24,
-                h: 20,
-                vx: 15,
-                vy: 0,
-                glowColor: '#ff3300'
-            });
+            shurikenCooldownTimer = 15; // 0.25s cooldown
+            fireShurikenFromPlayer();
         }
 
         function spawnPlatform(subType = 'classic') {
@@ -5472,6 +5547,9 @@
                 if ((gameState === STATE_PLAYING || gameState === STATE_BONUS_ROOM) && !isReviveOverlayActive) {
                     if (obj.type === 'shuriken') {
                         obj.x += obj.vx * timeScale;
+                        if (obj.vy) {
+                            obj.y += obj.vy * timeScale;
+                        }
                         
                         // Collision check between shuriken and hazards (spikes, shields, drones, laser_barriers)
                         for (let j = gameObjects.length - 1; j >= 0; j--) {
@@ -5521,9 +5599,11 @@
                                         spawnScorePopup(other.x, other.y, "DISRUPTED!", 'combo');
                                     }
                                     
-                                    // Destroy shuriken itself
-                                    gameObjects.splice(i, 1);
-                                    break;
+                                    // Destroy shuriken itself if not piercing
+                                    if (!obj.isPiercing) {
+                                        gameObjects.splice(i, 1);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -5533,16 +5613,18 @@
                             let bossBox = { x: boss.x + 10, y: boss.y + 10, w: boss.w - 20, h: boss.h - 20 };
                             if (obj.x < bossBox.x + bossBox.w && obj.x + obj.w > bossBox.x &&
                                 obj.y < bossBox.y + bossBox.h && obj.y + obj.h > bossBox.y) {
-                                damageBoss(1);
+                                damageBoss(obj.isPiercing ? 3 : 1);
                                 spawnDroneExplosionParticles(obj.x + obj.w / 2, obj.y + obj.h / 2);
-                                gameObjects.splice(i, 1);
-                                continue;
+                                if (!obj.isPiercing) {
+                                    gameObjects.splice(i, 1);
+                                    continue;
+                                }
                             }
                         }
 
                         // If shuriken is out of bounds or already deleted, skip further updates
                         if (gameObjects[i] !== obj) continue;
-                        if (obj.x > LOGICAL_WIDTH + 50) {
+                        if (obj.x > LOGICAL_WIDTH + 50 || obj.y < -50 || obj.y > FLOOR_Y + 100) {
                             gameObjects.splice(i, 1);
                             continue;
                         }
@@ -9769,17 +9851,7 @@
                                     Sound.playDash();
                                     spawnChronoWave(player.x + player.width / 2, player.y + player.height / 2);
                                     if (selectedSkin === 'shadowstrike') {
-                                        Sound.playShuriken();
-                                        gameObjects.push({
-                                            type: 'shuriken',
-                                            x: player.x + player.width,
-                                            y: player.y + player.height / 2 - 10,
-                                            w: 24,
-                                            h: 20,
-                                            vx: 15,
-                                            vy: 0,
-                                            glowColor: '#ff3300'
-                                        });
+                                        fireShurikenFromPlayer();
                                     }
                                 }
                             }
