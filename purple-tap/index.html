@@ -4166,6 +4166,8 @@
             isGrounded: true,
             doubleJumpAvailable: false,
             
+            isGravityFlipped: false,
+            
             // Sonic Loop state variables
             isLooping: false,
             loopObject: null,
@@ -4183,6 +4185,7 @@
             isWallRunning: false,
             wallRunPanel: null,
             wallRunTimer: 0,
+            isGravityFlipped: false,
             
             // Squash and Stretch parameters for movement juice
             scaleX: 1,
@@ -4217,6 +4220,7 @@
                 this.isWallRunning = false;
                 this.wallRunPanel = null;
                 this.wallRunTimer = 0;
+                this.isGravityFlipped = false;
             },
 
             jump() {
@@ -4238,11 +4242,12 @@
                 if (this.isWallRunning) {
                     this.isWallRunning = false;
                     this.wallRunPanel = null;
-                    this.vy = -this.jumpStrength * 0.95; // Strong jump off the wall
+                    let jumpDir = this.isGravityFlipped ? 1 : -1;
+                    this.vy = this.jumpStrength * 0.95 * jumpDir; // Strong jump off the wall
                     this.doubleJumpAvailable = (selectedSkin === 'platinum');
                     Sound.playJump();
                     addComboPoints(3);
-                    spawnJumpParticles(this.x + this.width / 2, this.y + this.height);
+                    spawnJumpParticles(this.x + this.width / 2, this.isGravityFlipped ? this.y : this.y + this.height);
                     return;
                 }
 
@@ -4278,16 +4283,17 @@
                 }
 
                 // Case 3: Standard jump/double jump
+                let jumpDir = this.isGravityFlipped ? 1 : -1;
                 if (this.isGrounded) {
-                    this.vy = -this.jumpStrength;
+                    this.vy = this.jumpStrength * jumpDir;
                     this.isGrounded = false;
                     this.landSquash = 0;
                     Sound.playJump();
                     addComboPoints(1);
-                    spawnJumpParticles(this.x + this.width / 2, this.y + this.height);
+                    spawnJumpParticles(this.x + this.width / 2, this.isGravityFlipped ? this.y : this.y + this.height);
                     this.doubleJumpAvailable = selectedSkin === 'platinum';
                 } else if (selectedSkin === 'platinum' && this.doubleJumpAvailable) {
-                    this.vy = -this.jumpStrength * 0.95; // Strong mid-air double jump
+                    this.vy = this.jumpStrength * 0.95 * jumpDir; // Strong mid-air double jump
                     this.doubleJumpAvailable = false;
                     Sound.playJump();
                     addComboPoints(2);
@@ -4457,65 +4463,125 @@
                     this.x += (200 - this.x) * 0.08;
                 }
 
-                let currentGravity = this.gravity * (isDashing ? 0.08 : 1.0) * timeScale;
+                let gravityDirection = this.isGravityFlipped ? -1 : 1;
+                let currentGravity = this.gravity * gravityDirection * (isDashing ? 0.08 : 1.0) * timeScale;
                 this.vy += currentGravity;
                 this.y += this.vy * timeScale;
 
                 // Collision with floating platforms (one-way platform behavior)
                 let onPlatform = false;
-                if (this.vy >= 0) {
-                    for (let obj of gameObjects) {
-                        if (obj.type === 'platform') {
-                            if (obj.subType === 'phase_cyan' && activePhaseColor !== 'cyan') continue;
-                            if (obj.subType === 'phase_pink' && activePhaseColor !== 'pink') continue;
-                            // Check horizontal overlap
-                            if (this.x + this.width > obj.x && this.x < obj.x + obj.w) {
-                                let playerBottom = this.y + this.height;
-                                let prevPlayerBottom = playerBottom - this.vy * timeScale;
-                                // If player bottom is passing through the platform top surface
-                                if (playerBottom >= obj.y && prevPlayerBottom <= obj.y + 12) {
-                                    if (obj.subType === 'bouncy') {
-                                        this.y = obj.y - this.height;
-                                        this.vy = -22;
-                                        this.isGrounded = false;
-                                        this.doubleJumpAvailable = selectedSkin === 'platinum';
-                                        this.landSquash = 1.25;
-                                        spawnLandingPuff(this.x + this.width / 2, obj.y);
-                                        Sound.playSpring();
-                                        spawnScorePopup(this.x + this.width / 2, obj.y - 20, "MEGA BOUNCE!", 'powerup');
-                                    } else {
-                                        this.y = obj.y - this.height;
-                                        this.vy = 0;
-                                        onPlatform = true;
-                                        if (obj.subType === 'crumbling') {
-                                            obj.steppedOn = true;
-                                        }
-                                        if (!this.isGrounded) {
-                                            this.isGrounded = true;
+                if (!this.isGravityFlipped) {
+                    if (this.vy >= 0) {
+                        for (let obj of gameObjects) {
+                            if (obj.type === 'platform') {
+                                if (obj.subType === 'phase_cyan' && activePhaseColor !== 'cyan') continue;
+                                if (obj.subType === 'phase_pink' && activePhaseColor !== 'pink') continue;
+                                // Check horizontal overlap
+                                if (this.x + this.width > obj.x && this.x < obj.x + obj.w) {
+                                    let playerBottom = this.y + this.height;
+                                    let prevPlayerBottom = playerBottom - this.vy * timeScale;
+                                    // If player bottom is passing through the platform top surface
+                                    if (playerBottom >= obj.y && prevPlayerBottom <= obj.y + 12) {
+                                        if (obj.subType === 'bouncy') {
+                                            this.y = obj.y - this.height;
+                                            this.vy = -22;
+                                            this.isGrounded = false;
                                             this.doubleJumpAvailable = selectedSkin === 'platinum';
-                                            this.landSquash = 1.0;
+                                            this.landSquash = 1.25;
                                             spawnLandingPuff(this.x + this.width / 2, obj.y);
+                                            Sound.playSpring();
+                                            spawnScorePopup(this.x + this.width / 2, obj.y - 20, "MEGA BOUNCE!", 'powerup');
+                                        } else {
+                                            this.y = obj.y - this.height;
+                                            this.vy = 0;
+                                            onPlatform = true;
+                                            if (obj.subType === 'crumbling') {
+                                                obj.steppedOn = true;
+                                            }
+                                            if (!this.isGrounded) {
+                                                this.isGrounded = true;
+                                                this.doubleJumpAvailable = selectedSkin === 'platinum';
+                                                this.landSquash = 1.0;
+                                                spawnLandingPuff(this.x + this.width / 2, obj.y);
+                                            }
                                         }
+                                        break;
                                     }
-                                    break;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Inverted gravity platform collision (one-way platform underneath)
+                    if (this.vy <= 0) {
+                        for (let obj of gameObjects) {
+                            if (obj.type === 'platform') {
+                                if (obj.subType === 'phase_cyan' && activePhaseColor !== 'cyan') continue;
+                                if (obj.subType === 'phase_pink' && activePhaseColor !== 'pink') continue;
+                                // Check horizontal overlap
+                                if (this.x + this.width > obj.x && this.x < obj.x + obj.w) {
+                                    let playerTop = this.y;
+                                    let prevPlayerTop = playerTop - this.vy * timeScale;
+                                    let platformBottom = obj.y + obj.h;
+                                    // If player top is passing through the platform bottom surface
+                                    if (playerTop <= platformBottom && prevPlayerTop >= platformBottom - 12) {
+                                        if (obj.subType === 'bouncy') {
+                                            this.y = platformBottom;
+                                            this.vy = 22; // bounce down
+                                            this.isGrounded = false;
+                                            this.doubleJumpAvailable = selectedSkin === 'platinum';
+                                            this.landSquash = 1.25;
+                                            spawnLandingPuff(this.x + this.width / 2, platformBottom);
+                                            Sound.playSpring();
+                                            spawnScorePopup(this.x + this.width / 2, platformBottom + 20, "MEGA BOUNCE!", 'powerup');
+                                        } else {
+                                            this.y = platformBottom;
+                                            this.vy = 0;
+                                            onPlatform = true;
+                                            if (obj.subType === 'crumbling') {
+                                                obj.steppedOn = true;
+                                            }
+                                            if (!this.isGrounded) {
+                                                this.isGrounded = true;
+                                                this.doubleJumpAvailable = selectedSkin === 'platinum';
+                                                this.landSquash = 1.0;
+                                                spawnLandingPuff(this.x + this.width / 2, platformBottom);
+                                            }
+                                        }
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // Collide with the floor
-                if (!onPlatform && this.y >= FLOOR_Y - this.height) {
-                    this.y = FLOOR_Y - this.height;
-                    this.vy = 0;
-                    if (!this.isGrounded) {
-                        this.isGrounded = true;
-                        this.landSquash = 1.0; // Trigger landing impact squash
-                        spawnLandingPuff(this.x + this.width / 2, FLOOR_Y);
+                // Collide with the floor or ceiling
+                const CEILING_Y = 80;
+                if (this.isGravityFlipped) {
+                    if (!onPlatform && this.y <= CEILING_Y) {
+                        this.y = CEILING_Y;
+                        this.vy = 0;
+                        if (!this.isGrounded) {
+                            this.isGrounded = true;
+                            this.landSquash = 1.0;
+                            spawnLandingPuff(this.x + this.width / 2, CEILING_Y);
+                        }
+                    } else if (!onPlatform && this.y > CEILING_Y) {
+                        this.isGrounded = false;
                     }
-                } else if (!onPlatform && this.y < FLOOR_Y - this.height) {
-                    // If player is mid-air and not on any platform, they are not grounded
-                    this.isGrounded = false;
+                } else {
+                    if (!onPlatform && this.y >= FLOOR_Y - this.height) {
+                        this.y = FLOOR_Y - this.height;
+                        this.vy = 0;
+                        if (!this.isGrounded) {
+                            this.isGrounded = true;
+                            this.landSquash = 1.0; // Trigger landing impact squash
+                            spawnLandingPuff(this.x + this.width / 2, FLOOR_Y);
+                        }
+                    } else if (!onPlatform && this.y < FLOOR_Y - this.height) {
+                        this.isGrounded = false;
+                    }
                 }
 
                 // Run cycle oscillation
@@ -4523,7 +4589,7 @@
                     this.runCycle += 0.35 * timeScale;
                     // Spawn ground dust particles while running
                     if (gameFrames % 6 === 0 && Math.abs(this.x - 200) < 50) {
-                        spawnRunParticles(this.x, this.y + this.height);
+                        spawnRunParticles(this.x, this.isGravityFlipped ? this.y : this.y + this.height);
                     }
                     // Skin cosmetic sparks
                     if (Math.random() < 0.15) {
@@ -4617,7 +4683,7 @@
                     let alpha = (i + 1) / this.trail.length * 0.22;
                     ctx.save();
                     ctx.translate(pt.x + this.width / 2, pt.y + this.height / 2);
-                    ctx.scale(pt.scaleX, pt.scaleY);
+                    ctx.scale(pt.scaleX, pt.scaleY * (this.isGravityFlipped ? -1 : 1));
                     ctx.fillStyle = `rgba(${hexToRgb(trailColorHex)}, ${alpha})`;
                     ctx.beginPath();
                     ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 8);
@@ -4631,7 +4697,7 @@
                 if (this.isLooping) {
                     ctx.rotate(this.loopAngle - Math.PI / 2);
                 }
-                ctx.scale(this.scaleX, this.scaleY);
+                ctx.scale(this.scaleX, this.scaleY * (this.isGravityFlipped ? -1 : 1));
 
                 if (selectedSkin === 'holo') {
                     ctx.globalAlpha = 0.75;
@@ -4896,6 +4962,12 @@
                 return;
             }
 
+            // Check Gravity Flip Portal spawn chance (6%) - only starting from Sector 6
+            if (gameState !== STATE_BONUS_ROOM && currentSector >= 6 && Math.random() < 0.06) {
+                spawnGravityPortal();
+                return;
+            }
+
             let pType = Math.random() < 0.55 ? 'classic' : (Math.random() < 0.55 ? 'bouncy' : 'crumbling');
             let isPhasePlatform = (currentSector >= 2 && Math.random() < 0.25);
             let isStairs = (currentSector >= 3 && Math.random() < 0.35);
@@ -5065,6 +5137,18 @@
                 w: 90,
                 h: 200,
                 phaseOffset: Math.random() * Math.PI * 2,
+                passed: false
+            });
+        }
+
+        function spawnGravityPortal() {
+            let y = FLOOR_Y - 200 - Math.random() * 80;
+            gameObjects.push({
+                type: 'gravity_portal',
+                x: LOGICAL_WIDTH + 50,
+                y: y,
+                w: 50,
+                h: 80,
                 passed: false
             });
         }
@@ -6385,6 +6469,57 @@
                     }
                     ctx.restore();
 
+                } else if (obj.type === 'gravity_portal') {
+                    // --- GRAVITY FLIP PORTAL ---
+                    ctx.save();
+                    ctx.shadowBlur = 22;
+                    let pColor = player.isGravityFlipped ? '#00ffff' : '#bd00ff';
+                    ctx.shadowColor = pColor;
+                    ctx.strokeStyle = pColor;
+                    ctx.lineWidth = 4;
+
+                    ctx.beginPath();
+                    ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 12);
+                    ctx.stroke();
+
+                    ctx.fillStyle = player.isGravityFlipped ? 'rgba(0, 255, 255, 0.08)' : 'rgba(189, 0, 255, 0.08)';
+                    ctx.fill();
+
+                    // Scanner scanline
+                    ctx.strokeStyle = pColor;
+                    ctx.lineWidth = 1.5;
+                    let waveY = (gameFrames * 1.5) % (obj.h - 10);
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x + 5, obj.y + 5 + waveY);
+                    ctx.lineTo(obj.x + obj.w - 5, obj.y + 5 + waveY);
+                    ctx.stroke();
+
+                    // Directional chevrons
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    let arrowCenterY = obj.y + obj.h / 2;
+                    let arrowCenterX = obj.x + obj.w / 2;
+                    let arrowDir = player.isGravityFlipped ? 1 : -1;
+                    
+                    ctx.moveTo(arrowCenterX - 12, arrowCenterY + 10 * arrowDir);
+                    ctx.lineTo(arrowCenterX, arrowCenterY - 2 * arrowDir);
+                    ctx.lineTo(arrowCenterX + 12, arrowCenterY + 10 * arrowDir);
+                    ctx.lineTo(arrowCenterX + 8, arrowCenterY + 10 * arrowDir);
+                    ctx.lineTo(arrowCenterX, arrowCenterY + 2 * arrowDir);
+                    ctx.lineTo(arrowCenterX - 8, arrowCenterY + 10 * arrowDir);
+                    ctx.closePath();
+                    
+                    ctx.moveTo(arrowCenterX - 12, arrowCenterY - 2 * arrowDir);
+                    ctx.lineTo(arrowCenterX, arrowCenterY - 14 * arrowDir);
+                    ctx.lineTo(arrowCenterX + 12, arrowCenterY - 2 * arrowDir);
+                    ctx.lineTo(arrowCenterX + 8, arrowCenterY - 2 * arrowDir);
+                    ctx.lineTo(arrowCenterX, arrowCenterY - 10 * arrowDir);
+                    ctx.lineTo(arrowCenterX - 8, arrowCenterY - 2 * arrowDir);
+                    ctx.closePath();
+                    
+                    ctx.fill();
+                    ctx.restore();
+
                 } else if (obj.type === 'laser_barrier') {
                     // --- LASER BARRIER HAZARD ---
                     if (obj.warningTimer > 0) {
@@ -6552,7 +6687,7 @@
                             }
                         }
                     } else if (obj.type !== 'portal' && obj.type !== 'shuriken' && obj.type !== 'platform' && obj.type !== 'sonic_loop' && obj.type !== 'grapple_point') {
-                        isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal');
+                        isColliding = checkCollision(player, obj, obj.type === 'chip' || obj.type === 'magnet' || obj.type === 'shield_pu' || obj.type === 'hourglass' || obj.type === 'multiplier_star' || obj.type === 'bonus_portal' || obj.type === 'gravity_portal');
                     }
                 }
 
@@ -6672,6 +6807,29 @@
                         shakeTime = 15;
                         shakeIntensity = 6;
                         break; // Exit loop immediately
+
+                    } else if (obj.type === 'gravity_portal') {
+                        // Toggle player gravity inversion state
+                        player.isGravityFlipped = !player.isGravityFlipped;
+                        Sound.playToggle();
+                        
+                        screenFlashColor = player.isGravityFlipped ? 'rgba(189, 0, 255, 0.25)' : 'rgba(0, 255, 255, 0.25)';
+                        screenFlashTimer = 12;
+                        spawnScorePopup(obj.x + obj.w / 2, obj.y - 10, player.isGravityFlipped ? "GRAVITY INVERTED!" : "GRAVITY RESTORED!", 'powerup');
+                        addComboPoints(12);
+                        
+                        // Visual feedback sparks
+                        for (let j = 0; j < 12; j++) {
+                            let vx = (Math.random() - 0.5) * 10;
+                            let vy = (Math.random() - 0.5) * 10;
+                            let size = Math.random() * 5 + 3;
+                            let decay = Math.random() * 0.04 + 0.02;
+                            let color = player.isGravityFlipped ? '#bd00ff' : '#00ffff';
+                            spawnParticle(obj.x + obj.w / 2, obj.y + obj.h / 2, vx, vy, size, color, decay, 0.02, 'star');
+                        }
+                        
+                        gameObjects.splice(i, 1);
+                        continue;
 
                     } else if (obj.type === 'reflector_orb') {
                         if (!obj.deflected) {
@@ -7108,9 +7266,10 @@
         }
 
         function spawnJumpParticles(x, y) {
+            let gravityDir = player.isGravityFlipped ? 1 : -1;
             for (let i = 0; i < 10; i++) {
                 let vx = (Math.random() - 0.5) * 6 - 2;
-                let vy = (Math.random() - 0.3) * -4;
+                let vy = (Math.random() - 0.3) * 4 * gravityDir;
                 let size = Math.random() * 5 + 3;
                 let decay = Math.random() * 0.03 + 0.02;
                 spawnParticle(x, y, vx, vy, size, secondaryColor, decay, 0.05, 'circle');
@@ -7119,7 +7278,7 @@
 
         function spawnRunParticles(x, y) {
             let vx = (Math.random() - 0.9) * 4;
-            let vy = (Math.random() - 0.5) * -2;
+            let vy = (Math.random() - 0.5) * (player.isGravityFlipped ? 2 : -2);
             let size = Math.random() * 4 + 2;
             let decay = Math.random() * 0.05 + 0.03;
             spawnParticle(x, y, vx, vy, size, `rgba(${hexToRgb(primaryColor)}, 0.65)`, decay, 0.02, 'square');
@@ -7192,9 +7351,10 @@
         }
 
         function spawnLandingPuff(x, y) {
+            let gravityDir = player.isGravityFlipped ? 1 : -1;
             for (let i = 0; i < 12; i++) {
                 let vx = (Math.random() - 0.5) * 8;
-                let vy = -Math.random() * 3 - 1;
+                let vy = (Math.random() * 3 + 1) * gravityDir;
                 let size = Math.random() * 8 + 4;
                 let decay = Math.random() * 0.04 + 0.03;
                 spawnParticle(x, y, vx, vy, size, 'rgba(189, 0, 255, 0.4)', decay, 0.1, 'circle');
